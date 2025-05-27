@@ -2,8 +2,8 @@
   "name": "scalar-autograd",
   "version": "0.1.4",
   "description": "Scalar-based reverse-mode automatic differentiation in TypeScript.",
-  "main": "Value.js",
-  "types": "Value.d.ts",
+  "main": "dist/Value.js",
+  "types": "dist/Value.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/mfagerlund/ScalarAutograd.git"
@@ -18,15 +18,7 @@
   "author": "Mattias Fagerlund <mattias.fagerlund@carretera.se>",
   "license": "MIT",
   "files": [
-    "Value.js",
-    "Value.d.ts",
-    "V.ts",
-    "Value*.js",
-    "Value*.ts",
-    "Losses.js",
-    "Losses.ts",
-    "Optimizers.js",
-    "Optimizers.ts"
+    "dist/"
   ],
   "devDependencies": {
     "ts-node": "^10.0.0",
