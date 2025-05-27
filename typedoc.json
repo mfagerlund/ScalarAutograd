@@ -1,0 +1,16 @@
+{
+  "entryPoints": [
+    "Value.ts",
+    "ValueActivation.ts",
+    "ValueArithmetic.ts",
+    "ValueComparison.ts",
+    "ValueTrig.ts",
+    "Optimizers.ts",
+    "Losses.ts",
+    "V.ts"
+  ],
+  "out": "docs",
+  "exclude": [
+    "**/*.spec.ts"
+  ]
+}

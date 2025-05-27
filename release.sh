@@ -15,7 +15,7 @@ echo "\nStep 3: Building project..."
 npm run build
 
 echo "\nStep 4: Generating docs..."
-npm run docs
+npx typedoc
 
 echo "\nStep 5: NPM Login (skip if already logged in)"
 npm login || true

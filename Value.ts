@@ -1,4 +1,4 @@
-type BackwardFn = () => void;
+export type BackwardFn = () => void;
 
 const EPS = 1e-12;
 

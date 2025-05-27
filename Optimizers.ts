@@ -53,7 +53,7 @@ export abstract class Optimizer {
  * @property weightDecay: L2 regularization multiplier (default 0). Ignored for plain SGD.
  * @property gradientClip: Maximum absolute value for gradient updates (default 0: no clipping).
  */
-interface OptimizerOptions {
+export interface OptimizerOptions {
   learningRate?: number;
   weightDecay?: number;
   gradientClip?: number;
@@ -96,7 +96,7 @@ export class SGD extends Optimizer {
  * @property beta2: Exponential decay rate for 2nd moment (default 0.999).
  * @property epsilon: Numerical stability fudge factor (default 1e-8).
  */
-interface AdamOptions extends OptimizerOptions {
+export interface AdamOptions extends OptimizerOptions {
   beta1?: number;
   beta2?: number;
   epsilon?: number;
