@@ -109,5 +109,12 @@ To run the test suite and verify the correctness of ScalarAutograd, execute the 
 npm run test
 ```
 
+## Deploy to npm
+
+Start "Git Bash" terminal
+Type ./release.sh
+
+---
+
 ## License
 MIT
