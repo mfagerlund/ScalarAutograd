@@ -1,5 +1,5 @@
 import { Value } from "./Value";
-import { mse, mae, binaryCrossEntropy, categoricalCrossEntropy } from "./Losses";
+import { Losses } from "./Losses";
 
 describe("Losses", () => {
   it("mse computes value and gradients correctly", () => {
@@ -7,7 +7,7 @@ describe("Losses", () => {
     const y = new Value(3, "y", true);
     const tx = new Value(5, "tx");
     const ty = new Value(1, "ty");
-    const loss = mse([x, y], [tx, ty]); // (1/2)*((2-5)^2 + (3-1)^2) = (1/2)*(9+4) = 6.5
+    const loss = Losses.mse([x, y], [tx, ty]); // (1/2)*((2-5)^2 + (3-1)^2) = (1/2)*(9+4) = 6.5
     expect(loss.data).toBeCloseTo(6.5);
     loss.backward();
     expect(x.grad).toBeCloseTo(-3);
@@ -19,7 +19,7 @@ describe("Losses", () => {
     const y = new Value(-3, "y", true);
     const tx = new Value(5, "tx");
     const ty = new Value(2, "ty");
-    const loss = mae([x, y], [tx, ty]); // (1/2)*(abs(2-5)+abs(-3-2)) = (1/2)*(3+5)=4
+    const loss = Losses.mae([x, y], [tx, ty]); // (1/2)*(abs(2-5)+abs(-3-2)) = (1/2)*(3+5)=4
     expect(loss.data).toBeCloseTo(4);
     loss.backward();
     expect(x.grad).toBeCloseTo(-0.5);
@@ -29,7 +29,7 @@ describe("Losses", () => {
   it("binaryCrossEntropy computes value and gradients correctly for easy case", () => {
     const out = new Value(0.9, "out", true);
     const target = new Value(1, "target");
-    const loss = binaryCrossEntropy([out], [target]);
+    const loss = Losses.binaryCrossEntropy([out], [target]);
     expect(loss.data).toBeCloseTo(-Math.log(0.9));
     loss.backward();
     expect(out.grad).toBeCloseTo(-1/0.9, 4);
@@ -41,7 +41,7 @@ describe("Losses", () => {
     const b = new Value(1, "b", true);
     const c = new Value(0, "c", true);
     const targets = [0];
-    const loss = categoricalCrossEntropy([a, b, c], targets);
+    const loss = Losses.categoricalCrossEntropy([a, b, c], targets);
     const softmax = [
       Math.exp(2)/(Math.exp(2)+Math.exp(1)+Math.exp(0)),
       Math.exp(1)/(Math.exp(2)+Math.exp(1)+Math.exp(0)),

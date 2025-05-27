@@ -1,6 +1,10 @@
 export type BackwardFn = () => void;
+export { V } from './V';
+export { Optimizer, SGD, Adam, AdamW, OptimizerOptions, AdamOptions } from './Optimizers';
+export { Losses } from './Losses';
 
 const EPS = 1e-12;
+
 
 import { ValueTrig } from './ValueTrig';
 import { ValueActivation } from './ValueActivation';
