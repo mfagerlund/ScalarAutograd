@@ -8,7 +8,9 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "types": ["vitest/globals"],
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./dist"
   },
   "include": ["*.ts"]
 }
