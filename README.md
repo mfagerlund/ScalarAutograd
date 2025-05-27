@@ -103,7 +103,11 @@ All API operations work with both `Value` and raw number inputs (numbers are aut
 
 ## Testing
 
-See the included `.spec.ts` files for thorough usage and tests.
+To run the test suite and verify the correctness of ScalarAutograd, execute the following command in your project directory:
+
+```shell
+npm run test
+```
 
 ## License
 MIT

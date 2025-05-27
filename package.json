@@ -6,7 +6,7 @@
   "types": "Value.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/ScalarAutograd.git"
+    "url": "https://github.com/mfagerlund/ScalarAutograd.git"
   },
   "keywords": [
     "autograd",
@@ -30,7 +30,8 @@
   ],
   "devDependencies": {
     "ts-node": "^10.0.0",
-    "typescript": "^5.0.0",
+    "typedoc": "^0.28.5",
+    "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   },
   "scripts": {
