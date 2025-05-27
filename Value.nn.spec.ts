@@ -1,6 +1,6 @@
 import { Value } from "./Value";
 import { SGD, Adam } from "./Optimizers";
-import { mse, binaryCrossEntropy } from "./Losses";
+import { Losses } from "./Losses";
 
 describe("can train scalar neural networks on minimal problems", () => {
 
@@ -22,7 +22,7 @@ describe("can train scalar neural networks on minimal problems", () => {
         preds.push(pred);
         targets.push(new Value(ex.y));
       }
-      let loss = mse(preds, targets);
+      let loss = Losses.mse(preds, targets);
       if (loss.data < 1e-4) break;
       w.grad = 0; b.grad = 0;
       loss.backward();
@@ -53,7 +53,7 @@ describe("can train scalar neural networks on minimal problems", () => {
         preds.push(pred);
         targets.push(new Value(ex.y));
       }
-      let loss = mse(preds, targets);
+      let loss = Losses.mse(preds, targets);
       if (loss.data < 1e-4) break;
       a.grad = 0; b.grad = 0; c.grad = 0;
       loss.backward();
