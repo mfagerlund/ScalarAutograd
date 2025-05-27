@@ -1,0 +1,9 @@
+*.spec.ts
+*.test.ts
+.idea/
+.vscode/
+README.md
+.git/
+node_modules/
+dist/test/
+coverage/
