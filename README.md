@@ -101,6 +101,7 @@ This pattern—forward pass, backward for gradients, and calling `optimizer.step
 
 All API operations work with both `Value` and raw number inputs (numbers are automatically wrapped as non-grad constants).
 
+
 ## Testing
 
 To run the test suite and verify the correctness of ScalarAutograd, execute the following command in your project directory:

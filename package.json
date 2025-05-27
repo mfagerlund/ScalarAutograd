@@ -1,6 +1,6 @@
 {
   "name": "scalar-autograd",
-  "version": "2.1.0",
+  "version": "0.1.0",
   "description": "Scalar-based reverse-mode automatic differentiation in TypeScript.",
   "main": "Value.js",
   "types": "Value.d.ts",
