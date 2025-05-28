@@ -25,6 +25,8 @@ export abstract class Optimizer {
    */
   abstract step(): void;
 
+  abstract resetStateFor(trainable: Value): void;
+
   /**
    * Sets grads of all trainables to zero.
    */
@@ -87,6 +89,9 @@ export class SGD extends Optimizer {
       v.data -= this.learningRate * v.grad;
     }
   }
+
+   resetStateFor(trainable: Value): void{   
+   }
 }
 
 /**
@@ -161,6 +166,11 @@ export class Adam extends Optimizer {
       this.v.set(v, vVal);
     }
   }
+
+  resetStateFor(trainable: Value): void{   
+    this.m.set(trainable, 0);
+    this.v.set(trainable, 0);
+  }
 }
 
 /**
@@ -218,5 +228,10 @@ export class AdamW extends Optimizer {
       this.m.set(v, m);
       this.v.set(v, vVal);
     }
+  }
+
+  resetStateFor(trainable: Value): void{   
+    this.m.set(trainable, 0);
+    this.v.set(trainable, 0);
   }
 }
