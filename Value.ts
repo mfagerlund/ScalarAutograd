@@ -313,6 +313,14 @@ export class Value {
   }
 
   /**
+   * Returns sign(this).
+   * @returns New Value with sign.
+   */
+  sign(): Value {
+    return ValueArithmetic.sign(this);
+  }
+
+  /**
    * Returns the sum of the given Values.
    * @param vals Array of Value objects
    * @returns New Value holding their sum.

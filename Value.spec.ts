@@ -252,6 +252,15 @@ describe('Value unary and binary operators: trigs, relu, abs, exp/log, min/max',
   it('numerical gradient: log',    () => testUnaryGrad('log',    x=>x.log(),       x=>1/x,                              1.5));
   it('numerical gradient: tanh',   () => testUnaryGrad('tanh',   x=>x.tanh(),      x=>1-Math.tanh(x)**2,                0.9));
   it('numerical gradient: sigmoid',() => testUnaryGrad('sigmoid',x=>x.sigmoid(),   x=>{const s=1/(1+Math.exp(-x));return s*(1-s);},0.7));
+  it('numerical gradient: sign',    () => testUnaryGrad('sign',    x=>x.sign(),      x=>0,  2.0));
+  it('numerical gradient: sign negative', () => testUnaryGrad('sign', x=>x.sign(), x=>0, -2.0));
+  it('gradient of sign(0) is 0', () => {
+    const x = new Value(0.0, "x", true);
+    const y = x.sign();
+    expect(y.data).toBe(0); // sign(0) should be 0
+    y.backward();
+    expect(x.grad).toBe(0); // Analytical gradient for sign(0) is implemented as 0
+  });
   
   // Numerical vs analytic gradient checks for binary operators
   it('numerical gradient: add', () => testBinaryGrad('add', (a,b)=>a.add(b), (a,b)=>1, (a,b)=>1, 1.3, -2.1));

@@ -269,4 +269,19 @@ export class ValueArithmetic {
       `(-${a.label})`
     );
   }
+
+  static sign(a: Value): Value {
+    const s = Math.sign(a.data);
+    return Value.make(
+      s,
+      a, null,
+      (out) => () => {
+        // The derivative of sign(x) is 0 for x != 0.
+        // At x = 0, the derivative is undefined (Dirac delta), but for practical purposes in ML,
+        // we can define it as 0.
+        if (a.requiresGrad) a.grad += 0 * out.grad;
+      },
+      `sign(${a.label})`
+    );
+  }
 }
