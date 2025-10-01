@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { circleFormationDemo } from './demos/CircleFormation';
 import { robotArmIKDemo } from './demos/RobotArmIK';
+import { selfAvoidingRopeDemo } from './demos/SelfAvoidingRope';
 import { registerDemo, getAllDemos } from './demos';
 import type { Demo } from './demos/types';
 import './App.css';
@@ -9,6 +10,7 @@ import './App.css';
 // Register demos
 registerDemo(circleFormationDemo);
 registerDemo(robotArmIKDemo);
+registerDemo(selfAvoidingRopeDemo);
 
 const allDemos = getAllDemos();
 
@@ -50,7 +52,7 @@ function App() {
             transition={{ duration: 0.3 }}
             className="demo-wrapper"
           >
-            <currentDemo.Component width={600} height={600} />
+            <currentDemo.Component width={800} height={400} />
           </motion.div>
         </AnimatePresence>
       </main>

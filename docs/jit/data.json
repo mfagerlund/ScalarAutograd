@@ -1,0 +1,464 @@
+[
+  {
+    "graphSize": 3,
+    "iterations": 1,
+    "traditionalTime": 0.24860000000001037,
+    "compiledTime": 0.47260000000005675,
+    "speedup": 0.5260262378332216
+  },
+  {
+    "graphSize": 3,
+    "iterations": 2,
+    "traditionalTime": 0.07169999999996435,
+    "compiledTime": 0.23520000000002028,
+    "speedup": 0.3048469387753323
+  },
+  {
+    "graphSize": 3,
+    "iterations": 5,
+    "traditionalTime": 0.11889999999999645,
+    "compiledTime": 0.12939999999997553,
+    "speedup": 0.9188562596601154
+  },
+  {
+    "graphSize": 3,
+    "iterations": 10,
+    "traditionalTime": 0.16280000000000427,
+    "compiledTime": 0.13620000000003074,
+    "speedup": 1.1953010278999086
+  },
+  {
+    "graphSize": 3,
+    "iterations": 20,
+    "traditionalTime": 0.3860000000000241,
+    "compiledTime": 0.07290000000000418,
+    "speedup": 5.29492455418384
+  },
+  {
+    "graphSize": 3,
+    "iterations": 50,
+    "traditionalTime": 0.6634999999999991,
+    "compiledTime": 0.11340000000001282,
+    "speedup": 5.850970017636015
+  },
+  {
+    "graphSize": 3,
+    "iterations": 100,
+    "traditionalTime": 1.4470999999999776,
+    "compiledTime": 0.080600000000004,
+    "speedup": 17.9540942928028
+  },
+  {
+    "graphSize": 3,
+    "iterations": 200,
+    "traditionalTime": 4.087699999999984,
+    "compiledTime": 0.098700000000008,
+    "speedup": 41.41540020263072
+  },
+  {
+    "graphSize": 3,
+    "iterations": 500,
+    "traditionalTime": 5.793799999999976,
+    "compiledTime": 0.241800000000012,
+    "speedup": 23.96112489660748
+  },
+  {
+    "graphSize": 3,
+    "iterations": 1000,
+    "traditionalTime": 14.662500000000023,
+    "compiledTime": 0.234800000000007,
+    "speedup": 62.44676320272396
+  },
+  {
+    "graphSize": 3,
+    "iterations": 2000,
+    "traditionalTime": 23.661900000000003,
+    "compiledTime": 0.49850000000003547,
+    "speedup": 47.46619859578399
+  },
+  {
+    "graphSize": 5,
+    "iterations": 1,
+    "traditionalTime": 0.323599999999999,
+    "compiledTime": 0.3502000000000294,
+    "speedup": 0.9240434037691944
+  },
+  {
+    "graphSize": 5,
+    "iterations": 2,
+    "traditionalTime": 0.13040000000000873,
+    "compiledTime": 0.12549999999998818,
+    "speedup": 1.0390438247013627
+  },
+  {
+    "graphSize": 5,
+    "iterations": 5,
+    "traditionalTime": 0.14200000000005275,
+    "compiledTime": 0.058100000000024465,
+    "speedup": 2.44406196213413
+  },
+  {
+    "graphSize": 5,
+    "iterations": 10,
+    "traditionalTime": 0.2769000000000119,
+    "compiledTime": 0.066599999999994,
+    "speedup": 4.157657657658211
+  },
+  {
+    "graphSize": 5,
+    "iterations": 20,
+    "traditionalTime": 0.5129000000000019,
+    "compiledTime": 0.07080000000001974,
+    "speedup": 7.244350282483883
+  },
+  {
+    "graphSize": 5,
+    "iterations": 50,
+    "traditionalTime": 1.268000000000029,
+    "compiledTime": 0.08609999999998763,
+    "speedup": 14.727061556332302
+  },
+  {
+    "graphSize": 5,
+    "iterations": 100,
+    "traditionalTime": 2.4693000000000325,
+    "compiledTime": 0.0928000000000111,
+    "speedup": 26.60883620689372
+  },
+  {
+    "graphSize": 5,
+    "iterations": 200,
+    "traditionalTime": 3.798400000000015,
+    "compiledTime": 0.11880000000002156,
+    "speedup": 31.9730639730583
+  },
+  {
+    "graphSize": 5,
+    "iterations": 500,
+    "traditionalTime": 10.668000000000006,
+    "compiledTime": 0.19839999999999236,
+    "speedup": 53.77016129032468
+  },
+  {
+    "graphSize": 5,
+    "iterations": 1000,
+    "traditionalTime": 20.052099999999996,
+    "compiledTime": 0.3664999999999736,
+    "speedup": 54.712414733973915
+  },
+  {
+    "graphSize": 5,
+    "iterations": 2000,
+    "traditionalTime": 41.03449999999998,
+    "compiledTime": 0.14170000000001437,
+    "speedup": 289.58715596327323
+  },
+  {
+    "graphSize": 10,
+    "iterations": 1,
+    "traditionalTime": 0.03809999999998581,
+    "compiledTime": 0.23230000000000928,
+    "speedup": 0.16401205337918334
+  },
+  {
+    "graphSize": 10,
+    "iterations": 2,
+    "traditionalTime": 0.07139999999998281,
+    "compiledTime": 0.15760000000000218,
+    "speedup": 0.45304568527907246
+  },
+  {
+    "graphSize": 10,
+    "iterations": 5,
+    "traditionalTime": 0.16289999999997917,
+    "compiledTime": 0.07880000000000109,
+    "speedup": 2.067258883248438
+  },
+  {
+    "graphSize": 10,
+    "iterations": 10,
+    "traditionalTime": 0.33899999999999864,
+    "compiledTime": 0.1338000000000079,
+    "speedup": 2.533632286995356
+  },
+  {
+    "graphSize": 10,
+    "iterations": 20,
+    "traditionalTime": 0.6338000000000079,
+    "compiledTime": 0.08199999999999363,
+    "speedup": 7.729268292683623
+  },
+  {
+    "graphSize": 10,
+    "iterations": 50,
+    "traditionalTime": 1.6164999999999736,
+    "compiledTime": 0.09430000000003247,
+    "speedup": 17.142099681860202
+  },
+  {
+    "graphSize": 10,
+    "iterations": 100,
+    "traditionalTime": 3.422300000000007,
+    "compiledTime": 0.12669999999997117,
+    "speedup": 27.011049723763108
+  },
+  {
+    "graphSize": 10,
+    "iterations": 200,
+    "traditionalTime": 9.367300000000057,
+    "compiledTime": 0.18900000000007822,
+    "speedup": 49.562433862413656
+  },
+  {
+    "graphSize": 10,
+    "iterations": 500,
+    "traditionalTime": 19.196800000000053,
+    "compiledTime": 0.29570000000001073,
+    "speedup": 64.91985120053891
+  },
+  {
+    "graphSize": 10,
+    "iterations": 1000,
+    "traditionalTime": 37.052099999999996,
+    "compiledTime": 0.5733000000000175,
+    "speedup": 64.62951334379709
+  },
+  {
+    "graphSize": 10,
+    "iterations": 2000,
+    "traditionalTime": 76.49090000000001,
+    "compiledTime": 0.9008999999999787,
+    "speedup": 84.90498390498593
+  },
+  {
+    "graphSize": 20,
+    "iterations": 1,
+    "traditionalTime": 0.06729999999993197,
+    "compiledTime": 0.32759999999996126,
+    "speedup": 0.20543345543327207
+  },
+  {
+    "graphSize": 20,
+    "iterations": 2,
+    "traditionalTime": 0.1450999999999567,
+    "compiledTime": 0.26490000000001146,
+    "speedup": 0.5477538693844863
+  },
+  {
+    "graphSize": 20,
+    "iterations": 5,
+    "traditionalTime": 0.3122999999999365,
+    "compiledTime": 0.13789999999994507,
+    "speedup": 2.2646845540250973
+  },
+  {
+    "graphSize": 20,
+    "iterations": 10,
+    "traditionalTime": 0.5794999999999391,
+    "compiledTime": 0.22530000000006112,
+    "speedup": 2.572126054149054
+  },
+  {
+    "graphSize": 20,
+    "iterations": 20,
+    "traditionalTime": 1.1508999999999787,
+    "compiledTime": 0.1513999999999669,
+    "speedup": 7.6017173051534375
+  },
+  {
+    "graphSize": 20,
+    "iterations": 50,
+    "traditionalTime": 2.868600000000015,
+    "compiledTime": 0.22480000000007294,
+    "speedup": 12.760676156579557
+  },
+  {
+    "graphSize": 20,
+    "iterations": 100,
+    "traditionalTime": 8.433299999999917,
+    "compiledTime": 0.2742000000000644,
+    "speedup": 30.756017505462935
+  },
+  {
+    "graphSize": 20,
+    "iterations": 200,
+    "traditionalTime": 11.339200000000005,
+    "compiledTime": 0.34050000000002,
+    "speedup": 33.30161527165738
+  },
+  {
+    "graphSize": 20,
+    "iterations": 500,
+    "traditionalTime": 37.00329999999997,
+    "compiledTime": 0.5793999999999642,
+    "speedup": 63.864860200211005
+  },
+  {
+    "graphSize": 20,
+    "iterations": 1000,
+    "traditionalTime": 68.31270000000006,
+    "compiledTime": 0.9692000000000007,
+    "speedup": 70.48359471729262
+  },
+  {
+    "graphSize": 20,
+    "iterations": 2000,
+    "traditionalTime": 139.5996,
+    "compiledTime": 1.690900000000056,
+    "speedup": 82.55934709326121
+  },
+  {
+    "graphSize": 50,
+    "iterations": 1,
+    "traditionalTime": 0.17349999999999,
+    "compiledTime": 0.6735999999999649,
+    "speedup": 0.257571258907362
+  },
+  {
+    "graphSize": 50,
+    "iterations": 2,
+    "traditionalTime": 0.3158000000000811,
+    "compiledTime": 0.6426999999999907,
+    "speedup": 0.4913645557804352
+  },
+  {
+    "graphSize": 50,
+    "iterations": 5,
+    "traditionalTime": 3.794499999999971,
+    "compiledTime": 1.9428000000000338,
+    "speedup": 1.9531089149680383
+  },
+  {
+    "graphSize": 50,
+    "iterations": 10,
+    "traditionalTime": 1.9627000000000407,
+    "compiledTime": 0.483600000000024,
+    "speedup": 4.0585194375515785
+  },
+  {
+    "graphSize": 50,
+    "iterations": 20,
+    "traditionalTime": 2.852800000000002,
+    "compiledTime": 0.3929000000000542,
+    "speedup": 7.260880631202872
+  },
+  {
+    "graphSize": 50,
+    "iterations": 50,
+    "traditionalTime": 6.929300000000012,
+    "compiledTime": 0.435799999999972,
+    "speedup": 15.900183570446208
+  },
+  {
+    "graphSize": 50,
+    "iterations": 100,
+    "traditionalTime": 16.41249999999991,
+    "compiledTime": 0.5492000000000417,
+    "speedup": 29.88437727603544
+  },
+  {
+    "graphSize": 50,
+    "iterations": 200,
+    "traditionalTime": 33.87030000000004,
+    "compiledTime": 0.832300000000032,
+    "speedup": 40.69482157875615
+  },
+  {
+    "graphSize": 50,
+    "iterations": 500,
+    "traditionalTime": 89.51850000000002,
+    "compiledTime": 1.3289999999999509,
+    "speedup": 67.35778781038626
+  },
+  {
+    "graphSize": 50,
+    "iterations": 1000,
+    "traditionalTime": 179.49620000000004,
+    "compiledTime": 2.2870000000000346,
+    "speedup": 78.48543944031366
+  },
+  {
+    "graphSize": 50,
+    "iterations": 2000,
+    "traditionalTime": 358.82360000000017,
+    "compiledTime": 7.36019999999985,
+    "speedup": 48.75188174234498
+  },
+  {
+    "graphSize": 100,
+    "iterations": 1,
+    "traditionalTime": 0.34570000000007894,
+    "compiledTime": 1.3632000000000062,
+    "speedup": 0.25359448356813186
+  },
+  {
+    "graphSize": 100,
+    "iterations": 2,
+    "traditionalTime": 0.641399999999976,
+    "compiledTime": 1.6123999999999796,
+    "speedup": 0.3977921111386654
+  },
+  {
+    "graphSize": 100,
+    "iterations": 5,
+    "traditionalTime": 1.611699999999928,
+    "compiledTime": 0.592200000000048,
+    "speedup": 2.721546774737922
+  },
+  {
+    "graphSize": 100,
+    "iterations": 10,
+    "traditionalTime": 3.085399999999936,
+    "compiledTime": 0.9266999999999825,
+    "speedup": 3.329448580986289
+  },
+  {
+    "graphSize": 100,
+    "iterations": 20,
+    "traditionalTime": 7.702199999999948,
+    "compiledTime": 0.667299999999841,
+    "speedup": 11.542334781959813
+  },
+  {
+    "graphSize": 100,
+    "iterations": 50,
+    "traditionalTime": 16.72289999999998,
+    "compiledTime": 0.8459000000000287,
+    "speedup": 19.769358080150624
+  },
+  {
+    "graphSize": 100,
+    "iterations": 100,
+    "traditionalTime": 34.21939999999995,
+    "compiledTime": 0.9682000000000244,
+    "speedup": 35.3433174963841
+  },
+  {
+    "graphSize": 100,
+    "iterations": 200,
+    "traditionalTime": 87.9516000000001,
+    "compiledTime": 2.044300000000021,
+    "speedup": 43.022844005282586
+  },
+  {
+    "graphSize": 100,
+    "iterations": 500,
+    "traditionalTime": 204.7781,
+    "compiledTime": 5.2047999999999774,
+    "speedup": 39.34408622809731
+  },
+  {
+    "graphSize": 100,
+    "iterations": 1000,
+    "traditionalTime": 352.85940000000005,
+    "compiledTime": 6.431599999999889,
+    "speedup": 54.86339324584957
+  },
+  {
+    "graphSize": 100,
+    "iterations": 2000,
+    "traditionalTime": 698.3378000000002,
+    "compiledTime": 15.106200000000172,
+    "speedup": 46.22855516278034
+  }
+]

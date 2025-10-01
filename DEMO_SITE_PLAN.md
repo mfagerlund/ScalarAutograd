@@ -44,13 +44,6 @@ demo-site/
 
 ## Demo Ideas (Ordered by Complexity)
 
-### 1. **Circle Formation** ⭐ (Starter demo)
-- **Visual**: 20-30 points connected by lines, 1-2 fixed anchor points
-- **Goal**: Minimize distance from each point to a circle radius
-- **Juicy**: Points smoothly glide into position, lines pulse when near solution
-- **Optimizer Comparison**: Side-by-side view of SGD vs Adam vs AdamW
-- **Parameters**: Number of points, circle radius, connection stiffness
-
 ### 2. **Spring Mass System**
 - **Visual**: Connected masses with springs, gravity pulling down
 - **Goal**: Find equilibrium positions that minimize energy
@@ -62,12 +55,6 @@ demo-site/
 - **Goal**: Fit polynomial/bezier curve to noisy data
 - **Juicy**: Curve morphs smoothly, residual lines shrink to zero
 - **Interactive**: User can add/remove points by clicking
-
-### 4. **Robot Arm Inverse Kinematics**
-- **Visual**: Multi-segment arm trying to reach a target
-- **Goal**: Find joint angles to reach target position
-- **Juicy**: Smooth arm movement, target glows when reached
-- **Interactive**: Drag target, watch arm solve in real-time
 
 ### 5. **Traveling Salesman (Simplified)**
 - **Visual**: Cities as circles, path as lines

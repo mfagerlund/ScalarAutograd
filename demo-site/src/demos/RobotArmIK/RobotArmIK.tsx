@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { DemoCanvas } from '../../components/DemoCanvas';
 import type { DemoProps } from '../types';
-import { V } from '../../../../src/V';
-import { Adam } from '../../../../src/Optimizers';
-import { Value } from '../../../../src/Value';
+import {AdamW, Optimizer, V} from '../../../../src';
+import { Adam } from '../../../../src';
+import { Value } from '../../../../src';
 
 interface ArmSegment {
   length: number;
@@ -84,7 +84,7 @@ export function RobotArmIK({ width, height, onMetrics }: DemoProps) {
   const [nlsLineSearchSteps, setNlsLineSearchSteps] = useState(10);
   const [nlsAdaptiveDamping, setNlsAdaptiveDamping] = useState(true);
 
-  const adamOptimizerRef = useRef<Adam | null>(null);
+  const adamOptimizerRef = useRef<Optimizer | null>(null);
   const animationRef = useRef<number>();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -221,7 +221,7 @@ export function RobotArmIK({ width, height, onMetrics }: DemoProps) {
     adamArmRef.current = newAdamArm;
     nlsArmRef.current = newNlsArm;
 
-    adamOptimizerRef.current = new Adam(adamAngles, { learningRate: 0.1 });
+    adamOptimizerRef.current = new AdamW(adamAngles, { learningRate: 0.2 });
 
     setTimeout(() => {
       runNLS(newNlsArm);
