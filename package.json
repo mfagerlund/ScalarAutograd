@@ -2,8 +2,14 @@
   "name": "scalar-autograd",
   "version": "0.1.8",
   "description": "Scalar-based reverse-mode automatic differentiation in TypeScript.",
-  "main": "dist/Value.js",
-  "types": "dist/Value.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mfagerlund/ScalarAutograd.git"

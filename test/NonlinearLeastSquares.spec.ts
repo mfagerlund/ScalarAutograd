@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { V } from '../V';
-import { Value } from '../Value';
+import { V } from "../src/V";
+import { Value } from "../src/Value";
 
 describe('NonlinearLeastSquares', () => {
   it('should solve simple quadratic problem: minimize (x-5)^2 + (y-3)^2', () => {

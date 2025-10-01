@@ -1,4 +1,4 @@
-import { Value } from "../Value";
+import { Value } from "../src/Value";
 
 // Edge cases and error handling
 describe('Value edge cases and error handling', () => {

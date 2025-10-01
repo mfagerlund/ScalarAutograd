@@ -1,5 +1,5 @@
-import { Value } from "../Value";
-import { Losses } from "../Losses";
+import { Value } from "../src/Value";
+import { Losses } from "../src/Losses";
 
 describe("Losses", () => {
   it("mse computes value and gradients correctly", () => {

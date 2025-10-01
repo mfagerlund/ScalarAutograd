@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { V } from '../V';
-import { Value } from '../Value';
+import { V } from "../src/V";
+import { Value } from "../src/Value";
 
 describe('Gradient Norm Convergence', () => {
   it('should converge faster with gradient tolerance on flat cost surface', () => {

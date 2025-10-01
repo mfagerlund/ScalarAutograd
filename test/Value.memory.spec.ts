@@ -1,4 +1,4 @@
-import { Value } from "../Value";
+import { Value } from "../src/Value";
 
 describe('Memory management', () => {
   it('handles large computation graphs', () => {
