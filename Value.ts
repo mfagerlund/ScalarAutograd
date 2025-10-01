@@ -1,3 +1,7 @@
+/**
+ * Function type for backward pass computations in automatic differentiation.
+ * @public
+ */
 export type BackwardFn = () => void;
 export { V } from './V';
 export { Optimizer, SGD, Adam, AdamW } from './Optimizers';
@@ -12,13 +16,43 @@ import { ValueActivation } from './ValueActivation';
 import { ValueArithmetic } from './ValueArithmetic';
 import { ValueComparison } from './ValueComparison';
 
+/**
+ * Represents a scalar value in the computational graph for automatic differentiation.
+ * Supports forward computation and reverse-mode autodiff (backpropagation).
+ * @public
+ */
 export class Value {
+  /**
+   * Global flag to disable gradient tracking. Use Value.withNoGrad() instead of setting directly.
+   * @public
+   */
   static no_grad_mode = false;
+
+  /**
+   * The numeric value stored in this node.
+   * @public
+   */
   data: number;
+
+  /**
+   * The gradient of the output with respect to this value.
+   * @public
+   */
   grad: number = 0;
+
+  /**
+   * Whether this value participates in gradient computation.
+   * @public
+   */
   requiresGrad: boolean;
+
   private backwardFn: BackwardFn = () => {};
   private prev: Value[] = [];
+
+  /**
+   * Optional label for debugging and visualization.
+   * @public
+   */
   public label: string;
 
   constructor(data: number, label = "", requiresGrad = false) {

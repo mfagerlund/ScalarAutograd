@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 .idea/
 .vscode/
 .DS_Store
+/cl.bat

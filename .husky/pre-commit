@@ -1,0 +1,4 @@
+npm run build
+npx api-extractor run --local
+cat dist/Value.d.ts dist/V.d.ts dist/Optimizers.d.ts dist/Losses.d.ts > etc/api-full.d.ts
+git add etc/scalar-autograd.api.md etc/api-full.d.ts

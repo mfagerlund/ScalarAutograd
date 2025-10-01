@@ -21,6 +21,8 @@
     "dist/"
   ],
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.52.15",
+    "husky": "^9.1.7",
     "ts-node": "^10.0.0",
     "typedoc": "^0.28.5",
     "typescript": "^5.8.3",
@@ -28,6 +30,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest run --globals"
+    "test": "vitest run --globals",
+    "prepare": "husky"
   }
 }

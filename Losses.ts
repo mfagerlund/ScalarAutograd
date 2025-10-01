@@ -12,6 +12,11 @@ function checkLengthMatch(outputs: Value[], targets: Value[]): void {
   }
 }
 
+/**
+ * Collection of loss functions for training neural networks and optimization.
+ * All methods return a scalar Value representing the loss.
+ * @public
+ */
 export class Losses {
   /**
    * Computes mean squared error (MSE) loss between outputs and targets.
@@ -41,6 +46,10 @@ export class Losses {
     return Value.mean(diffs);
   }
 
+  /**
+   * Small epsilon value for numerical stability in logarithmic computations.
+   * @public
+   */
   static EPS = 1e-12;
 
   /**

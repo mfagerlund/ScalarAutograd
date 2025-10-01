@@ -5,15 +5,25 @@ import { Value } from "./Value";
 /**
  * Abstract base class for all optimizers.
  * Ensures only requiresGrad parameters are optimized.
+ * @public
  */
 export abstract class Optimizer {
+  /**
+   * Array of trainable Value parameters filtered to only those requiring gradients.
+   * @public
+   */
   protected trainables: Value[];
+
+  /**
+   * Learning rate for parameter updates.
+   * @public
+   */
   public learningRate: number;
 
   /**
    * Constructs an Optimizer.
-   * @param trainables Array of Value parameters to optimize.
-   * @param learningRate Learning rate for updates.
+   * @param trainables - Array of Value parameters to optimize.
+   * @param learningRate - Learning rate for updates.
    */
   constructor(trainables: Value[], learningRate: number) {
     this.trainables = trainables.filter(v => v.requiresGrad);
@@ -22,9 +32,15 @@ export abstract class Optimizer {
 
   /**
    * Performs a parameter update step.
+   * @public
    */
   abstract step(): void;
 
+  /**
+   * Resets optimizer state for a specific trainable parameter.
+   * @param trainable - The Value parameter to reset state for.
+   * @public
+   */
   abstract resetStateFor(trainable: Value): void;
 
   /**
@@ -51,26 +67,39 @@ export abstract class Optimizer {
 
 /**
  * Optional arguments for basic optimizers.
- * @property learningRate: Overrides the step size for parameter updates (default varies by optimizer).
- * @property weightDecay: L2 regularization multiplier (default 0). Ignored for plain SGD.
- * @property gradientClip: Maximum absolute value for gradient updates (default 0: no clipping).
+ * @public
  */
 export interface OptimizerOptions {
+  /**
+   * Overrides the step size for parameter updates (default varies by optimizer).
+   * @public
+   */
   learningRate?: number;
+
+  /**
+   * L2 regularization multiplier (default 0). Ignored for plain SGD.
+   * @public
+   */
   weightDecay?: number;
+
+  /**
+   * Maximum absolute value for gradient updates (default 0: no clipping).
+   * @public
+   */
   gradientClip?: number;
 }
 
 /**
  * Stochastic Gradient Descent (SGD) optimizer. Accepts weightDecay and gradientClip for API consistency (ignored).
+ * @public
  */
 export class SGD extends Optimizer {
   private weightDecay: number;
   private gradientClip: number;
   /**
    * Constructs an SGD optimizer.
-   * @param trainables Array of Value parameters to optimize.
-   * @param opts Optional parameters (learningRate, weightDecay, gradientClip).
+   * @param trainables - Array of Value parameters to optimize.
+   * @param opts - Optional parameters (learningRate, weightDecay, gradientClip).
    */
   constructor(trainables: Value[], opts: OptimizerOptions = {}) {
     super(
@@ -82,6 +111,7 @@ export class SGD extends Optimizer {
   }
   /**
    * Performs a parameter update using standard SGD.
+   * @public
    */
   step(): void {
     // Intentionally ignoring weightDecay/gradientClip for SGD
@@ -90,25 +120,43 @@ export class SGD extends Optimizer {
     }
   }
 
-   resetStateFor(trainable: Value): void{   
+  /**
+   * Resets optimizer state for a trainable (no-op for SGD).
+   * @param trainable - The Value parameter to reset state for.
+   * @public
+   */
+   resetStateFor(trainable: Value): void{
    }
 }
 
 /**
  * Adam and AdamW optimizer parameters.
  * Extends OptimizerOptions.
- * @property beta1: Exponential decay rate for 1st moment (default 0.9).
- * @property beta2: Exponential decay rate for 2nd moment (default 0.999).
- * @property epsilon: Numerical stability fudge factor (default 1e-8).
+ * @public
  */
 export interface AdamOptions extends OptimizerOptions {
+  /**
+   * Exponential decay rate for 1st moment (default 0.9).
+   * @public
+   */
   beta1?: number;
+
+  /**
+   * Exponential decay rate for 2nd moment (default 0.999).
+   * @public
+   */
   beta2?: number;
+
+  /**
+   * Numerical stability fudge factor (default 1e-8).
+   * @public
+   */
   epsilon?: number;
 }
 
 /**
  * Adam optimizer, supports decoupled weight decay and gradient clipping.
+ * @public
  */
 export class Adam extends Optimizer {
   private beta1: number;
@@ -121,8 +169,8 @@ export class Adam extends Optimizer {
   private stepCount: number = 0;
   /**
    * Constructs an Adam optimizer.
-   * @param trainables Array of Value parameters to optimize.
-   * @param opts Optional parameters (learningRate, weightDecay, gradientClip, beta1, beta2, epsilon).
+   * @param trainables - Array of Value parameters to optimize.
+   * @param opts - Optional parameters (learningRate, weightDecay, gradientClip, beta1, beta2, epsilon).
    */
   constructor(
     trainables: Value[],
@@ -141,6 +189,7 @@ export class Adam extends Optimizer {
   }
   /**
    * Performs a parameter update using Adam optimization.
+   * @public
    */
   step(): void {
     this.stepCount++;
@@ -167,7 +216,12 @@ export class Adam extends Optimizer {
     }
   }
 
-  resetStateFor(trainable: Value): void{   
+  /**
+   * Resets optimizer state (momentum and velocity) for a specific trainable.
+   * @param trainable - The Value parameter to reset state for.
+   * @public
+   */
+  resetStateFor(trainable: Value): void{
     this.m.set(trainable, 0);
     this.v.set(trainable, 0);
   }
@@ -175,6 +229,7 @@ export class Adam extends Optimizer {
 
 /**
  * AdamW optimizer, supports decoupled weight decay and gradient clipping (same options as Adam).
+ * @public
  */
 export class AdamW extends Optimizer {
   private beta1: number;
@@ -187,8 +242,8 @@ export class AdamW extends Optimizer {
   private stepCount: number = 0;
   /**
    * Constructs an AdamW optimizer.
-   * @param trainables Array of Value parameters to optimize.
-   * @param opts Optional parameters (learningRate, weightDecay, gradientClip, beta1, beta2, epsilon).
+   * @param trainables - Array of Value parameters to optimize.
+   * @param opts - Optional parameters (learningRate, weightDecay, gradientClip, beta1, beta2, epsilon).
    */
   constructor(
     trainables: Value[],
@@ -207,6 +262,7 @@ export class AdamW extends Optimizer {
   }
   /**
    * Performs a parameter update using AdamW optimization (decoupled weight decay).
+   * @public
    */
   step(): void {
     this.stepCount++;
@@ -230,7 +286,12 @@ export class AdamW extends Optimizer {
     }
   }
 
-  resetStateFor(trainable: Value): void{   
+  /**
+   * Resets optimizer state (momentum and velocity) for a specific trainable.
+   * @param trainable - The Value parameter to reset state for.
+   * @public
+   */
+  resetStateFor(trainable: Value): void{
     this.m.set(trainable, 0);
     this.v.set(trainable, 0);
   }
