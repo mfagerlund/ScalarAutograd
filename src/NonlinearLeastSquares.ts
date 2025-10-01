@@ -1,5 +1,5 @@
 import { Value } from "./Value";
-import { choleskySolve, computeJtJ, computeJtr } from "./LinearSolver";
+import { choleskySolve, computeJtJ, computeJtr, qrSolve } from "./LinearSolver";
 
 /**
  * Configuration options for nonlinear least squares solver.
@@ -15,6 +15,9 @@ export interface NonlinearLeastSquaresOptions {
   adaptiveDamping?: boolean;
   dampingIncreaseFactor?: number;
   dampingDecreaseFactor?: number;
+  maxInnerIterations?: number;
+  useQR?: boolean;
+  trustRegionRadius?: number;
   verbose?: boolean;
 }
 
@@ -42,7 +45,9 @@ function computeResidualsAndJacobian(
   for (const r of residualValues) {
     cost += r.data * r.data;
 
-    params.forEach((p) => (p.grad = 0));
+    // This was not here before
+    Value.zeroGradTree(r);
+    params.forEach(p => p.grad = 0);
 
     r.backward();
 
@@ -55,7 +60,27 @@ function computeResidualsAndJacobian(
   return { residuals, J, cost };
 }
 
-function solveNormalEquations(J: number[][], r: number[], lambda: number = 0): number[] {
+function solveNormalEquations(J: number[][], r: number[], lambda: number = 0, useQR: boolean = false): number[] {
+  if (useQR) {
+    const m = J.length;
+    const n = J[0].length;
+
+    if (lambda > 0) {
+      const augmentedJ = [...J];
+      for (let i = 0; i < n; i++) {
+        const row = Array(n).fill(0);
+        row[i] = Math.sqrt(lambda);
+        augmentedJ.push(row);
+      }
+      const augmentedR = [...r, ...Array(n).fill(0)];
+      const negAugmentedR = augmentedR.map(x => -x);
+      return qrSolve(augmentedJ, negAugmentedR);
+    } else {
+      const negR = r.map(x => -x);
+      return qrSolve(J, negR);
+    }
+  }
+
   const JtJ = computeJtJ(J);
   const Jtr = computeJtr(J, r);
   const negJtr = Jtr.map((x) => -x);
@@ -127,6 +152,9 @@ export function nonlinearLeastSquares(
     adaptiveDamping = true,
     dampingIncreaseFactor = 10,
     dampingDecreaseFactor = 10,
+    maxInnerIterations = 10,
+    useQR = false,
+    trustRegionRadius = Infinity,
     verbose = false,
   } = options;
 
@@ -182,11 +210,10 @@ export function nonlinearLeastSquares(
     let delta: number[];
     let accepted = false;
     let innerIterations = 0;
-    const maxInnerIterations = 10;
 
     while (!accepted && innerIterations < maxInnerIterations) {
       try {
-        delta = solveNormalEquations(J, residuals, adaptiveDamping ? lambda : 0);
+        delta = solveNormalEquations(J, residuals, adaptiveDamping ? lambda : 0, useQR);
       } catch (e) {
         return {
           success: false,
@@ -197,7 +224,14 @@ export function nonlinearLeastSquares(
         };
       }
 
-      const deltaNorm = Math.sqrt(delta.reduce((sum, d) => sum + d * d, 0));
+      let deltaNorm = Math.sqrt(delta.reduce((sum, d) => sum + d * d, 0));
+
+      if (deltaNorm > trustRegionRadius) {
+        const scale = trustRegionRadius / deltaNorm;
+        delta = delta.map(d => d * scale);
+        deltaNorm = trustRegionRadius;
+      }
+
       if (deltaNorm < paramTolerance) {
         return {
           success: true,

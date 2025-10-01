@@ -143,3 +143,106 @@ export function computeJtr(J: number[][], r: number[]): number[] {
 
   return Jtr;
 }
+
+/**
+ * Computes QR decomposition of matrix A using Householder reflections.
+ * @param A - Input matrix (m × n)
+ * @returns Object with Q (m × m) and R (m × n) matrices
+ * @public
+ */
+export function qrDecomposition(A: number[][]): { Q: number[][]; R: number[][] } {
+  const m = A.length;
+  const n = A[0].length;
+
+  const R = A.map(row => [...row]);
+  const Q = Array(m).fill(0).map((_, i) =>
+    Array(m).fill(0).map((_, j) => i === j ? 1 : 0)
+  );
+
+  for (let k = 0; k < Math.min(m - 1, n); k++) {
+    let norm = 0;
+    for (let i = k; i < m; i++) {
+      norm += R[i][k] * R[i][k];
+    }
+    norm = Math.sqrt(norm);
+
+    if (norm < 1e-14) continue;
+
+    const s = R[k][k] >= 0 ? -1 : 1;
+    const u1 = R[k][k] - s * norm;
+    const v = Array(m).fill(0);
+    v[k] = 1;
+    for (let i = k + 1; i < m; i++) {
+      v[i] = R[i][k] / u1;
+    }
+
+    const tau = -s * u1 / norm;
+
+    for (let j = k; j < n; j++) {
+      let sum = R[k][j];
+      for (let i = k + 1; i < m; i++) {
+        sum += v[i] * R[i][j];
+      }
+      sum *= tau;
+
+      R[k][j] -= sum;
+      for (let i = k + 1; i < m; i++) {
+        R[i][j] -= sum * v[i];
+      }
+    }
+
+    for (let j = 0; j < m; j++) {
+      let sum = Q[k][j];
+      for (let i = k + 1; i < m; i++) {
+        sum += v[i] * Q[i][j];
+      }
+      sum *= tau;
+
+      Q[k][j] -= sum;
+      for (let i = k + 1; i < m; i++) {
+        Q[i][j] -= sum * v[i];
+      }
+    }
+  }
+
+  return { Q, R };
+}
+
+/**
+ * Solves least squares problem min ||Ax - b|| using QR decomposition.
+ * Handles rank-deficient matrices by truncating small singular values.
+ * @param A - Coefficient matrix (m × n)
+ * @param b - Right-hand side vector (m elements)
+ * @param epsilon - Singular value threshold (default 1e-10)
+ * @returns Solution vector x (n elements)
+ * @public
+ */
+export function qrSolve(A: number[][], b: number[], epsilon = 1e-10): number[] {
+  const m = A.length;
+  const n = A[0].length;
+
+  const { Q, R } = qrDecomposition(A);
+
+  const Qtb = Array(m).fill(0);
+  for (let i = 0; i < m; i++) {
+    for (let j = 0; j < m; j++) {
+      Qtb[i] += Q[j][i] * b[j];
+    }
+  }
+
+  const x = Array(n).fill(0);
+  for (let i = Math.min(m, n) - 1; i >= 0; i--) {
+    if (Math.abs(R[i][i]) < epsilon) {
+      x[i] = 0;
+      continue;
+    }
+
+    let sum = Qtb[i];
+    for (let j = i + 1; j < n; j++) {
+      sum -= R[i][j] * x[j];
+    }
+    x[i] = sum / R[i][i];
+  }
+
+  return x;
+}

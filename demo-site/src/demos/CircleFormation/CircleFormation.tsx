@@ -4,8 +4,8 @@ import { DemoControls } from '../../components/DemoControls';
 import { MetricsDisplay } from '../../components/MetricsDisplay';
 import type { OptimizationMetrics } from '../../components/MetricsDisplay';
 import type { DemoProps } from '../types';
-import { V } from '../../../../V';
-import { SGD, Adam, AdamW, Optimizer } from '../../../../Optimizers';
+import { V } from '../../../../src/V';
+import { SGD, Adam, AdamW, Optimizer } from '../../../../src/Optimizers';
 
 interface Point {
   x: ReturnType<typeof V.W>;

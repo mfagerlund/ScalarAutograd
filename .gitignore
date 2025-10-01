@@ -10,3 +10,4 @@ tsconfig.tsbuildinfo
 .DS_Store
 /cl.bat
 /CLAUDE.md
+/nul

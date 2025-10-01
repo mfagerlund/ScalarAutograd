@@ -897,6 +897,9 @@ export interface NonlinearLeastSquaresOptions {
     adaptiveDamping?: boolean;
     dampingIncreaseFactor?: number;
     dampingDecreaseFactor?: number;
+    maxInnerIterations?: number;
+    useQR?: boolean;
+    trustRegionRadius?: number;
     verbose?: boolean;
 }
 /**
@@ -960,3 +963,23 @@ export declare function computeJtJ(J: number[][]): number[][];
  * @public
  */
 export declare function computeJtr(J: number[][], r: number[]): number[];
+/**
+ * Computes QR decomposition of matrix A using Householder reflections.
+ * @param A - Input matrix (m × n)
+ * @returns Object with Q (m × m) and R (m × n) matrices
+ * @public
+ */
+export declare function qrDecomposition(A: number[][]): {
+    Q: number[][];
+    R: number[][];
+};
+/**
+ * Solves least squares problem min ||Ax - b|| using QR decomposition.
+ * Handles rank-deficient matrices by truncating small singular values.
+ * @param A - Coefficient matrix (m × n)
+ * @param b - Right-hand side vector (m elements)
+ * @param epsilon - Singular value threshold (default 1e-10)
+ * @returns Solution vector x (n elements)
+ * @public
+ */
+export declare function qrSolve(A: number[][], b: number[], epsilon?: number): number[];

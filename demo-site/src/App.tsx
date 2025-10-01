@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { circleFormationDemo } from './demos/CircleFormation';
-import { circleFittingDemo } from './demos/CircleFitting';
+import { robotArmIKDemo } from './demos/RobotArmIK';
 import { registerDemo, getAllDemos } from './demos';
 import type { Demo } from './demos/types';
 import './App.css';
 
 // Register demos
 registerDemo(circleFormationDemo);
-registerDemo(circleFittingDemo);
+registerDemo(robotArmIKDemo);
 
 const allDemos = getAllDemos();
 
