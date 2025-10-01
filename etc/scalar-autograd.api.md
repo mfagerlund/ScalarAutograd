@@ -39,7 +39,7 @@ export class Losses {
     static tukey(outputs: Value[], targets: Value[], c?: number): Value;
 }
 
-// @public (undocumented)
+// @public
 export interface NonlinearLeastSquaresOptions {
     // (undocumented)
     adaptiveDamping?: boolean;
@@ -63,7 +63,7 @@ export interface NonlinearLeastSquaresOptions {
     verbose?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export interface NonlinearLeastSquaresResult {
     // (undocumented)
     computationTime: number;
@@ -205,7 +205,7 @@ export class Value {
     static zeroGradTree(root: Value): void;
 }
 
-// @public (undocumented)
+// @public
 export class Vec2 {
     constructor(x: Value | number, y: Value | number);
     // (undocumented)
@@ -238,7 +238,7 @@ export class Vec2 {
     y: Value;
 }
 
-// @public (undocumented)
+// @public
 export class Vec3 {
     constructor(x: Value | number, y: Value | number, z: Value | number);
     // (undocumented)

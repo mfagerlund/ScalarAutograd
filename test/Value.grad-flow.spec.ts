@@ -1,4 +1,4 @@
-import { Value } from "./Value";
+import { Value } from "../Value";
 
 describe('Gradient flow control', () => {
   it('stops gradient at non-requiresGrad nodes', () => {

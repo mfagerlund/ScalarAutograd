@@ -1,6 +1,10 @@
 import { Value } from './Value';
 import { V } from './V';
 
+/**
+ * 2D vector class with differentiable operations.
+ * @public
+ */
 export class Vec2 {
   x: Value;
   y: Value;

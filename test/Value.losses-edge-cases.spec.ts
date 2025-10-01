@@ -1,5 +1,5 @@
-import { Value } from "./Value";
-import { Losses } from "./Losses";
+import { Value } from "../Value";
+import { Losses } from "../Losses";
 
 describe('Loss function edge cases', () => {
   it('handles empty arrays', () => {

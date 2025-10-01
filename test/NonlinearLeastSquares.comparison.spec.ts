@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { V } from './V';
-import { Value } from './Value';
-import { SGD } from './Optimizers';
-import { Vec2 } from './Vec2';
-import { Vec3 } from './Vec3';
+import { V } from '../V';
+import { Value } from '../Value';
+import { SGD } from '../Optimizers';
+import { Vec2 } from '../Vec2';
+import { Vec3 } from '../Vec3';
 
 describe('Nonlinear Least Squares vs Gradient Descent Comparison', () => {
   it('should compare on 2D point cloud alignment problem (50 points)', () => {

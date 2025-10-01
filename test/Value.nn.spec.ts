@@ -1,6 +1,6 @@
-import { Value } from "./Value";
-import { SGD, Adam } from "./Optimizers";
-import { Losses } from "./Losses";
+import { Value } from "../Value";
+import { SGD, Adam } from "../Optimizers";
+import { Losses } from "../Losses";
 
 describe("can train scalar neural networks on minimal problems", () => {
 

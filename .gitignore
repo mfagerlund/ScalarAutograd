@@ -9,3 +9,4 @@ tsconfig.tsbuildinfo
 .vscode/
 .DS_Store
 /cl.bat
+/CLAUDE.md

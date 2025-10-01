@@ -1,7 +1,7 @@
 // Optimizers.spec.ts
 
-import { Value } from "./Value";
-import { SGD, Adam, AdamW } from "./Optimizers";
+import { Value } from "../Value";
+import { SGD, Adam, AdamW } from "../Optimizers";
 
 function createLoss(x: Value): Value {
   // Loss = (x - 5)^2

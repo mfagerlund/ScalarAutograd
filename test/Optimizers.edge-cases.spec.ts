@@ -1,5 +1,5 @@
-import { Value } from "./Value";
-import { SGD, Adam } from "./Optimizers";
+import { Value } from "../Value";
+import { SGD, Adam } from "../Optimizers";
 
 describe('Optimizer edge cases', () => {
   it('handles empty parameter list', () => {

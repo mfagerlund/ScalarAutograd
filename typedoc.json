@@ -7,10 +7,14 @@
     "ValueTrig.ts",
     "Optimizers.ts",
     "Losses.ts",
-    "V.ts"
+    "V.ts",
+    "Vec2.ts",
+    "Vec3.ts",
+    "NonlinearLeastSquares.ts",
+    "LinearSolver.ts"
   ],
   "out": "docs",
   "exclude": [
-    "**/*.spec.ts"
+    "test/**/*"
   ]
 }

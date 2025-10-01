@@ -296,7 +296,7 @@ export declare class Value {
     static withNoGrad<T>(fn: () => T): T;
 }
 import { Value } from './Value';
-import { NonlinearLeastSquaresOptions, NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
+import type { NonlinearLeastSquaresOptions, NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
 /**
  * Static factory and operation methods for Value objects.
  * Provides functional-style API for creating and manipulating Values.
@@ -834,3 +834,129 @@ export declare class Losses {
      */
     static tukey(outputs: Value[], targets: Value[], c?: number): Value;
 }
+import { Value } from './Value';
+/**
+ * 2D vector class with differentiable operations.
+ * @public
+ */
+export declare class Vec2 {
+    x: Value;
+    y: Value;
+    constructor(x: Value | number, y: Value | number);
+    static W(x: number, y: number): Vec2;
+    static C(x: number, y: number): Vec2;
+    get magnitude(): Value;
+    get sqrMagnitude(): Value;
+    get normalized(): Vec2;
+    static dot(a: Vec2, b: Vec2): Value;
+    add(other: Vec2): Vec2;
+    sub(other: Vec2): Vec2;
+    mul(scalar: Value | number): Vec2;
+    div(scalar: Value | number): Vec2;
+    get trainables(): Value[];
+    toString(): string;
+}
+import { Value } from './Value';
+/**
+ * 3D vector class with differentiable operations.
+ * @public
+ */
+export declare class Vec3 {
+    x: Value;
+    y: Value;
+    z: Value;
+    constructor(x: Value | number, y: Value | number, z: Value | number);
+    static W(x: number, y: number, z: number): Vec3;
+    static C(x: number, y: number, z: number): Vec3;
+    static zero(): Vec3;
+    static one(): Vec3;
+    get magnitude(): Value;
+    get sqrMagnitude(): Value;
+    get normalized(): Vec3;
+    static dot(a: Vec3, b: Vec3): Value;
+    static cross(a: Vec3, b: Vec3): Vec3;
+    add(other: Vec3): Vec3;
+    sub(other: Vec3): Vec3;
+    mul(scalar: Value | number): Vec3;
+    div(scalar: Value | number): Vec3;
+    get trainables(): Value[];
+    toString(): string;
+}
+import { Value } from "./Value";
+/**
+ * Configuration options for nonlinear least squares solver.
+ * @public
+ */
+export interface NonlinearLeastSquaresOptions {
+    maxIterations?: number;
+    costTolerance?: number;
+    paramTolerance?: number;
+    gradientTolerance?: number;
+    lineSearchSteps?: number;
+    initialDamping?: number;
+    adaptiveDamping?: boolean;
+    dampingIncreaseFactor?: number;
+    dampingDecreaseFactor?: number;
+    verbose?: boolean;
+}
+/**
+ * Result object returned by nonlinear least squares solver.
+ * @public
+ */
+export interface NonlinearLeastSquaresResult {
+    success: boolean;
+    iterations: number;
+    finalCost: number;
+    convergenceReason: string;
+    computationTime: number;
+}
+export declare function nonlinearLeastSquares(params: Value[], residualFn: (params: Value[]) => Value[], options?: NonlinearLeastSquaresOptions): NonlinearLeastSquaresResult;
+/**
+ * Performs Cholesky decomposition of a positive definite matrix A = LL^T.
+ * @param A - Positive definite matrix to decompose
+ * @returns Lower triangular matrix L
+ * @throws Error if matrix is not positive definite
+ * @public
+ */
+export declare function choleskyDecomposition(A: number[][]): number[][];
+/**
+ * Solves Ly = b for y using forward substitution (L is lower triangular).
+ * @param L - Lower triangular matrix
+ * @param b - Right-hand side vector
+ * @returns Solution vector y
+ * @public
+ */
+export declare function forwardSubstitution(L: number[][], b: number[]): number[];
+/**
+ * Solves L^T x = y for x using back substitution (L^T is upper triangular).
+ * @param L - Lower triangular matrix (uses its transpose)
+ * @param y - Right-hand side vector
+ * @returns Solution vector x
+ * @public
+ */
+export declare function backSubstitution(L: number[][], y: number[]): number[];
+/**
+ * Solves Ax = b using Cholesky decomposition where A is positive definite.
+ * @param A - Positive definite matrix
+ * @param b - Right-hand side vector
+ * @returns Solution vector x
+ * @public
+ */
+export declare function choleskySolve(A: number[][], b: number[]): number[];
+/**
+ * Computes J^T J (Jacobian transpose times Jacobian).
+ * Used in Gauss-Newton and Levenberg-Marquardt methods.
+ * @param J - Jacobian matrix (m residuals × n parameters)
+ * @returns J^T J matrix (n × n)
+ * @public
+ */
+export declare function computeJtJ(J: number[][]): number[][];
+/**
+ * Computes J^T r (Jacobian transpose times residual vector).
+ * Used to compute the gradient in least squares problems.
+ * @param J - Jacobian matrix (m residuals × n parameters)
+ * @param r - Residual vector (m elements)
+ * @returns J^T r vector (n elements)
+ * @public
+ */
+export declare function computeJtr(J: number[][], r: number[]): number[];

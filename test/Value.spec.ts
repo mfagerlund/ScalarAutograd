@@ -1,4 +1,4 @@
-import { Value } from "./Value";
+import { Value } from "../Value";
 
 function numericalGrad(f: (x: number) => number, x0: number, eps = 1e-6): number {
   return (f(x0 + eps) - f(x0 - eps)) / (2 * eps);

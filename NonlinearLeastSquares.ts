@@ -1,6 +1,10 @@
 import { Value } from "./Value";
 import { choleskySolve, computeJtJ, computeJtr } from "./LinearSolver";
 
+/**
+ * Configuration options for nonlinear least squares solver.
+ * @public
+ */
 export interface NonlinearLeastSquaresOptions {
   maxIterations?: number;
   costTolerance?: number;
@@ -14,6 +18,10 @@ export interface NonlinearLeastSquaresOptions {
   verbose?: boolean;
 }
 
+/**
+ * Result object returned by nonlinear least squares solver.
+ * @public
+ */
 export interface NonlinearLeastSquaresResult {
   success: boolean;
   iterations: number;

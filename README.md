@@ -81,6 +81,50 @@ console.log('Fitted b:', b.data); // ~3
 
 This pattern—forward pass, backward for gradients, and calling `optimizer.step()`—applies to more complex optimization tasks and neural networks as well!
 
+## Example: Nonlinear Least Squares Solver
+
+For problems where you need to minimize the sum of squared residuals, the built-in Levenberg-Marquardt solver is much faster than gradient descent:
+
+```typescript
+import { V } from './V';
+
+// Fit a circle to noisy points
+const params = [V.W(0), V.W(0), V.W(5)]; // cx, cy, radius
+
+// Generate noisy circle data
+const points = Array.from({ length: 50 }, (_, i) => {
+  const angle = (i / 50) * 2 * Math.PI;
+  return {
+    x: 10 * Math.cos(angle) + (Math.random() - 0.5) * 0.5,
+    y: 10 * Math.sin(angle) + (Math.random() - 0.5) * 0.5,
+  };
+});
+
+const result = V.nonlinearLeastSquares(
+  params,
+  ([cx, cy, r]) => {
+    // Compute residual for each point (distance from circle)
+    return points.map(p => {
+      const dx = V.sub(p.x, cx);
+      const dy = V.sub(p.y, cy);
+      const dist = V.sqrt(V.add(V.square(dx), V.square(dy)));
+      return V.sub(dist, r);
+    });
+  },
+  {
+    maxIterations: 100,
+    costTolerance: 1e-6,
+    verbose: true,
+  }
+);
+
+console.log('Circle fitted in', result.iterations, 'iterations');
+console.log('Center:', params[0].data, params[1].data);
+console.log('Radius:', params[2].data);
+```
+
+The Levenberg-Marquardt algorithm typically converges 100-1000x faster than gradient descent for least squares problems.
+
 ## API Overview
 - **Core Value construction:**
     - `V.C(data, label?)` — constant (non-differentiable), e.g. for data/inputs.
@@ -95,9 +139,13 @@ This pattern—forward pass, backward for gradients, and calling `optimizer.step
     - `.backward()` — trigger automatic differentiation from this node.
     - `.grad` — access the computed gradient after backward pass.
 - **Optimizers:**
-    - E.g. `const opt = new SGD([w, b], {learningRate: 0.01})`
+    - `SGD`, `Adam`, `AdamW` - E.g. `const opt = new SGD([w, b], {learningRate: 0.01})`
 - **Losses:**
-    - Import from `Losses.ts` (e.g. `import { mse } from './Losses'`)
+    - `Losses.mse()`, `Losses.mae()`, `Losses.binaryCrossEntropy()`, `Losses.categoricalCrossEntropy()`, `Losses.huber()`, `Losses.tukey()`
+- **Nonlinear Least Squares:**
+    - `V.nonlinearLeastSquares(params, residualFn, options)` — Levenberg-Marquardt solver for minimizing sum of squared residuals
+- **Vector utilities:**
+    - `Vec2`, `Vec3` — Differentiable 2D/3D vectors with dot, cross, normalize operations
 
 All API operations work with both `Value` and raw number inputs (numbers are automatically wrapped as non-grad constants).
 

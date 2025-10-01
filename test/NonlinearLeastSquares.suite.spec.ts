@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { V } from './V';
-import { Value } from './Value';
-import { Vec2 } from './Vec2';
-import { Vec3 } from './Vec3';
+import { V } from '../V';
+import { Value } from '../Value';
+import { Vec2 } from '../Vec2';
+import { Vec3 } from '../Vec3';
 
 describe('NonlinearLeastSquares Test Suite - Trivial to Complex', () => {
   describe('Level 1: Trivial', () => {
