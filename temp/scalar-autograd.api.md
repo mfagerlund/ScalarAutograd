@@ -56,9 +56,15 @@ export interface NonlinearLeastSquaresOptions {
     // (undocumented)
     lineSearchSteps?: number;
     // (undocumented)
+    maxInnerIterations?: number;
+    // (undocumented)
     maxIterations?: number;
     // (undocumented)
     paramTolerance?: number;
+    // (undocumented)
+    trustRegionRadius?: number;
+    // (undocumented)
+    useQR?: boolean;
     // (undocumented)
     verbose?: boolean;
 }
