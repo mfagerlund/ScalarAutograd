@@ -7,6 +7,9 @@ export { V } from './V';
 export { Optimizer, SGD, Adam, AdamW } from './Optimizers';
 export type { OptimizerOptions, AdamOptions } from './Optimizers';
 export { Losses } from './Losses';
+export type { NonlinearLeastSquaresOptions, NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
+export { Vec2 } from './Vec2';
+export { Vec3 } from './Vec3';
 /**
  * Represents a scalar value in the computational graph for automatic differentiation.
  * Supports forward computation and reverse-mode autodiff (backpropagation).
@@ -293,6 +296,7 @@ export declare class Value {
     static withNoGrad<T>(fn: () => T): T;
 }
 import { Value } from './Value';
+import { NonlinearLeastSquaresOptions, NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
 /**
  * Static factory and operation methods for Value objects.
  * Provides functional-style API for creating and manipulating Values.
@@ -586,6 +590,15 @@ export declare class V {
      * @returns New Value with sign(a)
      */
     static sign(a: Value | number): Value;
+    /**
+     * Nonlinear least squares solver using Levenberg-Marquardt algorithm.
+     * Minimizes sum of squared residuals using automatic differentiation.
+     * @param params Array of trainable Value parameters to optimize
+     * @param residualFn Function that computes residuals from current parameters
+     * @param options Optional solver configuration
+     * @returns Result object with success status, iterations, and final cost
+     */
+    static nonlinearLeastSquares(params: Value[], residualFn: (params: Value[]) => Value[], options?: NonlinearLeastSquaresOptions): NonlinearLeastSquaresResult;
 }
 import { Value } from "./Value";
 /**

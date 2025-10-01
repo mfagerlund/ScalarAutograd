@@ -39,6 +39,44 @@ export class Losses {
     static tukey(outputs: Value[], targets: Value[], c?: number): Value;
 }
 
+// @public (undocumented)
+export interface NonlinearLeastSquaresOptions {
+    // (undocumented)
+    adaptiveDamping?: boolean;
+    // (undocumented)
+    costTolerance?: number;
+    // (undocumented)
+    dampingDecreaseFactor?: number;
+    // (undocumented)
+    dampingIncreaseFactor?: number;
+    // (undocumented)
+    gradientTolerance?: number;
+    // (undocumented)
+    initialDamping?: number;
+    // (undocumented)
+    lineSearchSteps?: number;
+    // (undocumented)
+    maxIterations?: number;
+    // (undocumented)
+    paramTolerance?: number;
+    // (undocumented)
+    verbose?: boolean;
+}
+
+// @public (undocumented)
+export interface NonlinearLeastSquaresResult {
+    // (undocumented)
+    computationTime: number;
+    // (undocumented)
+    convergenceReason: string;
+    // (undocumented)
+    finalCost: number;
+    // (undocumented)
+    iterations: number;
+    // (undocumented)
+    success: boolean;
+}
+
 // @public
 export abstract class Optimizer {
     constructor(trainables: Value[], learningRate: number);
@@ -93,6 +131,7 @@ export class V {
     static mul(a: Value | number, b: Value | number): Value;
     static neg(a: Value | number): Value;
     static neq(a: Value | number, b: Value | number): Value;
+    static nonlinearLeastSquares(params: Value[], residualFn: (params: Value[]) => Value[], options?: NonlinearLeastSquaresOptions): NonlinearLeastSquaresResult;
     static pow(a: Value | number, exp: number): Value;
     static powValue(a: Value | number, b: Value | number, eps?: number): Value;
     static reciprocal(a: Value | number, eps?: number): Value;
@@ -164,6 +203,80 @@ export class Value {
     static withNoGrad<T>(fn: () => T): T;
     static zeroGradAll(vals: Value[]): void;
     static zeroGradTree(root: Value): void;
+}
+
+// @public (undocumented)
+export class Vec2 {
+    constructor(x: Value | number, y: Value | number);
+    // (undocumented)
+    add(other: Vec2): Vec2;
+    // (undocumented)
+    static C(x: number, y: number): Vec2;
+    // (undocumented)
+    div(scalar: Value | number): Vec2;
+    // (undocumented)
+    static dot(a: Vec2, b: Vec2): Value;
+    // (undocumented)
+    get magnitude(): Value;
+    // (undocumented)
+    mul(scalar: Value | number): Vec2;
+    // (undocumented)
+    get normalized(): Vec2;
+    // (undocumented)
+    get sqrMagnitude(): Value;
+    // (undocumented)
+    sub(other: Vec2): Vec2;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    get trainables(): Value[];
+    // (undocumented)
+    static W(x: number, y: number): Vec2;
+    // (undocumented)
+    x: Value;
+    // (undocumented)
+    y: Value;
+}
+
+// @public (undocumented)
+export class Vec3 {
+    constructor(x: Value | number, y: Value | number, z: Value | number);
+    // (undocumented)
+    add(other: Vec3): Vec3;
+    // (undocumented)
+    static C(x: number, y: number, z: number): Vec3;
+    // (undocumented)
+    static cross(a: Vec3, b: Vec3): Vec3;
+    // (undocumented)
+    div(scalar: Value | number): Vec3;
+    // (undocumented)
+    static dot(a: Vec3, b: Vec3): Value;
+    // (undocumented)
+    get magnitude(): Value;
+    // (undocumented)
+    mul(scalar: Value | number): Vec3;
+    // (undocumented)
+    get normalized(): Vec3;
+    // (undocumented)
+    static one(): Vec3;
+    // (undocumented)
+    get sqrMagnitude(): Value;
+    // (undocumented)
+    sub(other: Vec3): Vec3;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    get trainables(): Value[];
+    // (undocumented)
+    static W(x: number, y: number, z: number): Vec3;
+    // (undocumented)
+    x: Value;
+    // (undocumented)
+    y: Value;
+    // (undocumented)
+    z: Value;
+    // (undocumented)
+    static zero(): Vec3;
 }
 
 // (No @packageDocumentation comment for this package)

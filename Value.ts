@@ -7,6 +7,9 @@ export { V } from './V';
 export { Optimizer, SGD, Adam, AdamW } from './Optimizers';
 export type { OptimizerOptions, AdamOptions } from './Optimizers';
 export { Losses } from './Losses';
+export type { NonlinearLeastSquaresOptions, NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
+export { Vec2 } from './Vec2';
+export { Vec3 } from './Vec3';
 
 const EPS = 1e-12;
 

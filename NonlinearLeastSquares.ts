@@ -1,0 +1,259 @@
+import { Value } from "./Value";
+import { choleskySolve, computeJtJ, computeJtr } from "./LinearSolver";
+
+export interface NonlinearLeastSquaresOptions {
+  maxIterations?: number;
+  costTolerance?: number;
+  paramTolerance?: number;
+  gradientTolerance?: number;
+  lineSearchSteps?: number;
+  initialDamping?: number;
+  adaptiveDamping?: boolean;
+  dampingIncreaseFactor?: number;
+  dampingDecreaseFactor?: number;
+  verbose?: boolean;
+}
+
+export interface NonlinearLeastSquaresResult {
+  success: boolean;
+  iterations: number;
+  finalCost: number;
+  convergenceReason: string;
+  computationTime: number;
+}
+
+function computeResidualsAndJacobian(
+  params: Value[],
+  residualFn: (params: Value[]) => Value[]
+): { residuals: number[]; J: number[][]; cost: number } {
+  const residualValues = residualFn(params);
+  const residuals: number[] = [];
+  const J: number[][] = [];
+  let cost = 0;
+
+  for (const r of residualValues) {
+    cost += r.data * r.data;
+
+    params.forEach((p) => (p.grad = 0));
+
+    r.backward();
+
+    const jacobianRow = params.map((p) => p.grad);
+
+    residuals.push(r.data);
+    J.push(jacobianRow);
+  }
+
+  return { residuals, J, cost };
+}
+
+function solveNormalEquations(J: number[][], r: number[], lambda: number = 0): number[] {
+  const JtJ = computeJtJ(J);
+  const Jtr = computeJtr(J, r);
+  const negJtr = Jtr.map((x) => -x);
+
+  if (lambda > 0) {
+    for (let i = 0; i < JtJ.length; i++) {
+      JtJ[i][i] += lambda;
+    }
+  }
+
+  try {
+    return choleskySolve(JtJ, negJtr);
+  } catch (e) {
+    if (lambda === 0) {
+      const fallbackLambda = 1e-6;
+      for (let i = 0; i < JtJ.length; i++) {
+        JtJ[i][i] += fallbackLambda;
+      }
+      return choleskySolve(JtJ, negJtr);
+    }
+    throw e;
+  }
+}
+
+function lineSearch(
+  params: Value[],
+  delta: number[],
+  residualFn: (params: Value[]) => Value[],
+  currentCost: number,
+  maxSteps: number = 10
+): number {
+  const originalData = params.map((p) => p.data);
+  let alpha = 1.0;
+
+  for (let i = 0; i < maxSteps; i++) {
+    params.forEach((p, idx) => {
+      p.data = originalData[idx] + alpha * delta[idx];
+    });
+
+    const residuals = residualFn(params);
+    const newCost = residuals.reduce((sum, r) => sum + r.data * r.data, 0);
+
+    if (newCost < currentCost) {
+      return alpha;
+    }
+
+    alpha *= 0.5;
+  }
+
+  params.forEach((p, idx) => {
+    p.data = originalData[idx];
+  });
+
+  return 0;
+}
+
+export function nonlinearLeastSquares(
+  params: Value[],
+  residualFn: (params: Value[]) => Value[],
+  options: NonlinearLeastSquaresOptions = {}
+): NonlinearLeastSquaresResult {
+  const {
+    maxIterations = 100,
+    costTolerance = 1e-6,
+    paramTolerance = 1e-6,
+    gradientTolerance = 1e-6,
+    lineSearchSteps = 10,
+    initialDamping = 1e-3,
+    adaptiveDamping = true,
+    dampingIncreaseFactor = 10,
+    dampingDecreaseFactor = 10,
+    verbose = false,
+  } = options;
+
+  const startTime = performance.now();
+  let prevCost = Infinity;
+  let lambda = initialDamping;
+
+  for (let iter = 0; iter < maxIterations; iter++) {
+    const { residuals, J, cost } = computeResidualsAndJacobian(
+      params,
+      residualFn
+    );
+
+    const Jtr = computeJtr(J, residuals);
+    const gradientNorm = Math.sqrt(Jtr.reduce((sum, g) => sum + g * g, 0));
+
+    if (verbose) {
+      console.log(
+        `Iteration ${iter}: cost=${cost.toFixed(6)}, ||∇||=${gradientNorm.toExponential(2)}${adaptiveDamping ? `, λ=${lambda.toExponential(2)}` : ''}`
+      );
+    }
+
+    if (gradientNorm < gradientTolerance) {
+      return {
+        success: true,
+        iterations: iter,
+        finalCost: cost,
+        convergenceReason: "Gradient tolerance reached",
+        computationTime: performance.now() - startTime,
+      };
+    }
+
+    if (Math.abs(prevCost - cost) < costTolerance) {
+      return {
+        success: true,
+        iterations: iter,
+        finalCost: cost,
+        convergenceReason: "Cost tolerance reached",
+        computationTime: performance.now() - startTime,
+      };
+    }
+
+    if (cost < costTolerance) {
+      return {
+        success: true,
+        iterations: iter,
+        finalCost: cost,
+        convergenceReason: "Cost below threshold",
+        computationTime: performance.now() - startTime,
+      };
+    }
+
+    let delta: number[];
+    let accepted = false;
+    let innerIterations = 0;
+    const maxInnerIterations = 10;
+
+    while (!accepted && innerIterations < maxInnerIterations) {
+      try {
+        delta = solveNormalEquations(J, residuals, adaptiveDamping ? lambda : 0);
+      } catch (e) {
+        return {
+          success: false,
+          iterations: iter,
+          finalCost: cost,
+          convergenceReason: `Linear solver failed: ${e}`,
+          computationTime: performance.now() - startTime,
+        };
+      }
+
+      const deltaNorm = Math.sqrt(delta.reduce((sum, d) => sum + d * d, 0));
+      if (deltaNorm < paramTolerance) {
+        return {
+          success: true,
+          iterations: iter,
+          finalCost: cost,
+          convergenceReason: "Parameter tolerance reached",
+          computationTime: performance.now() - startTime,
+        };
+      }
+
+      if (adaptiveDamping) {
+        const originalData = params.map(p => p.data);
+        params.forEach((p, idx) => {
+          p.data = originalData[idx] + delta[idx];
+        });
+
+        const newResiduals = residualFn(params);
+        const newCost = newResiduals.reduce((sum, r) => sum + r.data * r.data, 0);
+
+        if (newCost < cost) {
+          lambda = Math.max(lambda / dampingDecreaseFactor, 1e-10);
+          accepted = true;
+        } else {
+          params.forEach((p, idx) => {
+            p.data = originalData[idx];
+          });
+          lambda = Math.min(lambda * dampingIncreaseFactor, 1e10);
+          innerIterations++;
+        }
+      } else {
+        const alpha = lineSearch(params, delta, residualFn, cost, lineSearchSteps);
+
+        if (alpha === 0) {
+          return {
+            success: false,
+            iterations: iter,
+            finalCost: cost,
+            convergenceReason: "Line search failed",
+            computationTime: performance.now() - startTime,
+          };
+        }
+        accepted = true;
+      }
+    }
+
+    if (!accepted) {
+      return {
+        success: false,
+        iterations: iter,
+        finalCost: cost,
+        convergenceReason: "Damping adjustment failed",
+        computationTime: performance.now() - startTime,
+      };
+    }
+
+    prevCost = cost;
+  }
+
+  const { cost } = computeResidualsAndJacobian(params, residualFn);
+  return {
+    success: false,
+    iterations: maxIterations,
+    finalCost: cost,
+    convergenceReason: "Max iterations reached",
+    computationTime: performance.now() - startTime,
+  };
+}
