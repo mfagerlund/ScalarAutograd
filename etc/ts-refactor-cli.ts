@@ -4,6 +4,7 @@
  *
  * Built with Yargs + Zod for strict, typed subcommands and useful help output.
  * Safety gates run baseline/after TypeScript diagnostics so automated agents avoid breaking changes.
+ * Includes read-only intel commands so agents can gather project context without mutating files.
  */
 
 import yargs, { ArgumentsCamelCase } from "yargs";
