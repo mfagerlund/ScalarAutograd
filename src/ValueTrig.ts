@@ -9,7 +9,8 @@ export class ValueTrig {
       (out) => () => {
         if (x.requiresGrad) x.grad += Math.cos(x.data) * out.grad;
       },
-      `sin(${x.label})`
+      `sin(${x.label})`,
+      'sin'
     );
   }
   static cos(x: Value): Value {
@@ -20,7 +21,8 @@ export class ValueTrig {
       (out) => () => {
         if (x.requiresGrad) x.grad += -Math.sin(x.data) * out.grad;
       },
-      `cos(${x.label})`
+      `cos(${x.label})`,
+      'cos'
     );
   }
   static tan(x: Value): Value {
@@ -31,7 +33,8 @@ export class ValueTrig {
       (out) => () => {
         if (x.requiresGrad) x.grad += (1 / (Math.cos(x.data) ** 2)) * out.grad;
       },
-      `tan(${x.label})`
+      `tan(${x.label})`,
+      'tan'
     );
   }
   static asin(x: Value): Value {
@@ -42,7 +45,8 @@ export class ValueTrig {
       (out) => () => {
         if (x.requiresGrad) x.grad += (1 / Math.sqrt(1 - x.data * x.data)) * out.grad;
       },
-      `asin(${x.label})`
+      `asin(${x.label})`,
+      'asin'
     );
   }
   static acos(x: Value): Value {
@@ -53,7 +57,8 @@ export class ValueTrig {
       (out) => () => {
         if (x.requiresGrad) x.grad += (-1 / Math.sqrt(1 - x.data * x.data)) * out.grad;
       },
-      `acos(${x.label})`
+      `acos(${x.label})`,
+      'acos'
     );
   }
   static atan(x: Value): Value {
@@ -64,7 +69,8 @@ export class ValueTrig {
       (out) => () => {
         if (x.requiresGrad) x.grad += (1 / (1 + x.data * x.data)) * out.grad;
       },
-      `atan(${x.label})`
+      `atan(${x.label})`,
+      'atan'
     );
   }
 }

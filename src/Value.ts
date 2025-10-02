@@ -58,6 +58,18 @@ export class Value {
    */
   public label: string;
 
+  /**
+   * Operation type for JIT compilation (e.g., '+', 'exp', 'sin').
+   * @internal
+   */
+  public _op?: string;
+
+  /**
+   * Parameter name for JIT compilation inputs.
+   * @internal
+   */
+  public paramName?: string;
+
   constructor(data: number, label = "", requiresGrad = false) {
     if (typeof data !== 'number' || Number.isNaN(data) || !Number.isFinite(data)) {
       throw new Error(`Invalid number passed to Value: ${data}`);
@@ -464,6 +476,7 @@ export class Value {
    * @param right Right operand Value or null
    * @param backwardFnBuilder Function to create backward closure
    * @param label Node label for debugging
+   * @param op Operation name for JIT compilation
    * @returns New Value node
    */
   static make(
@@ -471,11 +484,13 @@ export class Value {
     left: Value,
     right: Value | null,
     backwardFnBuilder: (out: Value) => BackwardFn,
-    label: string
+    label: string,
+    op?: string
   ): Value {
     const requiresGrad = !Value.no_grad_mode && [left, right].filter(Boolean).some(v => v!.requiresGrad);
     const out = new Value(data, label, requiresGrad);
     out.prev = Value.no_grad_mode ? [] : ([left, right].filter(Boolean) as Value[]);
+    out._op = op;
     if (requiresGrad) {
       out.backwardFn = backwardFnBuilder(out);
     }
@@ -501,6 +516,135 @@ export class Value {
       return fn();
     } finally {
       Value.no_grad_mode = prev;
+    }
+  }
+
+  getForwardCode(childCodes: string[]): string {
+    if (this.paramName) return this.paramName;
+
+    if (this.prev.length === 1) {
+      const [child] = childCodes;
+      switch (this._op) {
+        case 'exp': return `Math.exp(${child})`;
+        case 'log': return `Math.log(${child})`;
+        case 'tanh': return `Math.tanh(${child})`;
+        case 'sigmoid': return `(1 / (1 + Math.exp(-${child})))`;
+        case 'relu': return `Math.max(0, ${child})`;
+        case 'sin': return `Math.sin(${child})`;
+        case 'cos': return `Math.cos(${child})`;
+        case 'tan': return `Math.tan(${child})`;
+        case 'asin': return `Math.asin(${child})`;
+        case 'acos': return `Math.acos(${child})`;
+        case 'atan': return `Math.atan(${child})`;
+        case 'neg': return `(-${child})`;
+        case 'abs': return `Math.abs(${child})`;
+        case 'square': return `(${child} * ${child})`;
+        case 'cube': return `(${child} * ${child} * ${child})`;
+        case 'reciprocal': return `(1 / ${child})`;
+        case 'sign': return `Math.sign(${child})`;
+        case 'softplus': return `Math.log(1 + Math.exp(${child}))`;
+        case 'floor': return `Math.floor(${child})`;
+        case 'ceil': return `Math.ceil(${child})`;
+        case 'round': return `Math.round(${child})`;
+        default: return String(this.data);
+      }
+    }
+
+    const [left, right] = childCodes;
+    switch (this._op) {
+      case '+': return `(${left} + ${right})`;
+      case '-': return `(${left} - ${right})`;
+      case '*': return `(${left} * ${right})`;
+      case '/': return `(${left} / ${right})`;
+      case 'powValue': return `Math.pow(${left}, ${right})`;
+      case 'mod': return `(${left} % ${right})`;
+      case 'min': return `Math.min(${left}, ${right})`;
+      case 'max': return `Math.max(${left}, ${right})`;
+      default: return String(this.data);
+    }
+  }
+
+  getBackwardCode(gradVar: string, childGrads: string[], childVars: string[]): string {
+    if (this.prev.length === 1) {
+      const [childGrad] = childGrads;
+      const [child] = childVars;
+
+      switch (this._op) {
+        case 'exp':
+          return `${childGrad} += ${gradVar} * Math.exp(${child});`;
+        case 'log':
+          return `${childGrad} += ${gradVar} / ${child};`;
+        case 'tanh': {
+          const tanhChild = `Math.tanh(${child})`;
+          return `${childGrad} += ${gradVar} * (1 - ${tanhChild} * ${tanhChild});`;
+        }
+        case 'sigmoid': {
+          const sigChild = `(1 / (1 + Math.exp(-${child})))`;
+          return `${childGrad} += ${gradVar} * ${sigChild} * (1 - ${sigChild});`;
+        }
+        case 'relu':
+          return `${childGrad} += ${gradVar} * (${child} > 0 ? 1 : 0);`;
+        case 'sin':
+          return `${childGrad} += ${gradVar} * Math.cos(${child});`;
+        case 'cos':
+          return `${childGrad} += ${gradVar} * (-Math.sin(${child}));`;
+        case 'tan': {
+          const cosChild = `Math.cos(${child})`;
+          return `${childGrad} += ${gradVar} / (${cosChild} * ${cosChild});`;
+        }
+        case 'asin':
+          return `${childGrad} += ${gradVar} / Math.sqrt(1 - ${child} * ${child});`;
+        case 'acos':
+          return `${childGrad} += ${gradVar} / (-Math.sqrt(1 - ${child} * ${child}));`;
+        case 'atan':
+          return `${childGrad} += ${gradVar} / (1 + ${child} * ${child});`;
+        case 'neg':
+          return `${childGrad} -= ${gradVar};`;
+        case 'abs':
+          return `${childGrad} += ${gradVar} * (${child} >= 0 ? 1 : -1);`;
+        case 'square':
+          return `${childGrad} += ${gradVar} * 2 * ${child};`;
+        case 'cube':
+          return `${childGrad} += ${gradVar} * 3 * ${child} * ${child};`;
+        case 'reciprocal':
+          return `${childGrad} -= ${gradVar} / (${child} * ${child});`;
+        case 'sign':
+          return `${childGrad} += 0;`;
+        case 'softplus': {
+          const expChild = `Math.exp(${child})`;
+          return `${childGrad} += ${gradVar} * ${expChild} / (1 + ${expChild});`;
+        }
+        case 'floor':
+        case 'ceil':
+        case 'round':
+          return `${childGrad} += 0;`;
+        default:
+          return '';
+      }
+    }
+
+    const [leftGrad, rightGrad] = childGrads;
+    const [left, right] = childVars;
+
+    switch (this._op) {
+      case '+':
+        return `${leftGrad} += ${gradVar}; ${rightGrad} += ${gradVar};`;
+      case '-':
+        return `${leftGrad} += ${gradVar}; ${rightGrad} -= ${gradVar};`;
+      case '*':
+        return `${leftGrad} += ${gradVar} * ${right}; ${rightGrad} += ${gradVar} * ${left};`;
+      case '/':
+        return `${leftGrad} += ${gradVar} / ${right}; ${rightGrad} -= ${gradVar} * ${left} / (${right} * ${right});`;
+      case 'powValue':
+        return `${leftGrad} += ${gradVar} * ${right} * Math.pow(${left}, ${right} - 1); ${rightGrad} += ${gradVar} * Math.pow(${left}, ${right}) * Math.log(${left});`;
+      case 'mod':
+        return `${leftGrad} += ${gradVar}; ${rightGrad} += 0;`;
+      case 'min':
+        return `${leftGrad} += ${gradVar} * (${left} < ${right} ? 1 : 0); ${rightGrad} += ${gradVar} * (${right} < ${left} ? 1 : 0);`;
+      case 'max':
+        return `${leftGrad} += ${gradVar} * (${left} > ${right} ? 1 : 0); ${rightGrad} += ${gradVar} * (${right} > ${left} ? 1 : 0);`;
+      default:
+        return '';
     }
   }
 }

@@ -9,7 +9,8 @@ export class ValueActivation {
       (out) => () => {
         if (x.requiresGrad) x.grad += (x.data > 0 ? 1 : 0) * out.grad;
       },
-      `relu(${x.label})`
+      `relu(${x.label})`,
+      'relu'
     );
   }
 
@@ -21,7 +22,8 @@ export class ValueActivation {
       (out) => () => {
         x.grad += 1 / (1 + Math.exp(-x.data)) * out.grad;
       },
-      `softplus(${x.label})`
+      `softplus(${x.label})`,
+      'softplus'
     );
   }
 
@@ -33,7 +35,8 @@ export class ValueActivation {
       (out) => () => {
         if (x.requiresGrad) x.grad += (1 - t ** 2) * out.grad;
       },
-      `tanh(${x.label})`
+      `tanh(${x.label})`,
+      'tanh'
     );
   }
 
@@ -45,7 +48,8 @@ export class ValueActivation {
       (out) => () => {
         if (x.requiresGrad) x.grad += s * (1 - s) * out.grad;
       },
-      `sigmoid(${x.label})`
+      `sigmoid(${x.label})`,
+      'sigmoid'
     );
   }
 }

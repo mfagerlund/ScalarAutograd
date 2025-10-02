@@ -1,4 +1,5 @@
-import { CompilableValue, compileGradientFunction } from './jit-compile';
+import { Value } from './Value';
+import { compileGradientFunction } from './jit-compile-value';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -24,7 +25,7 @@ function runBenchmark(): BenchmarkResult[] {
     for (const iters of iterationCounts) {
       const traditionalTime = performance.now();
       for (let i = 0; i < iters; i++) {
-        const vars = Array.from({ length: size }, (_, i) => new CompilableValue(i + 1));
+        const vars = Array.from({ length: size }, (_, i) => new Value(i + 1, `x${i}`, true));
         let result = vars[0];
         for (let j = 1; j < size; j++) {
           if (j % 4 === 0) result = result.add(vars[j]);
@@ -37,9 +38,11 @@ function runBenchmark(): BenchmarkResult[] {
       const traditionalDuration = performance.now() - traditionalTime;
 
       const compiledTime = performance.now();
-      const vars = Array.from({ length: size }, (_, i) =>
-        new CompilableValue(i + 1, `x${i}`)
-      );
+      const vars = Array.from({ length: size }, (_, i) => {
+        const v = new Value(i + 1, `x${i}`, true);
+        v.paramName = `x${i}`;
+        return v;
+      });
       let result = vars[0];
       for (let j = 1; j < size; j++) {
         if (j % 4 === 0) result = result.add(vars[j]);

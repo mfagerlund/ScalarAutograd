@@ -1,4 +1,5 @@
-import { CompilableValue, compileGradientFunction } from './jit-compile';
+import { compileGradientFunction } from './jit-compile-value';
+import { Value } from './Value';
 
 describe('JIT Compilation Optimization Strategies', () => {
   it('measures pure compilation time vs execution time', () => {
@@ -9,7 +10,11 @@ describe('JIT Compilation Optimization Strategies', () => {
     console.log('----------|--------------|----------------------|-------');
 
     for (const size of sizes) {
-      const vars = Array.from({ length: size }, (_, i) => new CompilableValue(i + 1, `x${i}`));
+      const vars = Array.from({ length: size }, (_, i) => {
+        const v = new Value(i + 1, `x${i}`, true);
+        v.paramName = `x${i}`;
+        return v;
+      });
       let result = vars[0];
       for (let j = 1; j < size; j++) {
         if (j % 4 === 0) result = result.add(vars[j]);
@@ -49,7 +54,11 @@ describe('JIT Compilation Optimization Strategies', () => {
 
     const recompileStart = performance.now();
     for (let run = 0; run < runs; run++) {
-      const vars = Array.from({ length: size }, (_, i) => new CompilableValue(i + run + 1, `x${i}`));
+      const vars = Array.from({ length: size }, (_, i) => {
+        const v = new Value(i + run + 1, `x${i}`, true);
+        v.paramName = `x${i}`;
+        return v;
+      });
       let result = vars[0];
       for (let j = 1; j < size; j++) {
         if (j % 4 === 0) result = result.add(vars[j]);
@@ -63,7 +72,11 @@ describe('JIT Compilation Optimization Strategies', () => {
     }
     const recompileTime = performance.now() - recompileStart;
 
-    const vars = Array.from({ length: size }, (_, i) => new CompilableValue(i + 1, `x${i}`));
+    const vars = Array.from({ length: size }, (_, i) => {
+      const v = new Value(i + 1, `x${i}`, true);
+      v.paramName = `x${i}`;
+      return v;
+    });
     let result = vars[0];
     for (let j = 1; j < size; j++) {
       if (j % 4 === 0) result = result.add(vars[j]);
@@ -101,7 +114,11 @@ describe('JIT Compilation Optimization Strategies', () => {
       let totalTime = 0;
       for (let chunk = 0; chunk < numChunks; chunk++) {
         const actualSize = Math.min(chunkSize, totalSize - chunk * chunkSize);
-        const vars = Array.from({ length: actualSize }, (_, i) => new CompilableValue(i + 1, `x${i}`));
+        const vars = Array.from({ length: actualSize }, (_, i) => {
+          const v = new Value(i + 1, `x${i}`, true);
+          v.paramName = `x${i}`;
+          return v;
+        });
         let result = vars[0];
         for (let j = 1; j < actualSize; j++) {
           if (j % 4 === 0) result = result.add(vars[j]);

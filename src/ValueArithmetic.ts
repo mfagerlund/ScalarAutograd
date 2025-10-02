@@ -9,7 +9,8 @@ export class ValueArithmetic {
         if (a.requiresGrad) a.grad += 1 * out.grad;
         if (b.requiresGrad) b.grad += 1 * out.grad;
       },
-      `(${a.label}+${b.label})`
+      `(${a.label}+${b.label})`,
+      '+'
     );
 }
   static sqrt(a: Value): Value {
@@ -23,7 +24,8 @@ export class ValueArithmetic {
       (out) => () => {
         if (a.requiresGrad) a.grad += 0.5 / root * out.grad;
       },
-      `sqrt(${a.label})`
+      `sqrt(${a.label})`,
+      'sqrt'
     );
   }
 
@@ -35,7 +37,8 @@ export class ValueArithmetic {
         if (a.requiresGrad) a.grad += b.data * out.grad;
         if (b.requiresGrad) b.grad += a.data * out.grad;
       },
-      `(${a.label}*${b.label})`
+      `(${a.label}*${b.label})`,
+      '*'
     );
   }
 
@@ -47,7 +50,8 @@ export class ValueArithmetic {
         if (a.requiresGrad) a.grad += 1 * out.grad;
         if (b.requiresGrad) b.grad -= 1 * out.grad;
       },
-      `(${a.label}-${b.label})`
+      `(${a.label}-${b.label})`,
+      '-'
     );
   }
 
@@ -63,7 +67,8 @@ export class ValueArithmetic {
         if (a.requiresGrad) a.grad += (1 / safe) * out.grad;
         if (b.requiresGrad) b.grad -= (a.data / (safe ** 2)) * out.grad;
       },
-      `(${a.label}/${b.label})`
+      `(${a.label}/${b.label})`,
+      '/'
     );
   }
 
@@ -71,18 +76,8 @@ export class ValueArithmetic {
     if (typeof exp !== "number" || Number.isNaN(exp) || !Number.isFinite(exp)) {
       throw new Error(`Exponent must be a finite number, got ${exp}`);
     }
-    if (a.data < 0 && Math.abs(exp % 1) > 1e-12) {
-      throw new Error(`Cannot raise negative base (${a.data}) to non-integer exponent (${exp})`);
-    }
-    const safeBase = a.data;
-    return Value.make(
-      Math.pow(safeBase, exp),
-      a, null,
-      (out) => () => {
-        if (a.requiresGrad) a.grad += exp * Math.pow(safeBase, exp - 1) * out.grad;
-      },
-      `(${a.label}^${exp})`
-    );
+    const expValue = new Value(exp, String(exp), false);
+    return ValueArithmetic.powValue(a, expValue);
   }
 
   static powValue(a: Value, b: Value, eps = 1e-12): Value {
@@ -100,7 +95,8 @@ export class ValueArithmetic {
         a.grad += b.data * Math.pow(safeBase, b.data - 1) * out.grad;
         b.grad += Math.log(Math.max(eps, safeBase)) * Math.pow(safeBase, b.data) * out.grad;
       },
-      `(${a.label}^${b.label})`
+      `(${a.label}^${b.label})`,
+      'powValue'
     );
   }
 
@@ -115,7 +111,8 @@ export class ValueArithmetic {
         a.grad += 1 * out.grad;
         // No grad to b (modulus not used in most diff cases)
       },
-      `(${a.label}%${b.label})`
+      `(${a.label}%${b.label})`,
+      'mod'
     );
   }
 
@@ -127,7 +124,8 @@ export class ValueArithmetic {
       (out) => () => {
         if (a.requiresGrad) a.grad += (a.data >= 0 ? 1 : -1) * out.grad;
       },
-      `abs(${a.label})`
+      `abs(${a.label})`,
+      'abs'
     );
   }
 
@@ -139,7 +137,8 @@ export class ValueArithmetic {
       (out) => () => {
         if (a.requiresGrad) a.grad += e * out.grad;
       },
-      `exp(${a.label})`
+      `exp(${a.label})`,
+      'exp'
     );
   }
 
@@ -155,7 +154,8 @@ export class ValueArithmetic {
       (out) => () => {
         if (a.requiresGrad) a.grad += (1 / safe) * out.grad;
       },
-      `log(${a.label})`
+      `log(${a.label})`,
+      'log'
     );
   }
 
@@ -168,7 +168,8 @@ export class ValueArithmetic {
         if (a.requiresGrad) a.grad += (a.data < b.data ? 1 : 0) * out.grad;
         if (b.requiresGrad) b.grad += (b.data < a.data ? 1 : 0) * out.grad;
       },
-      `min(${a.label},${b.label})`
+      `min(${a.label},${b.label})`,
+      'min'
     );
   }
 
@@ -181,7 +182,8 @@ export class ValueArithmetic {
         if (a.requiresGrad) a.grad += (a.data > b.data ? 1 : 0) * out.grad;
         if (b.requiresGrad) b.grad += (b.data > a.data ? 1 : 0) * out.grad;
       },
-      `max(${a.label},${b.label})`
+      `max(${a.label},${b.label})`,
+      'max'
     );
   }
 
@@ -191,7 +193,8 @@ export class ValueArithmetic {
       fl,
       a, null,
       () => () => {},
-      `floor(${a.label})`
+      `floor(${a.label})`,
+      'floor'
     );
   }
 
@@ -201,7 +204,8 @@ export class ValueArithmetic {
       cl,
       a, null,
       () => () => {},
-      `ceil(${a.label})`
+      `ceil(${a.label})`,
+      'ceil'
     );
   }
 
@@ -211,7 +215,8 @@ export class ValueArithmetic {
       rd,
       a, null,
       () => () => {},
-      `round(${a.label})`
+      `round(${a.label})`,
+      'round'
     );
   }
 
@@ -233,7 +238,8 @@ export class ValueArithmetic {
       (out) => () => {
         if (a.requiresGrad) a.grad += -1 / (a.data * a.data) * out.grad;
       },
-      `reciprocal(${a.label})`
+      `reciprocal(${a.label})`,
+      'reciprocal'
     );
   }
 
@@ -245,7 +251,8 @@ export class ValueArithmetic {
       (out) => () => {
         a.grad += (a.data > min && a.data < max ? 1 : 0) * out.grad;
       },
-      `clamp(${a.label},${min},${max})`
+      `clamp(${a.label},${min},${max})`,
+      'clamp'
     );
   }
 
@@ -266,7 +273,8 @@ export class ValueArithmetic {
       (out) => () => {
         if (a.requiresGrad) a.grad -= out.grad;
       },
-      `(-${a.label})`
+      `(-${a.label})`,
+      'neg'
     );
   }
 
@@ -276,12 +284,10 @@ export class ValueArithmetic {
       s,
       a, null,
       (out) => () => {
-        // The derivative of sign(x) is 0 for x != 0.
-        // At x = 0, the derivative is undefined (Dirac delta), but for practical purposes in ML,
-        // we can define it as 0.
         if (a.requiresGrad) a.grad += 0 * out.grad;
       },
-      `sign(${a.label})`
+      `sign(${a.label})`,
+      'sign'
     );
   }
 }
