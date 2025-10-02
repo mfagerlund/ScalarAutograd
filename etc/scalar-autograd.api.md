@@ -225,8 +225,11 @@ export class Vec2 {
     constructor(x: Value | number, y: Value | number);
     // (undocumented)
     add(other: Vec2): Vec2;
+    static angleBetween(a: Vec2, b: Vec2): Value;
     // (undocumented)
     static C(x: number, y: number): Vec2;
+    static cross(a: Vec2, b: Vec2): Value;
+    static distanceToLine(point: Vec2, lineStart: Vec2, lineEnd: Vec2): Value;
     // (undocumented)
     div(scalar: Value | number): Vec2;
     // (undocumented)
@@ -237,6 +240,9 @@ export class Vec2 {
     mul(scalar: Value | number): Vec2;
     // (undocumented)
     get normalized(): Vec2;
+    // (undocumented)
+    static one(): Vec2;
+    get perpendicular(): Vec2;
     // (undocumented)
     get sqrMagnitude(): Value;
     // (undocumented)
@@ -251,6 +257,8 @@ export class Vec2 {
     x: Value;
     // (undocumented)
     y: Value;
+    // (undocumented)
+    static zero(): Vec2;
 }
 
 // @public

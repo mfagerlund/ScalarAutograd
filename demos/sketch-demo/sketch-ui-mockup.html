@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sketch Solver Demo - UI Mockup</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #f5f5f5;
+    }
+
+    .header {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .toolbar {
+      background: white;
+      border-bottom: 1px solid #ddd;
+      padding: 8px 12px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .tool-btn {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+
+    .tool-btn:hover {
+      background: #f8f9fa;
+      border-color: #3498db;
+    }
+
+    .tool-btn.active {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+
+    .tool-btn.exists {
+      background: #2ecc71;
+      color: white;
+      border-color: #2ecc71;
+    }
+
+    .tool-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .radio-icon-btn {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: 36px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 16px;
+      flex: 1;
+    }
+
+    .radio-icon-btn:hover {
+      background: #f8f9fa;
+      border-color: #3498db;
+    }
+
+    .radio-icon-btn.active {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .canvas-area {
+      flex: 1;
+      background: white;
+      position: relative;
+      border-right: 1px solid #ddd;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel {
+      background: white;
+      margin: 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-weight: 600;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .radio-option:hover {
+      background: #f8f9fa;
+    }
+
+    .radio-option input[type="radio"] {
+      cursor: pointer;
+    }
+
+    .point-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .point-info:last-child {
+      margin-bottom: 0;
+    }
+
+    .constraint-btn {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .constraint-btn:hover {
+      background: #f8f9fa;
+      border-color: #3498db;
+    }
+
+    .constraint-btn:last-child {
+      margin-bottom: 0;
+    }
+
+    .constraint-btn i {
+      color: #3498db;
+      width: 20px;
+      text-align: center;
+    }
+
+    .constraint-category {
+      font-size: 12px;
+      font-weight: 600;
+      color: #777;
+      text-transform: uppercase;
+      margin: 12px 0 8px 0;
+    }
+
+    .constraint-category:first-child {
+      margin-top: 0;
+    }
+
+    .active-constraint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #e3f2fd;
+      border-left: 3px solid #3498db;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .active-constraint:last-child {
+      margin-bottom: 0;
+    }
+
+    .active-constraint .constraint-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    .remove-btn:hover {
+      background: #ffebee;
+    }
+
+    .status-bar {
+      background: #2c3e50;
+      color: white;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 13px;
+      border-top: 1px solid #34495e;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-success {
+      color: #2ecc71;
+    }
+
+    .status-error {
+      color: #e74c3c;
+    }
+
+    .divider {
+      height: 1px;
+      background: #eee;
+      margin: 16px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: #999;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <i class="fa-solid fa-ruler-combined"></i>
+    <h1>Sketch Solver Demo</h1>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div style="display: flex; gap: 4px; align-items: center;">
+      <button class="tool-btn active" title="Select (V)">
+        <i class="fa-solid fa-arrow-pointer"></i>
+      </button>
+      <button class="tool-btn" title="Point (P)">
+        <i class="fa-solid fa-circle"></i>
+      </button>
+      <button class="tool-btn" title="Line (L)">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+      <button class="tool-btn" title="Circle (C)">
+        <i class="fa-regular fa-circle"></i>
+      </button>
+    </div>
+
+    <div style="width: 1px; height: 24px; background: #ddd; margin: 0 8px;"></div>
+
+    <div style="display: flex; gap: 4px; align-items: center;">
+      <button class="tool-btn" title="Parallel (requires 2 lines)" disabled>
+        <i class="fa-solid fa-equals"></i>
+      </button>
+      <button class="tool-btn" title="Perpendicular (requires 2 lines)" disabled>
+        <i class="fa-solid fa-plus" style="transform: rotate(45deg);"></i>
+      </button>
+      <button class="tool-btn" title="Angle (requires 2 lines)" disabled>
+        <i class="fa-solid fa-angle-right"></i>
+      </button>
+      <button class="tool-btn exists" title="Horizontal (already applied)">
+        <i class="fa-solid fa-arrows-left-right"></i>
+      </button>
+      <button class="tool-btn" title="Vertical (click to apply)" disabled>
+        <i class="fa-solid fa-arrows-up-down"></i>
+      </button>
+      <button class="tool-btn" title="Point on Line (select a point to enable)">
+        <i class="fa-solid fa-circle-dot"></i>
+      </button>
+      <button class="tool-btn" title="Point on Circle" disabled>
+        <i class="fa-solid fa-record-vinyl"></i>
+      </button>
+      <button class="tool-btn" title="Collinear" disabled>
+        <i class="fa-solid fa-ellipsis"></i>
+      </button>
+      <button class="tool-btn" title="Tangent" disabled>
+        <i class="fa-solid fa-hand-point-up"></i>
+      </button>
+      <button class="tool-btn" title="Radial Alignment" disabled>
+        <i class="fa-solid fa-bullseye"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Canvas Area -->
+    <div class="canvas-area">
+      <canvas width="800" height="600"></canvas>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Properties Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <i class="fa-solid fa-sliders"></i>
+          Properties
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Entity Type</label>
+            <div style="font-weight: 600; color: #3498db;">
+              <i class="fa-solid fa-minus"></i> Line
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Label</label>
+            <input type="text" class="form-input" value="Base Line" placeholder="Enter label...">
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="fixed-length" checked>
+            <label for="fixed-length" style="font-weight: 500;">Fixed Length</label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Length</label>
+            <input type="number" class="form-input" value="100.00" step="0.01">
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form-group">
+            <label class="form-label">Line Direction</label>
+            <div style="display: flex; gap: 6px;">
+              <button class="radio-icon-btn" title="Free">
+                <i class="fa-solid fa-slash"></i>
+              </button>
+              <button class="radio-icon-btn active" title="Horizontal">
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </button>
+              <button class="radio-icon-btn" title="Vertical">
+                <i class="fa-solid fa-arrows-up-down"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form-group">
+            <label class="form-label">Connected Points</label>
+            <div class="point-info">
+              <i class="fa-solid fa-thumbtack" style="color: #e74c3c;"></i>
+              <span><strong>P1</strong> (0.0, 0.0)</span>
+            </div>
+            <div class="point-info">
+              <span style="margin-left: 24px;"><strong>P2</strong> (100.0, 0.0)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Constraints Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <i class="fa-solid fa-list-check"></i>
+          Active Constraints
+        </div>
+        <div class="panel-body">
+          <div class="active-constraint">
+            <div class="constraint-text">
+              <i class="fa-solid fa-arrows-left-right"></i>
+              <span>Horizontal</span>
+            </div>
+            <button class="remove-btn">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="active-constraint">
+            <div class="constraint-text">
+              <i class="fa-solid fa-ruler"></i>
+              <span>Fixed Length: 100px</span>
+            </div>
+            <button class="remove-btn">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="active-constraint">
+            <div class="constraint-text">
+              <i class="fa-solid fa-equals"></i>
+              <span>Parallel to "Side 2"</span>
+            </div>
+            <button class="remove-btn">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <i class="fa-solid fa-circle-check status-success"></i>
+      <span>Converged</span>
+    </div>
+    <div class="status-item">
+      <i class="fa-solid fa-wave-square"></i>
+      <span>Residual: 0.00012</span>
+    </div>
+    <div class="status-item">
+      <i class="fa-solid fa-rotate"></i>
+      <span>Iterations: 23</span>
+    </div>
+  </div>
+
+  <script>
+    // Simple mockup interaction
+    const canvas = document.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Draw a simple line to show the canvas works
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(100, 300);
+    ctx.lineTo(400, 300);
+    ctx.stroke();
+
+    // Draw points
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(100, 300, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(400, 300, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add selection highlight
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(100, 300);
+    ctx.lineTo(400, 300);
+    ctx.stroke();
+  </script>
+</body>
+</html>
