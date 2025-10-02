@@ -4206,6 +4206,71 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "scalar-autograd!V.Param:member(1)",
+              "docComment": "/**\n * Creates a parameterizable constant for JIT compilation. Unlike V.C(), these constants can be passed as function parameters to compiled functions.\n *\n * @param value - The numeric value\n *\n * @param paramName - Name for the parameter in compiled functions\n *\n * @returns New Value marked as a parameter\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static Param(value: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", paramName: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "value",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "paramName",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "Param"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "scalar-autograd!V.pow:member(1)",
               "docComment": "/**\n * Power operation with numeric exponent.\n *\n * @param a - Base\n *\n * @param exp - Exponent\n *\n * @returns New Value with result\n */\n",
               "excerptTokens": [
@@ -5846,6 +5911,134 @@
               "name": "floor"
             },
             {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Value#getBackwardCode:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getBackwardCode(gradVar: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", childGrads: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", childVars: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "gradVar",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "childGrads",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "childVars",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "getBackwardCode"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Value#getForwardCode:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getForwardCode(childCodes: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "childCodes",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "getForwardCode"
+            },
+            {
               "kind": "Property",
               "canonicalReference": "scalar-autograd!Value#grad:member",
               "docComment": "/**\n * The gradient of the output with respect to this value.\n *\n * @public\n */\n",
@@ -6140,7 +6333,7 @@
             {
               "kind": "Method",
               "canonicalReference": "scalar-autograd!Value.make:member(1)",
-              "docComment": "/**\n * Internal helper to construct a Value with correct backward fn and grads.\n *\n * @param data - Output value data\n *\n * @param left - Left operand Value\n *\n * @param right - Right operand Value or null\n *\n * @param backwardFnBuilder - Function to create backward closure\n *\n * @param label - Node label for debugging\n *\n * @returns New Value node\n */\n",
+              "docComment": "/**\n * Internal helper to construct a Value with correct backward fn and grads.\n *\n * @param data - Output value data\n *\n * @param left - Left operand Value\n *\n * @param right - Right operand Value or null\n *\n * @param backwardFnBuilder - Function to create backward closure\n *\n * @param label - Node label for debugging\n *\n * @param op - Operation name for JIT compilation\n *\n * @returns New Value node\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -6204,6 +6397,14 @@
                 },
                 {
                   "kind": "Content",
+                  "text": ", op?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
                   "text": "): "
                 },
                 {
@@ -6218,8 +6419,8 @@
               ],
               "isStatic": true,
               "returnTypeTokenRange": {
-                "startIndex": 15,
-                "endIndex": 16
+                "startIndex": 17,
+                "endIndex": 18
               },
               "releaseTag": "Public",
               "isProtected": false,
@@ -6264,6 +6465,14 @@
                     "endIndex": 14
                   },
                   "isOptional": false
+                },
+                {
+                  "parameterName": "op",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 15,
+                    "endIndex": 16
+                  },
+                  "isOptional": true
                 }
               ],
               "isOptional": false,
@@ -7524,6 +7733,73 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "scalar-autograd!Vec2.angleBetween:member(1)",
+              "docComment": "/**\n * Angle between two vectors in radians. Returns value in range [0, π].\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static angleBetween(a: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", b: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "a",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "b",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "angleBetween"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "scalar-autograd!Vec2.C:member(1)",
               "docComment": "",
               "excerptTokens": [
@@ -7586,6 +7862,157 @@
               "isOptional": false,
               "isAbstract": false,
               "name": "C"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Vec2.cross:member(1)",
+              "docComment": "/**\n * 2D cross product (returns scalar z-component of 3D cross product). Also known as the \"perpendicular dot product\" or \"wedge product\". Returns positive if b is counter-clockwise from a, negative if clockwise.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static cross(a: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", b: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "a",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "b",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "cross"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Vec2.distanceToLine:member(1)",
+              "docComment": "/**\n * Distance from this point to a line defined by two points. Uses the perpendicular distance formula.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static distanceToLine(point: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", lineStart: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", lineEnd: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "point",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "lineStart",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "lineEnd",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "distanceToLine"
             },
             {
               "kind": "Method",
@@ -7816,6 +8243,69 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "normalized",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Vec2.one:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static one(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "one"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "scalar-autograd!Vec2#perpendicular:member",
+              "docComment": "/**\n * Get perpendicular vector (rotated 90° counter-clockwise). Useful for computing distances to lines.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get perpendicular(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "perpendicular",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -8097,6 +8587,38 @@
               "isStatic": false,
               "isProtected": false,
               "isAbstract": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Vec2.zero:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static zero(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec2",
+                  "canonicalReference": "scalar-autograd!Vec2:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "zero"
             }
           ],
           "implementsTokenRanges": []

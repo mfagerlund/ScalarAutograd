@@ -11,7 +11,9 @@ export type UsageKind =
   | "import"
   | "export"
   | "jsx"
-  | "type";
+  | "type"
+  | "call"
+  | "callee";
 
 export interface Location {
   readonly file: string;
@@ -154,6 +156,8 @@ export function summarizeUsageKinds(hits: UsageHit[]): Record<UsageKind, number>
     export: 0,
     jsx: 0,
     type: 0,
+    call: 0,
+    callee: 0,
   };
   for (const hit of hits) {
     summary[hit.kind]++;
@@ -170,6 +174,7 @@ export function formatUsageHits(hits: UsageHit[]): string {
     .map(hit => `${hit.kind.padEnd(width)}  ${hit.file}:${hit.line}:${hit.column}`)
     .join("\n");
 }
+
 export function dedupeUsageHits(hits: UsageHit[]): UsageHit[] {
   const seen = new Set<string>();
   const out: UsageHit[] = [];
