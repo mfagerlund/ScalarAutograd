@@ -1,5 +1,5 @@
-import { Value } from './Value';
 import { V } from './V';
+import { Value } from './Value';
 
 /**
  * 2D vector class with differentiable operations.

@@ -2,18 +2,20 @@
  * Tests for project serialization and deserialization
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type {
+    Circle,
+    Line,
+    ParallelConstraint,
+    Point,
+    PointOnCircleConstraint,
+    Project,
+} from '../types';
 import {
-  Point,
-  Line,
-  Circle,
-  LineConstraintType,
-  ConstraintType,
-  Project,
-  serializeProject,
-  deserializeProject,
-  ParallelConstraint,
-  PointOnCircleConstraint,
+    ConstraintType,
+    deserializeProject,
+    LineConstraintType,
+    serializeProject,
 } from '../types';
 
 describe('Project Serialization', () => {

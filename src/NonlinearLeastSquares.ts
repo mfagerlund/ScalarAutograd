@@ -1,5 +1,5 @@
-import { Value } from "./Value";
 import { choleskySolve, computeJtJ, computeJtr, qrSolve } from "./LinearSolver";
+import { Value } from "./Value";
 
 /**
  * Configuration options for nonlinear least squares solver.
@@ -175,6 +175,22 @@ export function nonlinearLeastSquares(
       console.log(
         `Iteration ${iter}: cost=${cost.toFixed(6)}, ||∇||=${gradientNorm.toExponential(2)}${adaptiveDamping ? `, λ=${lambda.toExponential(2)}` : ''}`
       );
+      if (iter === 0) {
+        const m = J.length;  // number of constraints
+        const n = J[0]?.length ?? 0;  // number of parameters
+        console.log(`  Jacobian shape: ${m}×${n}`);
+
+        // Detect underdetermined system (nullspace exists)
+        if (m < n) {
+          console.log(`  ⚠ Underdetermined: ${n - m} degrees of freedom (nullspace dimension ≥ ${n - m})`);
+        }
+
+        console.log(`  Jacobian:`);
+        J.forEach((row, i) => {
+          console.log(`    [${row.map(v => v.toFixed(4)).join(', ')}]`);
+        });
+        console.log(`  Residuals: [${residuals.map(r => r.toFixed(4)).join(', ')}]`);
+      }
     }
 
     if (gradientNorm < gradientTolerance) {
@@ -215,6 +231,9 @@ export function nonlinearLeastSquares(
       try {
         delta = solveNormalEquations(J, residuals, adaptiveDamping ? lambda : 0, useQR);
       } catch (e) {
+        if (verbose) {
+          console.log(`  Linear solver failed: ${e}`);
+        }
         return {
           success: false,
           iterations: iter,
@@ -225,6 +244,11 @@ export function nonlinearLeastSquares(
       }
 
       let deltaNorm = Math.sqrt(delta.reduce((sum, d) => sum + d * d, 0));
+
+      if (verbose && iter === 0 && innerIterations === 0) {
+        console.log(`  Initial delta: [${delta.map(d => d.toFixed(4)).join(', ')}]`);
+        console.log(`  Delta norm: ${deltaNorm.toFixed(4)}`);
+      }
 
       if (deltaNorm > trustRegionRadius) {
         const scale = trustRegionRadius / deltaNorm;
@@ -248,8 +272,19 @@ export function nonlinearLeastSquares(
           p.data = originalData[idx] + delta[idx];
         });
 
+        if (verbose && iter === 0 && innerIterations === 0) {
+          console.log(`  New params: [${params.map(p => p.data.toFixed(4)).join(', ')}]`);
+        }
+
         const newResiduals = residualFn(params);
         const newCost = newResiduals.reduce((sum, r) => sum + r.data * r.data, 0);
+
+        if (verbose && iter === 0) {
+          if (innerIterations === 0) {
+            console.log(`  New residuals: [${newResiduals.map(r => r.data.toFixed(4)).join(', ')}]`);
+          }
+          console.log(`  Inner iteration ${innerIterations}: λ=${lambda.toExponential(2)}, cost=${cost.toFixed(4)} → ${newCost.toFixed(4)}, accepted=${newCost < cost}`);
+        }
 
         if (newCost < cost) {
           lambda = Math.max(lambda / dampingDecreaseFactor, 1e-10);

@@ -3,21 +3,21 @@
  * @public
  */
 export type BackwardFn = () => void;
-export { V } from './V';
-export { Optimizer, SGD, Adam, AdamW } from './Optimizers';
-export type { OptimizerOptions, AdamOptions } from './Optimizers';
 export { Losses } from './Losses';
 export type { NonlinearLeastSquaresOptions, NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
+export { Adam, AdamW, Optimizer, SGD } from './Optimizers';
+export type { AdamOptions, OptimizerOptions } from './Optimizers';
+export { V } from './V';
 export { Vec2 } from './Vec2';
 export { Vec3 } from './Vec3';
 
 const EPS = 1e-12;
 
 
-import { ValueTrig } from './ValueTrig';
 import { ValueActivation } from './ValueActivation';
 import { ValueArithmetic } from './ValueArithmetic';
 import { ValueComparison } from './ValueComparison';
+import { ValueTrig } from './ValueTrig';
 
 /**
  * Represents a scalar value in the computational graph for automatic differentiation.

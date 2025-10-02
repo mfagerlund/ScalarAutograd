@@ -2,8 +2,8 @@
  * Simple debug test for solver
  */
 
-import { describe, it, expect } from 'vitest';
-import { Value, V } from '../../../../src';
+import { describe, expect, it } from 'vitest';
+import { V, Value } from '../../../../src';
 import { nonlinearLeastSquares } from '../../../../src/NonlinearLeastSquares';
 
 describe('Simple Solver Test', () => {

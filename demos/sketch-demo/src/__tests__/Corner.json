@@ -1,0 +1,40 @@
+{
+  "name": "Demo Project",
+  "points": [
+    {
+      "id": "p0",
+      "x": 958,
+      "y": 158.53334045410156
+    },
+    {
+      "id": "p1",
+      "x": 897,
+      "y": 563.5333404541016,
+      "pinned": false
+    },
+    {
+      "id": "p2",
+      "x": 522,
+      "y": 182.53334045410156,
+      "pinned": false
+    }
+  ],
+  "lines": [
+    {
+      "id": "l0",
+      "startPointId": "p0",
+      "endPointId": "p1",
+      "constraintType": "vertical",
+      "fixedLength": 150
+    },
+    {
+      "id": "l1",
+      "startPointId": "p0",
+      "endPointId": "p2",
+      "constraintType": "horizontal",
+      "fixedLength": 434.8865124021543
+    }
+  ],
+  "circles": [],
+  "constraints": []
+}

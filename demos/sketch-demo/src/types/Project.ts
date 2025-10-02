@@ -3,24 +3,24 @@
  */
 
 import type {
-  Point,
-  Line,
-  Circle,
-  Entity,
-} from './Entities';
-import { LineConstraintType } from './Entities';
-import type {
-  Constraint,
-  CollinearConstraint,
-  ParallelConstraint,
-  PerpendicularConstraint,
-  AngleConstraint,
-  PointOnLineConstraint,
-  PointOnCircleConstraint,
-  TangentConstraint,
-  RadialAlignmentConstraint,
+    AngleConstraint,
+    CollinearConstraint,
+    Constraint,
+    ParallelConstraint,
+    PerpendicularConstraint,
+    PointOnCircleConstraint,
+    PointOnLineConstraint,
+    RadialAlignmentConstraint,
+    TangentConstraint,
 } from './Constraints';
 import { ConstraintType } from './Constraints';
+import type {
+    Circle,
+    Entity,
+    Line,
+    Point,
+} from './Entities';
+import { LineConstraintType } from './Entities';
 
 /**
  * Project - the serializable container for a sketch
@@ -179,6 +179,25 @@ export function serializeProject(project: Project): SerializedProject {
           circleId: circleIds.get((c as RadialAlignmentConstraint).circle)!,
           point2Id: pointIds.get((c as RadialAlignmentConstraint).point2)!,
         };
+      case ConstraintType.EqualLength:
+        return {
+          ...base,
+          lineIds: (c as import('./Constraints').EqualLengthConstraint).lines.map(l => lineIds.get(l)!),
+        };
+      case ConstraintType.EqualRadius:
+        return {
+          ...base,
+          circleIds: (c as import('./Constraints').EqualRadiusConstraint).circles.map(circle => circleIds.get(circle)!),
+        };
+      case ConstraintType.CirclesTangent:
+      case ConstraintType.Concentric:
+        return {
+          ...base,
+          circle1Id: circleIds.get((c as import('./Constraints').CirclesTangentConstraint | import('./Constraints').ConcentricConstraint).circle1)!,
+          circle2Id: circleIds.get((c as import('./Constraints').CirclesTangentConstraint | import('./Constraints').ConcentricConstraint).circle2)!,
+        };
+      default:
+        return base as any;
     }
   });
 
@@ -360,7 +379,7 @@ export function createDemoProject(): Project {
   const circle1: Circle = {
     center: p3,
     radius: 50,
-    fixedRadius: true,
+    fixedRadius: false,
   };
 
   const circle2: Circle = {

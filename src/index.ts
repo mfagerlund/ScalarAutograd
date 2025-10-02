@@ -1,7 +1,7 @@
-export { Value } from './Value';
-export { V } from './V';
+export { applyCompiledGradients, compileGradientFunction } from './jit-compile-value';
 export { Losses } from './Losses';
-export { SGD, Adam, AdamW, Optimizer } from './Optimizers';
+export { Adam, AdamW, Optimizer, SGD } from './Optimizers';
+export { V } from './V';
+export { Value } from './Value';
 export { Vec2 } from './Vec2';
 export { Vec3 } from './Vec3';
-export { compileGradientFunction, applyCompiledGradients } from './jit-compile-value';

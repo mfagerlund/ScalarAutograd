@@ -2,13 +2,13 @@
  * Tests for SketchController - state management operations
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { SketchController } from '../SketchController';
+import type { SketchState } from '../types';
 import {
-  createInitialState,
-  SketchState,
-  LineConstraintType,
-  ToolMode,
+    createInitialState,
+    LineConstraintType,
+    ToolMode,
 } from '../types';
 
 describe('SketchController - User Workflow', () => {
@@ -367,7 +367,7 @@ describe('SketchController - Multi-step Creation', () => {
     const p1 = controller.createPoint(0, 0);
     controller.startLineCreation(p1);
 
-    controller.setToolMode(ToolMode.CreateCircle);
+    controller.setToolMode(ToolMode.Circle);
 
     expect(controller.state.creation.lineStartPoint).toBeUndefined();
   });

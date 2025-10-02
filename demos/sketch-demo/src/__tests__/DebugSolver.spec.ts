@@ -1,11 +1,11 @@
 import { describe, it } from 'vitest';
 import { SketchSolver } from '../SketchSolver';
-import {
-  Project,
-  Point,
-  Line,
-  LineConstraintType,
+import type {
+    Line,
+    Point,
+    Project,
 } from '../types';
+import { LineConstraintType } from '../types';
 
 describe('Debug Solver', () => {
   it('debug fixed length', () => {
