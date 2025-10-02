@@ -138,6 +138,7 @@ export class V {
     static neg(a: Value | number): Value;
     static neq(a: Value | number, b: Value | number): Value;
     static nonlinearLeastSquares(params: Value[], residualFn: (params: Value[]) => Value[], options?: NonlinearLeastSquaresOptions): NonlinearLeastSquaresResult;
+    static Param(value: number, paramName: string): Value;
     static pow(a: Value | number, exp: number): Value;
     static powValue(a: Value | number, b: Value | number, eps?: number): Value;
     static reciprocal(a: Value | number, eps?: number): Value;
@@ -174,6 +175,10 @@ export class Value {
     eq(other: Value): Value;
     exp(): Value;
     floor(): Value;
+    // (undocumented)
+    getBackwardCode(gradVar: string, childGrads: string[], childVars: string[]): string;
+    // (undocumented)
+    getForwardCode(childCodes: string[]): string;
     grad: number;
     gt(other: Value): Value;
     gte(other: Value): Value;
@@ -181,7 +186,7 @@ export class Value {
     log(): Value;
     lt(other: Value): Value;
     lte(other: Value): Value;
-    static make(data: number, left: Value, right: Value | null, backwardFnBuilder: (out: Value) => BackwardFn, label: string): Value;
+    static make(data: number, left: Value, right: Value | null, backwardFnBuilder: (out: Value) => BackwardFn, label: string, op?: string): Value;
     max(other: Value): Value;
     static mean(vals: Value[]): Value;
     min(other: Value): Value;
@@ -190,6 +195,10 @@ export class Value {
     neg(): Value;
     neq(other: Value): Value;
     static no_grad_mode: boolean;
+    // @internal
+    _op?: string;
+    // @internal
+    paramName?: string;
     pow(exp: number): Value;
     powValue(other: Value | number): Value;
     reciprocal(): Value;

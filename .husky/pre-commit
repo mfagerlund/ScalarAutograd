@@ -1,6 +1,3 @@
-# NOTE: This file must be kept in sync with generate-api-docs.bat
-# If you update the list of files here, update the bat file too
 npm run build
 npx api-extractor run --local
-cat dist/Value.d.ts dist/V.d.ts dist/Optimizers.d.ts dist/Losses.d.ts dist/Vec2.d.ts dist/Vec3.d.ts dist/NonlinearLeastSquares.d.ts dist/LinearSolver.d.ts > etc/api-full.d.ts
-git add etc/scalar-autograd.api.md etc/api-full.d.ts
+git add etc/scalar-autograd.api.md
