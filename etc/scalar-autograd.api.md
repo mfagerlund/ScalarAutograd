@@ -118,6 +118,8 @@ export class V {
     static C(value: number, label?: string): Value;
     static ceil(a: Value | number): Value;
     static clamp(a: Value | number, min: number, max: number): Value;
+    // Warning: (ae-forgotten-export) The symbol "CompiledResiduals" needs to be exported by the entry point Value.d.ts
+    static compileObjective(params: Value[], objectiveFn: (params: Value[]) => Value): CompiledResiduals;
     static cos(x: Value | number): Value;
     static cube(a: Value | number): Value;
     static div(a: Value | number, b: Value | number, eps?: number): Value;

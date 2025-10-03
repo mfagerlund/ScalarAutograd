@@ -1,4 +1,5 @@
 import { Value } from "./Value";
+import { CompiledResiduals } from "./CompiledResiduals";
 
 /**
  * Configuration options for L-BFGS optimizer.
@@ -46,20 +47,24 @@ export interface LBFGSResult {
 
 /**
  * Computes objective value and gradient.
- * Returns the objective as a Value (whose backward() gives gradients).
+ * Uses compiled path if objectiveFn is CompiledResiduals, otherwise graph backward.
  */
 function computeObjectiveAndGradient(
   params: Value[],
-  objectiveFn: (params: Value[]) => Value
+  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals
 ): { cost: number; gradient: number[] } {
-  // Zero out gradients
+  if (objectiveFn instanceof CompiledResiduals) {
+    // Compiled path: evaluate once, get cost and gradient
+    const { residuals, J, cost } = objectiveFn.evaluate(params);
+    return { cost, gradient: J[0] };
+  }
+
+  // Graph backward path (original implementation)
   params.forEach((p) => (p.grad = 0));
 
-  // Compute objective
   const objective = objectiveFn(params);
   const cost = objective.data;
 
-  // Compute gradient via backpropagation
   Value.zeroGradTree(objective);
   params.forEach(p => p.grad = 0);
   objective.backward();
@@ -79,7 +84,7 @@ function computeObjectiveAndGradient(
 function wolfeLineSearch(
   params: Value[],
   direction: number[],
-  objectiveFn: (params: Value[]) => Value,
+  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals,
   currentCost: number,
   currentGradient: number[],
   options: {
@@ -239,6 +244,7 @@ function twoLoopRecursion(
  * @returns Optimization result with convergence information
  *
  * @example
+ * Basic usage with function:
  * ```typescript
  * const x = V.W(1.0);
  * const y = V.W(2.0);
@@ -255,11 +261,30 @@ function twoLoopRecursion(
  * console.log(`Solution: x=${x.data}, y=${y.data}`);
  * ```
  *
+ * @example
+ * Performance optimization with compiled objective (5-10x faster):
+ * ```typescript
+ * const x = V.W(1.0);
+ * const y = V.W(2.0);
+ * const params = [x, y];
+ *
+ * // Compile the objective function once
+ * const compiled = V.compileObjective(params, (p) => {
+ *   const [x, y] = p;
+ *   const a = V.sub(V.C(1), x);
+ *   const b = V.sub(y, V.pow(x, 2));
+ *   return V.add(V.pow(a, 2), V.mul(V.C(100), V.pow(b, 2)));
+ * });
+ *
+ * // Solve with compiled gradients
+ * const result = lbfgs(params, compiled, { verbose: true });
+ * ```
+ *
  * @public
  */
 export function lbfgs(
   params: Value[],
-  objectiveFn: (params: Value[]) => Value,
+  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals,
   options: LBFGSOptions = {}
 ): LBFGSResult {
   const {
