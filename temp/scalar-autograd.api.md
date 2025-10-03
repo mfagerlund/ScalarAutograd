@@ -203,6 +203,8 @@ export class Value {
     pow(exp: number): Value;
     powValue(other: Value | number): Value;
     reciprocal(): Value;
+    // @internal
+    _registryId?: number;
     relu(): Value;
     requiresGrad: boolean;
     round(): Value;

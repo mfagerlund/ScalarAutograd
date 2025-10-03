@@ -1,6 +1,5 @@
 import { choleskySolve, computeJtJ, computeJtr, qrSolve } from "./LinearSolver";
 import { Value } from "./Value";
-import { compileResidualJacobian } from "./jit-compile-value";
 import { CompiledResiduals } from "./CompiledResiduals";
 
 /**
@@ -21,8 +20,6 @@ export interface NonlinearLeastSquaresOptions {
   useQR?: boolean;
   trustRegionRadius?: number;
   verbose?: boolean;
-  /** Use compiled Jacobian computation for better performance (default: true) */
-  useCompiled?: boolean;
 }
 
 /**
@@ -64,33 +61,6 @@ function computeResidualsAndJacobian(
   return { residuals, J, cost };
 }
 
-/**
- * Compiled version of computeResidualsAndJacobian that avoids graph traversal.
- * Much faster as it eliminates:
- * - Value.zeroGradTree() recursive traversal
- * - backward() closure execution
- * - Value.grad intermediate storage
- */
-function computeResidualsAndJacobianCompiled(
-  params: Value[],
-  compiledResiduals: ((paramValues: number[], row: number[]) => number)[]
-): { residuals: number[]; J: number[][]; cost: number } {
-  const paramValues = params.map(p => p.data);
-  const numResiduals = compiledResiduals.length;
-  const numParams = params.length;
-
-  const residuals: number[] = new Array(numResiduals);
-  const J: number[][] = Array(numResiduals).fill(0).map(() => new Array(numParams).fill(0));
-  let cost = 0;
-
-  for (let i = 0; i < compiledResiduals.length; i++) {
-    const value = compiledResiduals[i](paramValues, J[i]);
-    cost += value * value;
-    residuals[i] = value;
-  }
-
-  return { residuals, J, cost };
-}
 
 function solveNormalEquations(J: number[][], r: number[], lambda: number = 0, useQR: boolean = false): number[] {
   if (useQR) {
@@ -189,39 +159,15 @@ export function nonlinearLeastSquares(
     useQR = false,
     trustRegionRadius = Infinity,
     verbose = false,
-    useCompiled = false,  // Disabled by default - only works for residuals that don't rebuild graph
   } = options;
 
   const startTime = performance.now();
   let prevCost = Infinity;
   let lambda = initialDamping;
 
-  // Compile residuals once for performance (if enabled and not already compiled)
-  let compiledResiduals: ((paramValues: number[], row: number[]) => number)[] | null = null;
-  if (useCompiled && !(residualFn instanceof CompiledResiduals)) {
-    // Ensure params have paramName for compilation
-    params.forEach((p, i) => {
-      if (!p.paramName) {
-        p.paramName = `p${i}`;
-      }
-    });
-
-    // Call residual function once to get the computation graph
-    const residualValues = (residualFn as (params: Value[]) => Value[])(params);
-
-    // Compile each residual with its row index baked in
-    compiledResiduals = residualValues.map((r, i) => compileResidualJacobian(r, params, i));
-
-    if (verbose) {
-      console.log(`Compiled ${compiledResiduals.length} residual functions`);
-    }
-  }
-
   for (let iter = 0; iter < maxIterations; iter++) {
     const { residuals, J, cost } = residualFn instanceof CompiledResiduals
       ? residualFn.evaluate(params)
-      : compiledResiduals
-      ? computeResidualsAndJacobianCompiled(params, compiledResiduals)
       : computeResidualsAndJacobian(params, residualFn as (params: Value[]) => Value[]);
 
     const Jtr = computeJtr(J, residuals);
@@ -381,8 +327,6 @@ export function nonlinearLeastSquares(
 
   const { cost } = residualFn instanceof CompiledResiduals
     ? residualFn.evaluate(params)
-    : compiledResiduals
-    ? computeResidualsAndJacobianCompiled(params, compiledResiduals)
     : computeResidualsAndJacobian(params, residualFn as (params: Value[]) => Value[]);
   return {
     success: false,
