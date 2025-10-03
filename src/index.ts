@@ -1,4 +1,5 @@
 export { applyCompiledGradients, compileGradientFunction } from './jit-compile-value';
+export { lbfgs, type LBFGSOptions, type LBFGSResult } from './LBFGS';
 export { Losses } from './Losses';
 export { Adam, AdamW, Optimizer, SGD } from './Optimizers';
 export { V } from './V';
