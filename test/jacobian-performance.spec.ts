@@ -157,11 +157,11 @@ describe("Jacobian API Performance", () => {
       const compiled = CompiledResiduals.compile(params, residualFn);
       compilationTime = performance.now() - compileStart;
 
-      // Now solve 10 times using the SAME compiled functions
+      // Now solve 10 times using the SAME params with different values
       for (let run = 0; run < 10; run++) {
-        const a = V.W(1.0 + run * 0.1, "a");
-        const b = V.W(0.1 + run * 0.01, "b");
-        const params = [a, b];
+        // Update the SAME Value objects with new data
+        a.data = 1.0 + run * 0.1;
+        b.data = 0.1 + run * 0.01;
 
         const start = performance.now();
         V.nonlinearLeastSquares(params, compiled, {

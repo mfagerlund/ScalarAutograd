@@ -70,6 +70,12 @@ export class Value {
    */
   public paramName?: string;
 
+  /**
+   * Registry ID for kernel reuse system.
+   * @internal
+   */
+  public _registryId?: number;
+
   constructor(data: number, label = "", requiresGrad = false) {
     if (typeof data !== 'number' || Number.isNaN(data) || !Number.isFinite(data)) {
       throw new Error(`Invalid number passed to Value: ${data}`);
@@ -527,6 +533,7 @@ export class Value {
       switch (this._op) {
         case 'exp': return `Math.exp(${child})`;
         case 'log': return `Math.log(${child})`;
+        case 'sqrt': return `Math.sqrt(${child})`;
         case 'tanh': return `Math.tanh(${child})`;
         case 'sigmoid': return `(1 / (1 + Math.exp(-${child})))`;
         case 'relu': return `Math.max(0, ${child})`;
@@ -574,6 +581,8 @@ export class Value {
           return `${childGrad} += ${gradVar} * Math.exp(${child});`;
         case 'log':
           return `${childGrad} += ${gradVar} / ${child};`;
+        case 'sqrt':
+          return `${childGrad} += ${gradVar} * 0.5 / Math.sqrt(${child});`;
         case 'tanh': {
           const tanhChild = `Math.tanh(${child})`;
           return `${childGrad} += ${gradVar} * (1 - ${tanhChild} * ${tanhChild});`;
