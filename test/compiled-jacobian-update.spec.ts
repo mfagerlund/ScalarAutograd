@@ -4,6 +4,7 @@
 
 import { V } from "../src/V";
 import { compileResidualJacobian } from "../src/jit-compile-value";
+import { testLog } from './testUtils';
 
 describe("Compiled Jacobian In-Place Update", () => {
   it("should update Jacobian matrix in-place", () => {
@@ -15,19 +16,19 @@ describe("Compiled Jacobian In-Place Update", () => {
     // Compile with row index 0
     const compiled = compileResidualJacobian(residual, [x], 0);
 
-    console.log("\n=== Generated function ===");
-    console.log(compiled.toString());
+    testLog("\n=== Generated function ===");
+    testLog(compiled.toString());
 
     // Create Jacobian matrix
     const J = [[0]];
     const paramValues = [3];
 
-    // Call compiled function
-    const value = compiled(paramValues, J);
+    // Call compiled function - pass J[0] which is the row
+    const value = compiled(paramValues, J[0]);
 
-    console.log("\nResult:");
-    console.log("  value:", value);
-    console.log("  J:", J);
+    testLog("\nResult:");
+    testLog("  value:", value);
+    testLog("  J:", J);
 
     expect(value).toBe(-2);
     expect(J[0][0]).toBe(1);
@@ -50,12 +51,12 @@ describe("Compiled Jacobian In-Place Update", () => {
     const J = Array(10).fill(0).map(() => [0, 0]);
     const paramValues = [2.0, 0.5];
 
-    const value = compiled(paramValues, J);
+    const value = compiled(paramValues, J[5]);
 
-    console.log("\nMulti-param result:");
-    console.log("  value:", value);
-    console.log("  J[5]:", J[5]);
-    console.log("  Other rows unchanged:", J[0], J[9]);
+    testLog("\nMulti-param result:");
+    testLog("  value:", value);
+    testLog("  J[5]:", J[5]);
+    testLog("  Other rows unchanged:", J[0], J[9]);
 
     // Expected: pred = 2.0 * exp(0.5 * 3) = 2 * exp(1.5) ≈ 8.96
     // residual ≈ 8.96 - 10 = -1.04
@@ -95,17 +96,17 @@ describe("Compiled Jacobian In-Place Update", () => {
 
     const start = performance.now();
     for (let i = 0; i < numResiduals; i++) {
-      residuals[i] = compiledFunctions[i](paramValues, J);
+      residuals[i] = compiledFunctions[i](paramValues, J[i]);
     }
     const time = performance.now() - start;
 
-    console.log("\n=== Performance ===");
-    console.log(`100 residuals evaluated in ${time.toFixed(2)}ms`);
-    console.log(`Per residual: ${(time / numResiduals).toFixed(4)}ms`);
-    console.log(`First residual: ${residuals[0].toFixed(4)}`);
-    console.log(`Last residual: ${residuals[99].toFixed(4)}`);
-    console.log(`J[0]: [${J[0].map(v => v.toFixed(4)).join(', ')}]`);
-    console.log(`J[99]: [${J[99].map(v => v.toFixed(4)).join(', ')}]`);
+    testLog("\n=== Performance ===");
+    testLog(`100 residuals evaluated in ${time.toFixed(2)}ms`);
+    testLog(`Per residual: ${(time / numResiduals).toFixed(4)}ms`);
+    testLog(`First residual: ${residuals[0].toFixed(4)}`);
+    testLog(`Last residual: ${residuals[99].toFixed(4)}`);
+    testLog(`J[0]: [${J[0].map(v => v.toFixed(4)).join(', ')}]`);
+    testLog(`J[99]: [${J[99].map(v => v.toFixed(4)).join(', ')}]`);
 
     expect(residuals).toHaveLength(numResiduals);
     expect(J).toHaveLength(numResiduals);

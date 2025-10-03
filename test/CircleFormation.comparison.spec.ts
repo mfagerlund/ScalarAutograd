@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { V } from "../src/V";
 import { Value } from "../src/Value";
 import { SGD, Adam, AdamW } from "../src/Optimizers";
+import { testLog } from './testUtils';
 
 describe('Circle Formation - All Optimizers Comparison', () => {
   it('should compare NonlinearLeastSquares, SGD, Adam, and AdamW on circle fitting', { timeout: 10000 }, () => {
@@ -10,10 +11,10 @@ describe('Circle Formation - All Optimizers Comparison', () => {
     const trueCy = -5;
     const trueR = 15;
 
-    console.log('\n=== Circle Fitting - All Optimizers (100 noisy points, 3 parameters) ===\n');
-    console.log('Problem: Fit circle (cx, cy, r) to 100 noisy observations');
-    console.log('Parameters: 3 (center x, center y, radius)');
-    console.log('Residuals: 100 (distance errors)\n');
+    testLog('\n=== Circle Fitting - All Optimizers (100 noisy points, 3 parameters) ===\n');
+    testLog('Problem: Fit circle (cx, cy, r) to 100 noisy observations');
+    testLog('Parameters: 3 (center x, center y, radius)');
+    testLog('Residuals: 100 (distance errors)\n');
 
     let seed = 12345;
     const seededRandom = () => {
@@ -57,12 +58,12 @@ describe('Circle Formation - All Optimizers Comparison', () => {
     const nlsTime = performance.now() - nlsStart;
     const nlsFinalCost = evaluateCost([nlsCx, nlsCy, nlsR]);
 
-    console.log('--- Nonlinear Least Squares ---');
-    console.log(`Iterations: ${nlsResult.iterations}`);
-    console.log(`Final cost: ${nlsFinalCost.toExponential(4)}`);
-    console.log(`Time: ${nlsTime.toFixed(2)}ms`);
-    console.log(`Solution: cx=${nlsCx.data.toFixed(3)}, cy=${nlsCy.data.toFixed(3)}, r=${nlsR.data.toFixed(3)}`);
-    console.log(`Convergence: ${nlsResult.convergenceReason}`);
+    testLog('--- Nonlinear Least Squares ---');
+    testLog(`Iterations: ${nlsResult.iterations}`);
+    testLog(`Final cost: ${nlsFinalCost.toExponential(4)}`);
+    testLog(`Time: ${nlsTime.toFixed(2)}ms`);
+    testLog(`Solution: cx=${nlsCx.data.toFixed(3)}, cy=${nlsCy.data.toFixed(3)}, r=${nlsR.data.toFixed(3)}`);
+    testLog(`Convergence: ${nlsResult.convergenceReason}`);
 
     const sgdCx = V.W(0);
     const sgdCy = V.W(0);
@@ -90,11 +91,11 @@ describe('Circle Formation - All Optimizers Comparison', () => {
     }
     const sgdTime = performance.now() - sgdStart;
 
-    console.log('\n--- Gradient Descent (SGD, lr=0.01) ---');
-    console.log(`Iterations: ${sgdIterations}`);
-    console.log(`Final cost: ${sgdFinalCost.toExponential(4)}`);
-    console.log(`Time: ${sgdTime.toFixed(2)}ms`);
-    console.log(`Solution: cx=${sgdCx.data.toFixed(3)}, cy=${sgdCy.data.toFixed(3)}, r=${sgdR.data.toFixed(3)}`);
+    testLog('\n--- Gradient Descent (SGD, lr=0.01) ---');
+    testLog(`Iterations: ${sgdIterations}`);
+    testLog(`Final cost: ${sgdFinalCost.toExponential(4)}`);
+    testLog(`Time: ${sgdTime.toFixed(2)}ms`);
+    testLog(`Solution: cx=${sgdCx.data.toFixed(3)}, cy=${sgdCy.data.toFixed(3)}, r=${sgdR.data.toFixed(3)}`);
 
     const adamCx = V.W(0);
     const adamCy = V.W(0);
@@ -122,11 +123,11 @@ describe('Circle Formation - All Optimizers Comparison', () => {
     }
     const adamTime = performance.now() - adamStart;
 
-    console.log('\n--- Adam (lr=0.1) ---');
-    console.log(`Iterations: ${adamIterations}`);
-    console.log(`Final cost: ${adamFinalCost.toExponential(4)}`);
-    console.log(`Time: ${adamTime.toFixed(2)}ms`);
-    console.log(`Solution: cx=${adamCx.data.toFixed(3)}, cy=${adamCy.data.toFixed(3)}, r=${adamR.data.toFixed(3)}`);
+    testLog('\n--- Adam (lr=0.1) ---');
+    testLog(`Iterations: ${adamIterations}`);
+    testLog(`Final cost: ${adamFinalCost.toExponential(4)}`);
+    testLog(`Time: ${adamTime.toFixed(2)}ms`);
+    testLog(`Solution: cx=${adamCx.data.toFixed(3)}, cy=${adamCy.data.toFixed(3)}, r=${adamR.data.toFixed(3)}`);
 
     const adamwCx = V.W(0);
     const adamwCy = V.W(0);
@@ -154,29 +155,29 @@ describe('Circle Formation - All Optimizers Comparison', () => {
     }
     const adamwTime = performance.now() - adamwStart;
 
-    console.log('\n--- AdamW (lr=0.1, wd=0) ---');
-    console.log(`Iterations: ${adamwIterations}`);
-    console.log(`Final cost: ${adamwFinalCost.toExponential(4)}`);
-    console.log(`Time: ${adamwTime.toFixed(2)}ms`);
-    console.log(`Solution: cx=${adamwCx.data.toFixed(3)}, cy=${adamwCy.data.toFixed(3)}, r=${adamwR.data.toFixed(3)}`);
+    testLog('\n--- AdamW (lr=0.1, wd=0) ---');
+    testLog(`Iterations: ${adamwIterations}`);
+    testLog(`Final cost: ${adamwFinalCost.toExponential(4)}`);
+    testLog(`Time: ${adamwTime.toFixed(2)}ms`);
+    testLog(`Solution: cx=${adamwCx.data.toFixed(3)}, cy=${adamwCy.data.toFixed(3)}, r=${adamwR.data.toFixed(3)}`);
 
-    console.log('\n=== Comparison Summary ===');
-    console.log(`True values: cx=${trueCx}, cy=${trueCy}, r=${trueR}`);
-    console.log('\nIterations:');
-    console.log(`  NLS:   ${nlsResult.iterations}`);
-    console.log(`  SGD:   ${sgdIterations} (${(sgdIterations / nlsResult.iterations).toFixed(1)}x)`);
-    console.log(`  Adam:  ${adamIterations} (${(adamIterations / nlsResult.iterations).toFixed(1)}x)`);
-    console.log(`  AdamW: ${adamwIterations} (${(adamwIterations / nlsResult.iterations).toFixed(1)}x)`);
-    console.log('\nTime:');
-    console.log(`  NLS:   ${nlsTime.toFixed(2)}ms`);
-    console.log(`  SGD:   ${sgdTime.toFixed(2)}ms (${(sgdTime / nlsTime).toFixed(1)}x)`);
-    console.log(`  Adam:  ${adamTime.toFixed(2)}ms (${(adamTime / nlsTime).toFixed(1)}x)`);
-    console.log(`  AdamW: ${adamwTime.toFixed(2)}ms (${(adamwTime / nlsTime).toFixed(1)}x)`);
-    console.log('\nFinal Cost:');
-    console.log(`  NLS:   ${nlsFinalCost.toExponential(4)}`);
-    console.log(`  SGD:   ${sgdFinalCost.toExponential(4)}`);
-    console.log(`  Adam:  ${adamFinalCost.toExponential(4)}`);
-    console.log(`  AdamW: ${adamwFinalCost.toExponential(4)}\n`);
+    testLog('\n=== Comparison Summary ===');
+    testLog(`True values: cx=${trueCx}, cy=${trueCy}, r=${trueR}`);
+    testLog('\nIterations:');
+    testLog(`  NLS:   ${nlsResult.iterations}`);
+    testLog(`  SGD:   ${sgdIterations} (${(sgdIterations / nlsResult.iterations).toFixed(1)}x)`);
+    testLog(`  Adam:  ${adamIterations} (${(adamIterations / nlsResult.iterations).toFixed(1)}x)`);
+    testLog(`  AdamW: ${adamwIterations} (${(adamwIterations / nlsResult.iterations).toFixed(1)}x)`);
+    testLog('\nTime:');
+    testLog(`  NLS:   ${nlsTime.toFixed(2)}ms`);
+    testLog(`  SGD:   ${sgdTime.toFixed(2)}ms (${(sgdTime / nlsTime).toFixed(1)}x)`);
+    testLog(`  Adam:  ${adamTime.toFixed(2)}ms (${(adamTime / nlsTime).toFixed(1)}x)`);
+    testLog(`  AdamW: ${adamwTime.toFixed(2)}ms (${(adamwTime / nlsTime).toFixed(1)}x)`);
+    testLog('\nFinal Cost:');
+    testLog(`  NLS:   ${nlsFinalCost.toExponential(4)}`);
+    testLog(`  SGD:   ${sgdFinalCost.toExponential(4)}`);
+    testLog(`  Adam:  ${adamFinalCost.toExponential(4)}`);
+    testLog(`  AdamW: ${adamwFinalCost.toExponential(4)}\n`);
 
     expect(nlsResult.success).toBe(true);
     expect(nlsResult.iterations).toBeLessThan(100);

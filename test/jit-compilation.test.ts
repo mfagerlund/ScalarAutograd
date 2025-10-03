@@ -1,14 +1,14 @@
-import { compileGradientFunction } from './jit-compile-value';
-import { Value } from './Value';
-import { numericalGradient } from '../test/testUtils';
+import { compileGradientFunction } from '../src/jit-compile-value';
+import { Value } from '../src/Value';
+import { numericalGradient, testLog } from '../test/testUtils';
 
 describe('JIT Compilation Performance', () => {
   it('finds break-even point for simple expression', () => {
     const iterations = [1, 10, 100, 1000, 10000];
 
-    console.log('\nPerformance comparison: (a * b) + (c / d)');
-    console.log('Iterations | Traditional | Compiled | Speedup');
-    console.log('-----------|-------------|----------|--------');
+    testLog('\nPerformance comparison: (a * b) + (c / d)');
+    testLog('Iterations | Traditional | Compiled | Speedup');
+    testLog('-----------|-------------|----------|--------');
 
     for (const iters of iterations) {
       const traditionalTime = performance.now();
@@ -41,7 +41,7 @@ describe('JIT Compilation Performance', () => {
       const compiledDuration = performance.now() - compiledTime;
 
       const speedup = (traditionalDuration / compiledDuration).toFixed(2);
-      console.log(
+      testLog(
         `${iters.toString().padStart(10)} | ` +
         `${traditionalDuration.toFixed(2).padStart(11)}ms | ` +
         `${compiledDuration.toFixed(2).padStart(8)}ms | ` +
@@ -54,9 +54,9 @@ describe('JIT Compilation Performance', () => {
     const sizes = [5, 10, 20, 50];
     const iterations = 1000;
 
-    console.log(`\nPerformance for different expression sizes (${iterations} iterations each)`);
-    console.log('Variables | Traditional | Compiled | Speedup');
-    console.log('----------|-------------|----------|--------');
+    testLog(`\nPerformance for different expression sizes (${iterations} iterations each)`);
+    testLog('Variables | Traditional | Compiled | Speedup');
+    testLog('----------|-------------|----------|--------');
 
     for (const size of sizes) {
       const traditionalTime = performance.now();
@@ -96,7 +96,7 @@ describe('JIT Compilation Performance', () => {
       const compiledDuration = performance.now() - compiledTime;
 
       const speedup = (traditionalDuration / compiledDuration).toFixed(2);
-      console.log(
+      testLog(
         `${size.toString().padStart(9)} | ` +
         `${traditionalDuration.toFixed(2).padStart(11)}ms | ` +
         `${compiledDuration.toFixed(2).padStart(8)}ms | ` +

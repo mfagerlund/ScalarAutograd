@@ -1,5 +1,5 @@
-import { compileGradientFunction } from './jit-compile-value';
-import { Value } from './Value';
+import { compileGradientFunction } from '../src/jit-compile-value';
+import { Value } from '../src/Value';
 import { numericalGradient } from '../test/testUtils';
 
 type Operation = {

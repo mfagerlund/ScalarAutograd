@@ -1,13 +1,14 @@
-import { compileGradientFunction } from './jit-compile-value';
-import { Value } from './Value';
+import { compileGradientFunction } from '../src/jit-compile-value';
+import { Value } from '../src/Value';
+import { testLog } from '../test/testUtils';
 
 describe('JIT Compilation Optimization Strategies', () => {
   it('measures pure compilation time vs execution time', () => {
     const sizes = [10, 20, 50, 100];
 
-    console.log('\nBreakdown: Compilation vs Execution Time');
-    console.log('Variables | Compile Time | Exec Time (100 iters) | Ratio');
-    console.log('----------|--------------|----------------------|-------');
+    testLog('\nBreakdown: Compilation vs Execution Time');
+    testLog('Variables | Compile Time | Exec Time (100 iters) | Ratio');
+    testLog('----------|--------------|----------------------|-------');
 
     for (const size of sizes) {
       const vars = Array.from({ length: size }, (_, i) => {
@@ -37,7 +38,7 @@ describe('JIT Compilation Optimization Strategies', () => {
 
       const ratio = (compileTime / execTime).toFixed(2);
 
-      console.log(
+      testLog(
         `${size.toString().padStart(9)} | ` +
         `${compileTime.toFixed(2).padStart(12)}ms | ` +
         `${execTime.toFixed(2).padStart(20)}ms | ` +
@@ -50,7 +51,7 @@ describe('JIT Compilation Optimization Strategies', () => {
     const size = 50;
     const runs = 10;
 
-    console.log(`\n Recompiling vs Reusing (${size} variables, ${runs} runs)`);
+    testLog(`\n Recompiling vs Reusing (${size} variables, ${runs} runs)`);
 
     const recompileStart = performance.now();
     for (let run = 0; run < runs; run++) {
@@ -93,18 +94,18 @@ describe('JIT Compilation Optimization Strategies', () => {
     }
     const reuseTime = performance.now() - reuseStart;
 
-    console.log(`Recompile every time: ${recompileTime.toFixed(2)}ms`);
-    console.log(`Compile once, reuse:  ${reuseTime.toFixed(2)}ms`);
-    console.log(`Speedup: ${(recompileTime / reuseTime).toFixed(1)}x`);
+    testLog(`Recompile every time: ${recompileTime.toFixed(2)}ms`);
+    testLog(`Compile once, reuse:  ${reuseTime.toFixed(2)}ms`);
+    testLog(`Speedup: ${(recompileTime / reuseTime).toFixed(1)}x`);
   });
 
   it('shows theoretical chunked compilation (simulate with smaller graphs)', () => {
     const totalSize = 100;
     const chunkSizes = [10, 20, 50, 100];
 
-    console.log('\nSimulated Chunked Compilation');
-    console.log('Chunk Size | Total Compile Time | Speedup');
-    console.log('-----------|-------------------|--------');
+    testLog('\nSimulated Chunked Compilation');
+    testLog('Chunk Size | Total Compile Time | Speedup');
+    testLog('-----------|-------------------|--------');
 
     const results: Array<{size: number, time: number}> = [];
 
@@ -138,14 +139,14 @@ describe('JIT Compilation Optimization Strategies', () => {
     const baseline = results[results.length - 1].time;
     for (const { size, time } of results) {
       const speedup = (baseline / time).toFixed(2);
-      console.log(
+      testLog(
         `${size.toString().padStart(10)} | ` +
         `${time.toFixed(2).padStart(17)}ms | ` +
         `${speedup}x`
       );
     }
 
-    console.log('\n💡 Insight: Smaller chunks compile faster individually,');
-    console.log('   but you need more of them. Overhead may dominate.');
+    testLog('\n💡 Insight: Smaller chunks compile faster individually,');
+    testLog('   but you need more of them. Overhead may dominate.');
   });
 });

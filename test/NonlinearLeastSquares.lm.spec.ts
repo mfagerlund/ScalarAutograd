@@ -3,6 +3,7 @@ import { V } from "../src/V";
 import { Value } from "../src/Value";
 import { Vec2 } from "../src/Vec2";
 import { Vec3 } from "../src/Vec3";
+import { testLog } from './testUtils';
 
 describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
   describe('Easy problems (both should work)', () => {
@@ -33,9 +34,9 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
       expect(lm.x).toBeCloseTo(5, 5);
       expect(lm.y).toBeCloseTo(3, 5);
 
-      console.log('\nSimple quadratic:');
-      console.log(`  GN: ${gn.result.iterations} iterations, cost=${gn.result.finalCost.toExponential(2)}`);
-      console.log(`  LM: ${lm.result.iterations} iterations, cost=${lm.result.finalCost.toExponential(2)}`);
+      testLog('\nSimple quadratic:');
+      testLog(`  GN: ${gn.result.iterations} iterations, cost=${gn.result.finalCost.toExponential(2)}`);
+      testLog(`  LM: ${lm.result.iterations} iterations, cost=${lm.result.finalCost.toExponential(2)}`);
     });
 
     it('should solve circle fitting with both methods', () => {
@@ -69,9 +70,9 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
       expect(gnParams[0].data).toBeCloseTo(10, 1);
       expect(lmParams[0].data).toBeCloseTo(10, 1);
 
-      console.log('\nCircle fitting (good start):');
-      console.log(`  GN: ${gnResult.iterations} iterations, cost=${gnResult.finalCost.toExponential(2)}`);
-      console.log(`  LM: ${lmResult.iterations} iterations, cost=${lmResult.finalCost.toExponential(2)}`);
+      testLog('\nCircle fitting (good start):');
+      testLog(`  GN: ${gnResult.iterations} iterations, cost=${gnResult.finalCost.toExponential(2)}`);
+      testLog(`  LM: ${lmResult.iterations} iterations, cost=${lmResult.finalCost.toExponential(2)}`);
     });
   });
 
@@ -107,9 +108,9 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
         maxIterations: 50
       });
 
-      console.log('\nCircle fitting (bad start: cx=100, cy=100, r=0.1):');
-      console.log(`  GN: success=${gnResult.success}, iterations=${gnResult.iterations}, cost=${gnResult.finalCost.toExponential(2)}`);
-      console.log(`  LM: success=${lmResult.success}, iterations=${lmResult.iterations}, cost=${lmResult.finalCost.toExponential(2)}`);
+      testLog('\nCircle fitting (bad start: cx=100, cy=100, r=0.1):');
+      testLog(`  GN: success=${gnResult.success}, iterations=${gnResult.iterations}, cost=${gnResult.finalCost.toExponential(2)}`);
+      testLog(`  LM: success=${lmResult.success}, iterations=${lmResult.iterations}, cost=${lmResult.finalCost.toExponential(2)}`);
 
       expect(lmResult.success).toBe(true);
       expect(lmParams[0].data).toBeCloseTo(10, 0);
@@ -134,10 +135,10 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
         maxIterations: 100
       });
 
-      console.log('\nRosenbrock valley (bad start: x=-1.5, y=2.5):');
-      console.log(`  LM: success=${lmResult.success}, iterations=${lmResult.iterations}`);
-      console.log(`  Solution: x=${x.data.toFixed(4)}, y=${y.data.toFixed(4)}`);
-      console.log(`  Expected: x=1, y=1`);
+      testLog('\nRosenbrock valley (bad start: x=-1.5, y=2.5):');
+      testLog(`  LM: success=${lmResult.success}, iterations=${lmResult.iterations}`);
+      testLog(`  Solution: x=${x.data.toFixed(4)}, y=${y.data.toFixed(4)}`);
+      testLog(`  Expected: x=1, y=1`);
 
       expect(lmResult.success).toBe(true);
       expect(x.data).toBeCloseTo(1, 1);
@@ -179,8 +180,8 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
         maxIterations: 200
       });
 
-      console.log('\n3D distance network (random start):');
-      console.log(`  LM: success=${result.success}, iterations=${result.iterations}, cost=${result.finalCost.toExponential(2)}`);
+      testLog('\n3D distance network (random start):');
+      testLog(`  LM: success=${result.success}, iterations=${result.iterations}, cost=${result.finalCost.toExponential(2)}`);
 
       expect(result.success).toBe(true);
       expect(result.finalCost).toBeLessThan(1e-4);
@@ -199,7 +200,7 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
         ];
       }
 
-      console.log('\nLevenberg-Marquardt lambda adaptation:');
+      testLog('\nLevenberg-Marquardt lambda adaptation:');
       const result = V.nonlinearLeastSquares([x, y], residuals, {
         adaptiveDamping: true,
         verbose: true,
@@ -291,9 +292,9 @@ describe('Levenberg-Marquardt vs Pure Gauss-Newton', () => {
       const gn = testMethod(false);
       const lm = testMethod(true);
 
-      console.log('\n20-point chain alignment (moderate difficulty):');
-      console.log(`  GN: success=${gn.result.success}, ${gn.result.iterations} iter, ${gn.time.toFixed(1)}ms, cost=${gn.result.finalCost.toExponential(2)}`);
-      console.log(`  LM: success=${lm.result.success}, ${lm.result.iterations} iter, ${lm.time.toFixed(1)}ms, cost=${lm.result.finalCost.toExponential(2)}`);
+      testLog('\n20-point chain alignment (moderate difficulty):');
+      testLog(`  GN: success=${gn.result.success}, ${gn.result.iterations} iter, ${gn.time.toFixed(1)}ms, cost=${gn.result.finalCost.toExponential(2)}`);
+      testLog(`  LM: success=${lm.result.success}, ${lm.result.iterations} iter, ${lm.time.toFixed(1)}ms, cost=${lm.result.finalCost.toExponential(2)}`);
 
       expect(gn.result.success || lm.result.success).toBe(true);
     });

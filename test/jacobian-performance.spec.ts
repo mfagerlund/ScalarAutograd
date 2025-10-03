@@ -4,6 +4,7 @@
 
 import { V } from "../src/V";
 import { CompiledResiduals } from "../src/CompiledResiduals";
+import { testLog } from './testUtils';
 
 describe("Jacobian API Performance", () => {
   it("should compare uncompiled vs compiled performance", () => {
@@ -19,8 +20,8 @@ describe("Jacobian API Performance", () => {
       yData.push(y);
     }
 
-    console.log("\n=== PERFORMANCE COMPARISON ===");
-    console.log(`Problem: Curve fitting with ${numPoints} data points, 2 parameters`);
+    testLog("\n=== PERFORMANCE COMPARISON ===");
+    testLog(`Problem: Curve fitting with ${numPoints} data points, 2 parameters`);
 
     // Test 1: Uncompiled approach
     {
@@ -46,11 +47,11 @@ describe("Jacobian API Performance", () => {
       });
       const time = performance.now() - start;
 
-      console.log("\n1. UNCOMPILED:");
-      console.log(`   Time: ${time.toFixed(2)}ms`);
-      console.log(`   Iterations: ${result.iterations}`);
-      console.log(`   Final cost: ${result.finalCost.toExponential(4)}`);
-      console.log(`   Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
+      testLog("\n1. UNCOMPILED:");
+      testLog(`   Time: ${time.toFixed(2)}ms`);
+      testLog(`   Iterations: ${result.iterations}`);
+      testLog(`   Final cost: ${result.finalCost.toExponential(4)}`);
+      testLog(`   Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
     }
 
     // Test 2: Compiled approach (new in-place API)
@@ -77,14 +78,14 @@ describe("Jacobian API Performance", () => {
       });
       const time = performance.now() - start;
 
-      console.log("\n2. COMPILED (in-place Jacobian updates):");
-      console.log(`   Time: ${time.toFixed(2)}ms`);
-      console.log(`   Iterations: ${result.iterations}`);
-      console.log(`   Final cost: ${result.finalCost.toExponential(4)}`);
-      console.log(`   Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
+      testLog("\n2. COMPILED (in-place Jacobian updates):");
+      testLog(`   Time: ${time.toFixed(2)}ms`);
+      testLog(`   Iterations: ${result.iterations}`);
+      testLog(`   Final cost: ${result.finalCost.toExponential(4)}`);
+      testLog(`   Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
     }
 
-    console.log("\n==============================================\n");
+    testLog("\n==============================================\n");
   });
 
   it("should benchmark IK scenario: compile once, run many times", () => {
@@ -100,9 +101,9 @@ describe("Jacobian API Performance", () => {
       yData.push(y);
     }
 
-    console.log("\n=== IK SCENARIO: Compile once, solve multiple times ===");
-    console.log(`Problem: ${numPoints} residuals, 2 parameters`);
-    console.log(`Scenario: Solve 10 different optimization problems with same structure\n`);
+    testLog("\n=== IK SCENARIO: Compile once, solve multiple times ===");
+    testLog(`Problem: ${numPoints} residuals, 2 parameters`);
+    testLog(`Scenario: Solve 10 different optimization problems with same structure\n`);
 
     // Uncompiled: solve 10 times
     let uncompiledTotal = 0;
@@ -173,27 +174,27 @@ describe("Jacobian API Performance", () => {
       }
     }
 
-    console.log("UNCOMPILED (10 solves):");
-    console.log(`  Total time: ${uncompiledTotal.toFixed(2)}ms`);
-    console.log(`  Per solve: ${(uncompiledTotal / 10).toFixed(2)}ms`);
+    testLog("UNCOMPILED (10 solves):");
+    testLog(`  Total time: ${uncompiledTotal.toFixed(2)}ms`);
+    testLog(`  Per solve: ${(uncompiledTotal / 10).toFixed(2)}ms`);
 
-    console.log("\nCOMPILED (compile once, solve 10 times):");
-    console.log(`  Compilation time: ${compilationTime.toFixed(2)}ms`);
-    console.log(`  10 solves: ${solveTime.toFixed(2)}ms`);
-    console.log(`  Per solve: ${(solveTime / 10).toFixed(2)}ms`);
-    console.log(`  Total (including compilation): ${(compilationTime + compiledTotal).toFixed(2)}ms`);
+    testLog("\nCOMPILED (compile once, solve 10 times):");
+    testLog(`  Compilation time: ${compilationTime.toFixed(2)}ms`);
+    testLog(`  10 solves: ${solveTime.toFixed(2)}ms`);
+    testLog(`  Per solve: ${(solveTime / 10).toFixed(2)}ms`);
+    testLog(`  Total (including compilation): ${(compilationTime + compiledTotal).toFixed(2)}ms`);
 
     const totalWithCompilation = compilationTime + compiledTotal;
     const speedup = uncompiledTotal / totalWithCompilation;
-    console.log(`\n  Speedup (including compilation): ${speedup.toFixed(2)}x ${speedup > 1 ? "FASTER" : "SLOWER"}`);
+    testLog(`\n  Speedup (including compilation): ${speedup.toFixed(2)}x ${speedup > 1 ? "FASTER" : "SLOWER"}`);
 
     // Excluding compilation overhead
     const avgUncompiled = uncompiledTotal / 10;
     const avgCompiled = solveTime / 10;
     const runtimeSpeedup = avgUncompiled / avgCompiled;
-    console.log(`  Runtime speedup (pure solve time): ${runtimeSpeedup.toFixed(2)}x ${runtimeSpeedup > 1 ? "FASTER" : "SLOWER"}`);
+    testLog(`  Runtime speedup (pure solve time): ${runtimeSpeedup.toFixed(2)}x ${runtimeSpeedup > 1 ? "FASTER" : "SLOWER"}`);
 
-    console.log("\n==============================================\n");
+    testLog("\n==============================================\n");
   });
 
   it("should verify correctness of compiled vs uncompiled", () => {
@@ -234,16 +235,16 @@ describe("Jacobian API Performance", () => {
       useCompiled: true,
     });
 
-    console.log("\n=== CORRECTNESS CHECK ===");
-    console.log("Uncompiled result:");
-    console.log(`  a=${a1.data.toFixed(6)}, b=${b1.data.toFixed(6)}`);
-    console.log(`  cost=${result1.finalCost.toExponential(6)}`);
-    console.log(`  iterations=${result1.iterations}`);
+    testLog("\n=== CORRECTNESS CHECK ===");
+    testLog("Uncompiled result:");
+    testLog(`  a=${a1.data.toFixed(6)}, b=${b1.data.toFixed(6)}`);
+    testLog(`  cost=${result1.finalCost.toExponential(6)}`);
+    testLog(`  iterations=${result1.iterations}`);
 
-    console.log("\nCompiled result:");
-    console.log(`  a=${a2.data.toFixed(6)}, b=${b2.data.toFixed(6)}`);
-    console.log(`  cost=${result2.finalCost.toExponential(6)}`);
-    console.log(`  iterations=${result2.iterations}`);
+    testLog("\nCompiled result:");
+    testLog(`  a=${a2.data.toFixed(6)}, b=${b2.data.toFixed(6)}`);
+    testLog(`  cost=${result2.finalCost.toExponential(6)}`);
+    testLog(`  iterations=${result2.iterations}`);
 
     // Should produce the same results
     expect(a2.data).toBeCloseTo(a1.data, 4);

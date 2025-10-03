@@ -1,6 +1,6 @@
-import { compileGradientFunction, applyCompiledGradients } from './jit-compile-value';
-import { Value } from './Value';
-import { SGD } from './Optimizers';
+import { compileGradientFunction, applyCompiledGradients } from '../src/jit-compile-value';
+import { Value } from '../src/Value';
+import { SGD } from '../src/Optimizers';
 
 describe('JIT + Optimizer Integration', () => {
   it('validates SGD optimization works identically with graph vs compiled', () => {

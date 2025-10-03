@@ -20,11 +20,11 @@ import { compileResidualJacobian } from "./jit-compile-value";
  * ```
  */
 export class CompiledResiduals {
-  private compiledFunctions: ((paramValues: number[], J: number[][]) => number)[];
+  private compiledFunctions: ((paramValues: number[], row: number[]) => number)[];
   private numParams: number;
 
   private constructor(
-    compiledFunctions: ((paramValues: number[], J: number[][]) => number)[],
+    compiledFunctions: ((paramValues: number[], row: number[]) => number)[],
     numParams: number
   ) {
     this.compiledFunctions = compiledFunctions;
@@ -75,7 +75,7 @@ export class CompiledResiduals {
     let cost = 0;
 
     for (let i = 0; i < numResiduals; i++) {
-      const value = this.compiledFunctions[i](paramValues, J);
+      const value = this.compiledFunctions[i](paramValues, J[i]);
       cost += value * value;
       residuals[i] = value;
     }

@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AdamSketchSolver } from '../AdamSketchSolver';
 import { SketchSolver } from '../SketchSolver';
+import { testLog } from '../../../../test/testUtils';
 import type {
     Circle,
     Line,
@@ -64,7 +65,7 @@ describe('SketchSolver - Line Constraints', () => {
 
     const result = solver.solve(project);
 
-    console.log('Horizontal line (free points) result:', {
+    testLog('Horizontal line (free points) result:', {
       converged: result.converged,
       residual: result.residual,
       iterations: result.iterations,
@@ -99,7 +100,7 @@ describe('SketchSolver - Line Constraints', () => {
 
     const result = solver.solve(project);
 
-    console.log('Vertical line (free points) result:', {
+    testLog('Vertical line (free points) result:', {
       converged: result.converged,
       residual: result.residual,
       iterations: result.iterations,
@@ -765,7 +766,7 @@ describe('SketchSolver - Fixture Tests', () => {
     const { project, result } = testFixture(cornerFixture);
 
     // Debug output
-    console.log('Corner fixture result:', {
+    testLog('Corner fixture result:', {
       converged: result.converged,
       residual: result.residual,
       iterations: result.iterations
@@ -810,7 +811,7 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
       constraints: [],
     };
 
-    console.log('\n=== Jacobian Debug: Horizontal Line ===');
+    testLog('\n=== Jacobian Debug: Horizontal Line ===');
     const solver = new SketchSolver({
       tolerance: 1e-4,
       maxIterations: 5,
@@ -819,7 +820,7 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
     });
 
     const result = solver.solve(project);
-    console.log(`\nResult: converged=${result.converged}, iterations=${result.iterations}, error=${result.error}`);
+    testLog(`\nResult: converged=${result.converged}, iterations=${result.iterations}, error=${result.error}`);
   });
 
   it('should find optimal Adam learning rate for horizontal line', () => {
@@ -827,7 +828,7 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
     const maxIterations = 1000;
     const tolerance = 1e-3; // Lowered to allow Adam to pass
 
-    console.log('Testing 7 different learning rates on horizontal line constraint:');
+    testLog('Testing 7 different learning rates on horizontal line constraint:');
 
     const results: Array<{ lr: number; converged: boolean; iterations: number; residual: number }> = [];
 
@@ -857,7 +858,7 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
         residual: result.residual
       });
 
-      console.log(`  LR=${lr.toFixed(2)}: ${result.converged ? '✓' : '✗'} iterations=${result.iterations}, residual=${result.residual.toExponential(2)}`);
+      testLog(`  LR=${lr.toFixed(2)}: ${result.converged ? '✓' : '✗'} iterations=${result.iterations}, residual=${result.residual.toExponential(2)}`);
     }
 
     // Find fastest converged solution
@@ -866,9 +867,9 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
       const fastest = converged.reduce((best, current) =>
         current.iterations < best.iterations ? current : best
       );
-      console.log(`  → Fastest: LR=${fastest.lr} (${fastest.iterations} iterations)`);
+      testLog(`  → Fastest: LR=${fastest.lr} (${fastest.iterations} iterations)`);
     } else {
-      console.log('  → No learning rate converged within tolerance');
+      testLog('  → No learning rate converged within tolerance');
     }
   });
 
@@ -904,7 +905,7 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
       constraints: []
     };
 
-    console.log('Testing 7 different learning rates on Corner fixture:');
+    testLog('Testing 7 different learning rates on Corner fixture:');
 
     const results: Array<{ lr: number; converged: boolean; iterations: number; residual: number }> = [];
 
@@ -920,7 +921,7 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
         residual: result.residual
       });
 
-      console.log(`  LR=${lr.toFixed(2)}: ${result.converged ? '✓' : '✗'} iterations=${result.iterations}, residual=${result.residual.toExponential(2)}`);
+      testLog(`  LR=${lr.toFixed(2)}: ${result.converged ? '✓' : '✗'} iterations=${result.iterations}, residual=${result.residual.toExponential(2)}`);
     }
 
     // Find fastest converged solution
@@ -929,9 +930,9 @@ describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
       const fastest = converged.reduce((best, current) =>
         current.iterations < best.iterations ? current : best
       );
-      console.log(`  → Fastest: LR=${fastest.lr} (${fastest.iterations} iterations)`);
+      testLog(`  → Fastest: LR=${fastest.lr} (${fastest.iterations} iterations)`);
     } else {
-      console.log('  → No learning rate converged within tolerance');
+      testLog('  → No learning rate converged within tolerance');
     }
   });
 });

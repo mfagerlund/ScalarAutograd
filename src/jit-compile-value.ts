@@ -102,9 +102,9 @@ export function compileGradientFunction(output: Value, params: Value[]) {
  * @param residual - A single residual Value (output of residual function)
  * @param params - Array of parameter Values
  * @param rowIdx - Row index in the Jacobian matrix (baked into compiled code)
- * @returns Compiled function: (paramValues: number[], J: number[][]) => number
+ * @returns Compiled function: (paramValues: number[], row: number[]) => number
  */
-export function compileResidualJacobian(residual: Value, params: Value[], rowIdx: number): (paramValues: number[], J: number[][]) => number {
+export function compileResidualJacobian(residual: Value, params: Value[], rowIdx: number): (paramValues: number[], row: number[]) => number {
   const paramNames = params.map(p => p.paramName!);
 
   const visited = new Set<Value>();
@@ -165,8 +165,8 @@ export function compileResidualJacobian(residual: Value, params: Value[], rowIdx
   // Extract parameter values from array
   const paramExtractions = paramNames.map((p, i) => `const ${p} = paramValues[${i}];`).join('\n    ');
 
-  // Build code to update Jacobian matrix in-place (rowIdx is baked in)
-  const jacobianUpdates = paramNames.map((p, i) => `J[${rowIdx}][${i}] = grad_${p};`).join('\n    ');
+  // Build code to update Jacobian row in-place
+  const jacobianUpdates = paramNames.map((p, i) => `row[${i}] = grad_${p};`).join('\n    ');
 
   const functionBody = `
     ${paramExtractions}
@@ -178,5 +178,5 @@ export function compileResidualJacobian(residual: Value, params: Value[], rowIdx
     return ${outputVar};
   `;
 
-  return new Function('paramValues', 'J', functionBody) as ((paramValues: number[], J: number[][]) => number);
+  return new Function('paramValues', 'row', functionBody) as ((paramValues: number[], row: number[]) => number);
 }

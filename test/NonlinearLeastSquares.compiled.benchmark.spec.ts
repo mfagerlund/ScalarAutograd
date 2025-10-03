@@ -6,6 +6,7 @@
  */
 
 import { V } from "../src/V";
+import { testLog } from './testUtils';
 
 describe("Compiled Jacobian Performance Benchmarks", () => {
   it("should benchmark curve fitting: compiled vs uncompiled", () => {
@@ -50,12 +51,12 @@ describe("Compiled Jacobian Performance Benchmarks", () => {
       });
       uncompiledTime = performance.now() - start;
 
-      console.log(`\nCurve Fitting (${numPoints} points, 2 parameters):`);
-      console.log(`  Uncompiled:`);
-      console.log(`    Time: ${uncompiledTime.toFixed(2)}ms`);
-      console.log(`    Iterations: ${result.iterations}`);
-      console.log(`    Final cost: ${result.finalCost.toExponential(4)}`);
-      console.log(`    Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
+      testLog(`\nCurve Fitting (${numPoints} points, 2 parameters):`);
+      testLog(`  Uncompiled:`);
+      testLog(`    Time: ${uncompiledTime.toFixed(2)}ms`);
+      testLog(`    Iterations: ${result.iterations}`);
+      testLog(`    Final cost: ${result.finalCost.toExponential(4)}`);
+      testLog(`    Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
     }
 
     // Compiled version (optimized)
@@ -82,17 +83,17 @@ describe("Compiled Jacobian Performance Benchmarks", () => {
       });
       compiledTime = performance.now() - start;
 
-      console.log(`  Compiled:`);
-      console.log(`    Time: ${compiledTime.toFixed(2)}ms`);
-      console.log(`    Iterations: ${result.iterations}`);
-      console.log(`    Final cost: ${result.finalCost.toExponential(4)}`);
-      console.log(`    Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
-      console.log(`    Success: ${result.success}, Reason: ${result.convergenceReason}`);
+      testLog(`  Compiled:`);
+      testLog(`    Time: ${compiledTime.toFixed(2)}ms`);
+      testLog(`    Iterations: ${result.iterations}`);
+      testLog(`    Final cost: ${result.finalCost.toExponential(4)}`);
+      testLog(`    Parameters: a=${a.data.toFixed(4)}, b=${b.data.toFixed(4)}`);
+      testLog(`    Success: ${result.success}, Reason: ${result.convergenceReason}`);
 
       if (compiledTime < uncompiledTime) {
-        console.log(`  Speedup: ${(uncompiledTime / compiledTime).toFixed(2)}x faster`);
+        testLog(`  Speedup: ${(uncompiledTime / compiledTime).toFixed(2)}x faster`);
       } else {
-        console.log(`  Slowdown: ${(compiledTime / uncompiledTime).toFixed(2)}x slower (compilation overhead exceeds savings)`);
+        testLog(`  Slowdown: ${(compiledTime / uncompiledTime).toFixed(2)}x slower (compilation overhead exceeds savings)`);
       }
 
       // Both should converge to similar results
@@ -105,7 +106,7 @@ describe("Compiled Jacobian Performance Benchmarks", () => {
     const numParams = 50;
     const numResiduals = 100;
 
-    console.log(`\nLarge Jacobian (${numResiduals} residuals, ${numParams} parameters):`);
+    testLog(`\nLarge Jacobian (${numResiduals} residuals, ${numParams} parameters):`);
 
     // Uncompiled version
     {
@@ -133,10 +134,10 @@ describe("Compiled Jacobian Performance Benchmarks", () => {
       });
       const uncompiledTime = performance.now() - start;
 
-      console.log(`  Uncompiled:`);
-      console.log(`    Time: ${uncompiledTime.toFixed(2)}ms`);
-      console.log(`    Iterations: ${result.iterations}`);
-      console.log(`    Final cost: ${result.finalCost.toExponential(4)}`);
+      testLog(`  Uncompiled:`);
+      testLog(`    Time: ${uncompiledTime.toFixed(2)}ms`);
+      testLog(`    Iterations: ${result.iterations}`);
+      testLog(`    Final cost: ${result.finalCost.toExponential(4)}`);
     }
 
     // Compiled version
@@ -164,13 +165,13 @@ describe("Compiled Jacobian Performance Benchmarks", () => {
       });
       const compiledTime = performance.now() - start;
 
-      console.log(`  Compiled:`);
-      console.log(`    Time: ${compiledTime.toFixed(2)}ms`);
-      console.log(`    Iterations: ${result.iterations}`);
-      console.log(`    Final cost: ${result.finalCost.toExponential(4)}`);
+      testLog(`  Compiled:`);
+      testLog(`    Time: ${compiledTime.toFixed(2)}ms`);
+      testLog(`    Iterations: ${result.iterations}`);
+      testLog(`    Final cost: ${result.finalCost.toExponential(4)}`);
 
       const uncompiledTime = 100;  // We need to get this from above, but for now estimate
-      console.log(`  Expected speedup: 2-10x (eliminates graph traversal)`);
+      testLog(`  Expected speedup: 2-10x (eliminates graph traversal)`);
 
       expect(result.iterations).toBeGreaterThan(0);
     }
@@ -202,9 +203,9 @@ describe("Compiled Jacobian Performance Benchmarks", () => {
       compiledResult = params.map(p => p.data);
     }
 
-    console.log(`\nIdentical Results Verification:`);
-    console.log(`  Uncompiled result: [${uncompiledResult.map(x => x.toFixed(2)).join(', ')}]`);
-    console.log(`  Compiled result:   [${compiledResult.map(x => x.toFixed(2)).join(', ')}]`);
+    testLog(`\nIdentical Results Verification:`);
+    testLog(`  Uncompiled result: [${uncompiledResult.map(x => x.toFixed(2)).join(', ')}]`);
+    testLog(`  Compiled result:   [${compiledResult.map(x => x.toFixed(2)).join(', ')}]`);
 
     // Results should be identical (or very close)
     for (let i = 0; i < numParams; i++) {

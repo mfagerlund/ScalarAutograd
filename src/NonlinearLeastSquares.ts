@@ -73,7 +73,7 @@ function computeResidualsAndJacobian(
  */
 function computeResidualsAndJacobianCompiled(
   params: Value[],
-  compiledResiduals: ((paramValues: number[], J: number[][]) => number)[]
+  compiledResiduals: ((paramValues: number[], row: number[]) => number)[]
 ): { residuals: number[]; J: number[][]; cost: number } {
   const paramValues = params.map(p => p.data);
   const numResiduals = compiledResiduals.length;
@@ -84,7 +84,7 @@ function computeResidualsAndJacobianCompiled(
   let cost = 0;
 
   for (let i = 0; i < compiledResiduals.length; i++) {
-    const value = compiledResiduals[i](paramValues, J);
+    const value = compiledResiduals[i](paramValues, J[i]);
     cost += value * value;
     residuals[i] = value;
   }
@@ -197,7 +197,7 @@ export function nonlinearLeastSquares(
   let lambda = initialDamping;
 
   // Compile residuals once for performance (if enabled and not already compiled)
-  let compiledResiduals: ((paramValues: number[], J: number[][]) => number)[] | null = null;
+  let compiledResiduals: ((paramValues: number[], row: number[]) => number)[] | null = null;
   if (useCompiled && !(residualFn instanceof CompiledResiduals)) {
     // Ensure params have paramName for compilation
     params.forEach((p, i) => {
