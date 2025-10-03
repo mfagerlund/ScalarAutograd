@@ -80,4 +80,92 @@ export class Vec3 {
   toString(): string {
     return `Vec3(${this.x.data}, ${this.y.data}, ${this.z.data})`;
   }
+
+  /**
+   * Compute angle between two vectors in radians.
+   * Returns value in range [0, π].
+   */
+  static angleBetween(a: Vec3, b: Vec3): Value {
+    const dotProd = Vec3.dot(a, b);
+    const magProduct = V.mul(a.magnitude, b.magnitude);
+    const cosAngle = V.div(dotProd, magProduct);
+    return V.acos(V.clamp(cosAngle, -1, 1)); // Clamp for numerical stability
+  }
+
+  /**
+   * Project vector a onto vector b.
+   */
+  static project(a: Vec3, b: Vec3): Vec3 {
+    const bMagSq = b.sqrMagnitude;
+    const scale = V.div(Vec3.dot(a, b), bMagSq);
+    return b.mul(scale);
+  }
+
+  /**
+   * Reject vector a from vector b (component of a perpendicular to b).
+   */
+  static reject(a: Vec3, b: Vec3): Vec3 {
+    return a.sub(Vec3.project(a, b));
+  }
+
+  /**
+   * Linear interpolation between two vectors.
+   */
+  static lerp(a: Vec3, b: Vec3, t: Value | number): Vec3 {
+    const oneMinusT = V.sub(1, t);
+    return new Vec3(
+      V.add(V.mul(a.x, oneMinusT), V.mul(b.x, t)),
+      V.add(V.mul(a.y, oneMinusT), V.mul(b.y, t)),
+      V.add(V.mul(a.z, oneMinusT), V.mul(b.z, t))
+    );
+  }
+
+  /**
+   * Component-wise minimum.
+   */
+  static min(a: Vec3, b: Vec3): Vec3 {
+    return new Vec3(V.min(a.x, b.x), V.min(a.y, b.y), V.min(a.z, b.z));
+  }
+
+  /**
+   * Component-wise maximum.
+   */
+  static max(a: Vec3, b: Vec3): Vec3 {
+    return new Vec3(V.max(a.x, b.x), V.max(a.y, b.y), V.max(a.z, b.z));
+  }
+
+  /**
+   * Clone this vector (create new Vec3 with same values but independent graph).
+   */
+  clone(): Vec3 {
+    return new Vec3(new Value(this.x.data), new Value(this.y.data), new Value(this.z.data));
+  }
+
+  /**
+   * Create Vec3 from raw data (no gradients).
+   */
+  static fromData(x: number, y: number, z: number): Vec3 {
+    return Vec3.C(x, y, z);
+  }
+
+  /**
+   * Extract raw data as array [x, y, z].
+   */
+  toArray(): number[] {
+    return [this.x.data, this.y.data, this.z.data];
+  }
+
+  /**
+   * Distance between two points.
+   */
+  static distance(a: Vec3, b: Vec3): Value {
+    return a.sub(b).magnitude;
+  }
+
+  /**
+   * Squared distance (faster, no sqrt).
+   */
+  static sqrDistance(a: Vec3, b: Vec3): Value {
+    return a.sub(b).sqrMagnitude;
+  }
 }

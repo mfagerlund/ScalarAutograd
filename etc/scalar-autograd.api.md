@@ -270,26 +270,37 @@ export class Vec3 {
     constructor(x: Value | number, y: Value | number, z: Value | number);
     // (undocumented)
     add(other: Vec3): Vec3;
+    static angleBetween(a: Vec3, b: Vec3): Value;
     // (undocumented)
     static C(x: number, y: number, z: number): Vec3;
+    clone(): Vec3;
     // (undocumented)
     static cross(a: Vec3, b: Vec3): Vec3;
+    static distance(a: Vec3, b: Vec3): Value;
     // (undocumented)
     div(scalar: Value | number): Vec3;
     // (undocumented)
     static dot(a: Vec3, b: Vec3): Value;
+    static fromData(x: number, y: number, z: number): Vec3;
+    static lerp(a: Vec3, b: Vec3, t: Value | number): Vec3;
     // (undocumented)
     get magnitude(): Value;
+    static max(a: Vec3, b: Vec3): Vec3;
+    static min(a: Vec3, b: Vec3): Vec3;
     // (undocumented)
     mul(scalar: Value | number): Vec3;
     // (undocumented)
     get normalized(): Vec3;
     // (undocumented)
     static one(): Vec3;
+    static project(a: Vec3, b: Vec3): Vec3;
+    static reject(a: Vec3, b: Vec3): Vec3;
+    static sqrDistance(a: Vec3, b: Vec3): Value;
     // (undocumented)
     get sqrMagnitude(): Value;
     // (undocumented)
     sub(other: Vec3): Vec3;
+    toArray(): number[];
     // (undocumented)
     toString(): string;
     // (undocumented)

@@ -2766,6 +2766,90 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "scalar-autograd!V.compileObjective:member(1)",
+              "docComment": "/**\n * Compile an objective function for efficient gradient computation. Useful for L-BFGS and other gradient-based optimizers.\n *\n * @param params - Array of parameter Values\n *\n * @param objectiveFn - Function that computes scalar objective from parameters\n *\n * @returns CompiledResiduals that can be passed to lbfgs()\n *\n * @example\n * ```typescript\n * const x = V.W(1.0);\n * const y = V.W(2.0);\n * const params = [x, y];\n *\n * // Compile Rosenbrock function\n * const compiled = V.compileObjective(params, (p) => {\n *   const [x, y] = p;\n *   const a = V.sub(V.C(1), x);\n *   const b = V.sub(y, V.pow(x, 2));\n *   return V.add(V.pow(a, 2), V.mul(V.C(100), V.pow(b, 2)));\n * });\n *\n * // Use with L-BFGS\n * lbfgs(params, compiled, { verbose: true });\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static compileObjective(params: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", objectiveFn: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(params: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Value",
+                  "canonicalReference": "scalar-autograd!Value:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CompiledResiduals",
+                  "canonicalReference": "scalar-autograd!~CompiledResiduals:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 10
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "params",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 3
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "objectiveFn",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 4,
+                    "endIndex": 8
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "compileObjective"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "scalar-autograd!V.cos:member(1)",
               "docComment": "/**\n * Cosine function.\n *\n * @param x - Input value\n *\n * @returns New Value with cos(x)\n */\n",
               "excerptTokens": [

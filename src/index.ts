@@ -1,3 +1,4 @@
+export { Geometry } from './Geometry';
 export { lbfgs, type LBFGSOptions, type LBFGSResult } from './LBFGS';
 export { Losses } from './Losses';
 export { Adam, AdamW, Optimizer, SGD } from './Optimizers';
