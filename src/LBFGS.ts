@@ -1,5 +1,5 @@
 import { Value } from "./Value";
-import { CompiledResiduals } from "./CompiledResiduals";
+import { CompiledFunctions } from "./CompiledFunctions";
 
 /**
  * Configuration options for L-BFGS optimizer.
@@ -47,16 +47,16 @@ export interface LBFGSResult {
 
 /**
  * Computes objective value and gradient.
- * Uses compiled path if objectiveFn is CompiledResiduals, otherwise graph backward.
+ * Uses compiled path if objectiveFn is CompiledFunctions, otherwise graph backward.
  */
 function computeObjectiveAndGradient(
   params: Value[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals
+  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions
 ): { cost: number; gradient: number[] } {
-  if (objectiveFn instanceof CompiledResiduals) {
-    // Compiled path: evaluate once, get cost and gradient
-    const { residuals, J, cost } = objectiveFn.evaluate(params);
-    return { cost, gradient: J[0] };
+  if (objectiveFn instanceof CompiledFunctions) {
+    // Compiled path: sum all functions and accumulate gradients
+    const { value, gradient } = objectiveFn.evaluateSumWithGradient(params);
+    return { cost: value, gradient };
   }
 
   // Graph backward path (original implementation)
@@ -84,7 +84,7 @@ function computeObjectiveAndGradient(
 function wolfeLineSearch(
   params: Value[],
   direction: number[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals,
+  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
   currentCost: number,
   currentGradient: number[],
   options: {
@@ -284,7 +284,7 @@ function twoLoopRecursion(
  */
 export function lbfgs(
   params: Value[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals,
+  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
   options: LBFGSOptions = {}
 ): LBFGSResult {
   const {

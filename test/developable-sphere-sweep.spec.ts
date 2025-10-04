@@ -10,6 +10,7 @@ import { describe, it } from 'vitest';
 import { V } from '../src/V';
 import { Value, Vec3 } from '../src/Value';
 import { lbfgs } from '../src/LBFGS';
+import { CompiledFunctions } from '../src/CompiledFunctions';
 
 // Skip this test by default unless explicitly requested
 const shouldRun = process.env.FORCE_SWEEP === '1';
@@ -138,6 +139,7 @@ class SimpleMesh implements TriangleMesh {
 interface EnergyFunction {
   name: string;
   compute(mesh: TriangleMesh): Value;
+  computeResiduals(mesh: TriangleMesh): Value[];
   classifyVertices(mesh: TriangleMesh, threshold?: number): { hingeVertices: number[]; seamVertices: number[] };
 }
 
@@ -152,6 +154,14 @@ class VarianceEnergy implements EnergyFunction {
       energies.push(vertexEnergy);
     }
     return V.sum(energies);
+  }
+
+  computeResiduals(mesh: TriangleMesh): Value[] {
+    const residuals: Value[] = [];
+    for (let i = 0; i < mesh.vertices.length; i++) {
+      residuals.push(this.computeVertexEnergy(i, mesh));
+    }
+    return residuals;
   }
 
   private computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
@@ -222,6 +232,14 @@ class BoundingBoxEnergy implements EnergyFunction {
       energies.push(vertexEnergy);
     }
     return V.sum(energies);
+  }
+
+  computeResiduals(mesh: TriangleMesh): Value[] {
+    const residuals: Value[] = [];
+    for (let i = 0; i < mesh.vertices.length; i++) {
+      residuals.push(this.computeVertexEnergy(i, mesh));
+    }
+    return residuals;
   }
 
   private computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
@@ -332,6 +350,30 @@ class AngleDefectEnergy implements EnergyFunction {
       total = V.add(total, energy);
     }
     return total;
+  }
+
+  computeResiduals(mesh: TriangleMesh): Value[] {
+    const residuals: Value[] = [];
+    for (let i = 0; i < mesh.vertices.length; i++) {
+      const star = mesh.getVertexStar(i);
+      if (star.length === 0) {
+        residuals.push(V.C(0));
+        continue;
+      }
+
+      // Sum angles at this vertex
+      let angleSum = V.C(0);
+      for (const faceIdx of star) {
+        const angle = this.computeAngleAtVertex(i, faceIdx, mesh);
+        angleSum = V.add(angleSum, angle);
+      }
+
+      // Defect from 2π (flat would be exactly 2π)
+      const defect = V.sub(angleSum, V.C(2 * Math.PI));
+      const energy = V.mul(defect, defect);
+      residuals.push(energy);
+    }
+    return residuals;
   }
 
   private computeAngleAtVertex(vertexIdx: number, faceIdx: number, mesh: TriangleMesh): Value {
@@ -445,8 +487,9 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
     params.push(V.W(v.x.data), V.W(v.y.data), V.W(v.z.data));
   }
 
-  // Create objective function
-  const objectiveFn = (p: Value[]) => {
+  // Compile residuals for all energy types
+  console.log(`  Compiling residuals...`);
+  const compiled = CompiledFunctions.compile(params, (p: Value[]) => {
     // Update mesh with parameters
     const numVertices = sphere.vertices.length;
     for (let i = 0; i < numVertices; i++) {
@@ -455,23 +498,23 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
       const z = p[3 * i + 2];
       sphere.setVertexPosition(i, new Vec3(x, y, z));
     }
-    return energyFunction.compute(sphere);
-  };
+    return energyFunction.computeResiduals(sphere);
+  });
 
-  // Only compile AngleDefect - Variance/BoundingBox create deep chains that overflow during execution
-  const useCompiled = energyFunction.name === 'AngleDefect';
-  let compiled: any = null;
+  console.log(`  Compiled: ${compiled.kernelCount} kernels, ${compiled.kernelReuseFactor.toFixed(1)}x reuse`);
 
-  if (useCompiled) {
-    compiled = V.compileObjective(params, objectiveFn);
-    console.log(`  Compiled: ${compiled.kernelCount} kernels, ${compiled.kernelReuseFactor.toFixed(1)}x reuse`);
-  } else {
-    console.log(`  Using graph backward (${energyFunction.name} energy has deep expression chains)`);
+  // IMPORTANT: Restore mesh to initial state after compilation
+  // (compilation modifies the mesh during graph building)
+  for (let i = 0; i < sphere.vertices.length; i++) {
+    const x = params[3 * i];
+    const y = params[3 * i + 1];
+    const z = params[3 * i + 2];
+    sphere.setVertexPosition(i, new Vec3(x, y, z));
   }
 
   console.log(`  Starting L-BFGS optimization...`);
   // Run optimization
-  const result = lbfgs(params, useCompiled ? compiled : objectiveFn, {
+  const result = lbfgs(params, compiled, {
     maxIterations,
     gradientTolerance,
     verbose: false,

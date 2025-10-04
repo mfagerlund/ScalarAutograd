@@ -79,6 +79,17 @@ label {
   font-size: 0.9rem;
 }
 
+label.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+label.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
 .hint {
   font-size: 0.8rem;
   color: #808080;

@@ -14,14 +14,14 @@ import { ValueRegistry } from './ValueRegistry';
  * @param residual - Output Value of the residual computation
  * @param params - Parameter Values (for Jacobian computation)
  * @param registry - ValueRegistry tracking all unique values
- * @returns Compiled function: (allValues: number[], indices: number[], row: number[]) => number
+ * @returns Compiled function: (allValues, indices, gradientIndices, gradient) => number
  * @internal
  */
 export function compileIndirectKernel(
   residual: Value,
   params: Value[],
   registry: ValueRegistry
-): (allValues: number[], indices: number[], row: number[]) => number {
+): (allValues: number[], indices: number[], gradientIndices: number[], gradient: number[]) => number {
   const visited = new Set<Value>();
   const topoOrder: Value[] = [];
   const forwardCode: string[] = [];
@@ -111,18 +111,17 @@ export function compileIndirectKernel(
     .map((input, i) => `const ${nodeToIndexVar.get(input)} = indices[${i}];`)
     .join('\n    ');
 
-  // Build Jacobian updates for parameters
-  const paramIndices = params.map(p => graphInputs.indexOf(p));
-  const jacobianUpdates = params
-    .map((p, paramIdx) => {
-      const inputIdx = paramIndices[paramIdx];
-      if (inputIdx === -1) {
-        // Parameter not used in this graph
-        return `row[${paramIdx}] = 0;`;
+  // Build gradient updates using gradientIndices mapping
+  // For each graph input that requires grad, ACCUMULATE to gradient[gradientIndices[inputIdx]]
+  const gradientUpdates = graphInputs
+    .map((input, inputIdx) => {
+      if (!input.requiresGrad) {
+        return ''; // Skip constants
       }
-      const gradVar = `grad_${getVarName(p)}`;
-      return `row[${paramIdx}] = ${gradVar};`;
+      const gradVar = `grad_${getVarName(input)}`;
+      return `gradient[gradientIndices[${inputIdx}]] += ${gradVar};`;
     })
+    .filter(line => line !== '')
     .join('\n    ');
 
   const functionBody = `
@@ -131,14 +130,15 @@ export function compileIndirectKernel(
     ${gradDeclarations.join('\n    ')}
     grad_${outputVar} = 1;
     ${backwardCode.join('\n    ')}
-    ${jacobianUpdates}
+    ${gradientUpdates}
     return ${outputVar};
   `;
 
-  return new Function('allValues', 'indices', 'row', functionBody) as (
+  return new Function('allValues', 'indices', 'gradientIndices', 'gradient', functionBody) as (
     allValues: number[],
     indices: number[],
-    row: number[]
+    gradientIndices: number[],
+    gradient: number[]
   ) => number;
 }
 

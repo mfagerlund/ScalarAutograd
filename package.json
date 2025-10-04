@@ -44,6 +44,10 @@
     "build": "tsc",
     "test": "vitest run --globals",
     "test:verbose": "cross-env VERBOSE=true vitest run --globals",
-    "prepare": "husky"
+    "prepare": "husky",
+    "watch:test": "node .claude/test-watcher.js",
+    "watch:build": "node .claude/build-watcher.js",
+    "watch:vite": "node .claude/vite-watcher.js",
+    "watch:demo-ts": "node .claude/demo-typecheck-watcher.js"
   }
 }

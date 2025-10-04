@@ -1,5 +1,6 @@
 import { Value, V, Vec3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
+import { EnergyRegistry } from './EnergyRegistry';
 
 /**
  * Bounding box energy for developable surfaces.
@@ -7,6 +8,21 @@ import { TriangleMesh } from '../mesh/TriangleMesh';
  * More compact normal distributions indicate better developability.
  */
 export class BoundingBoxEnergy {
+  static readonly name = 'Bounding Box Spread';
+  /**
+   * Compute total bounding box energy for the mesh.
+   * Uses n-ary sum to avoid deep expression chains.
+   */
+  static compute(mesh: TriangleMesh): Value {
+    const vertexEnergies: Value[] = [];
+
+    for (let i = 0; i < mesh.vertices.length; i++) {
+      vertexEnergies.push(this.computeVertexEnergy(i, mesh));
+    }
+
+    return V.sum(vertexEnergies);
+  }
+
   /**
    * Compute per-vertex residuals for compiled optimization.
    * Returns array of residuals (one per vertex).
@@ -95,3 +111,5 @@ export class BoundingBoxEnergy {
     return { hingeVertices, seamVertices };
   }
 }
+// Register with energy registry
+EnergyRegistry.register(BoundingBoxEnergy);

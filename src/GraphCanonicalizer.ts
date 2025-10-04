@@ -126,6 +126,7 @@ function canonicalSort(exprs: string[]): string[] {
  * @internal
  */
 export function canonicalizeGraph(output: Value, params: Value[]): CanonicalResult {
+  const t0 = performance.now();
   const leafToId = new Map<Value, number>();
   const visited = new Set<Value>();
   const allLeaves = new Set<Value>();
@@ -146,6 +147,7 @@ export function canonicalizeGraph(output: Value, params: Value[]): CanonicalResu
   }
 
   discoverLeaves(output);
+  const t1 = performance.now();
 
   // Phase 2: Assign IDs in stable, deterministic order
   // Primary params (from argument) get 0..n-1
@@ -168,13 +170,25 @@ export function canonicalizeGraph(output: Value, params: Value[]): CanonicalResu
   for (const leaf of remainingLeaves) {
     leafToId.set(leaf, nextId++);
   }
+  const t2 = performance.now();
 
   // Phase 3: Build canonical expression
+  let sortCalls = 0;
+  let sortTimeMs = 0;
+  const memoized = new Map<Value, string>();
+
   function canonExpr(node: Value): string {
+    // Check memoization first - nodes can appear multiple times in the graph
+    if (memoized.has(node)) {
+      return memoized.get(node)!;
+    }
+
     if (leafToId.has(node)) {
       const id = leafToId.get(node)!;
       const gradFlag = node.requiresGrad ? 'g' : '';
-      return `${id}${gradFlag}`;
+      const result = `${id}${gradFlag}`;
+      memoized.set(node, result);
+      return result;
     }
 
     const prev = (node as any).prev as Value[];
@@ -185,38 +199,60 @@ export function canonicalizeGraph(output: Value, params: Value[]): CanonicalResu
       const exponent = prev[1];
       if (leafToId.has(exponent) && exponent.data === 2 && !exponent.requiresGrad) {
         op = 'square';
-        return `(${op},${canonExpr(prev[0])})`;
+        const result = `(${op},${canonExpr(prev[0])})`;
+        memoized.set(node, result);
+        return result;
       }
     }
 
-    // Convert 'sum' n-ary op to flattened '+'
+    // Convert 'sum' to '+'
     if (op === 'sum') {
-      const childExprs = prev.map(p => canonExpr(p));
-      const sorted = canonicalSort(childExprs);
-      return `(+,${sorted.join(',')})`;
+      op = '+';
     }
 
-    let childExprs = prev.map(p => canonExpr(p));
     const isCommutative = op === '+' || op === '*' || op === 'min' || op === 'max';
 
     if (isCommutative) {
-      // Flatten nested operations of same type
-      const flattened: string[] = [];
-      for (const childExpr of childExprs) {
-        if (childExpr.startsWith(`(${op},`)) {
-          const inner = childExpr.slice(op.length + 2, -1);
-          const nestedChildren = splitExpr(inner);
-          flattened.push(...nestedChildren);
+      // Collect all child expressions, flattening same-op children
+      const childStrs: string[] = [];
+
+      function collectChildStrs(n: Value) {
+        // Check if this child is the same commutative op - flatten it
+        if (n._op === op) {
+          // Same op: recursively collect its children's strings (skip this node)
+          for (const child of (n as any).prev) {
+            collectChildStrs(child);
+          }
         } else {
-          flattened.push(childExpr);
+          // Different op or leaf: get its canonical string
+          childStrs.push(canonExpr(n));
         }
       }
-      const sorted = canonicalSort(flattened);
-      return `(${op},${sorted.join(',')})`;
+
+      // Collect all child strings recursively
+      for (const child of prev) {
+        collectChildStrs(child);
+      }
+
+      // Fast sort using default string comparison
+      // For large arrays, this is much faster than custom comparison functions
+      if (childStrs.length > 1) {
+        const sortStart = performance.now();
+        childStrs.sort();
+        sortTimeMs += performance.now() - sortStart;
+        sortCalls++;
+      }
+
+      const result = `(${op},${childStrs.join(',')})`;
+      memoized.set(node, result);
+      return result;
     }
 
     // Non-commutative: preserve order
-    return `(${op},${childExprs.join(',')})`;
+    const childStrs = prev.map(p => canonExpr(p));
+    const result = `(${op},${childStrs.join(',')})`;
+    memoized.set(node, result);
+    return result;
   }
 
   // Phase 4: Build param list (ONLY primary params, not internal constants)
@@ -229,12 +265,20 @@ export function canonicalizeGraph(output: Value, params: Value[]): CanonicalResu
   }
 
   const expr = canonExpr(output);
+  const t3 = performance.now();
+
   const canon = `${paramList.join(',')}|${expr}`;
 
   // Build reverse map
   const paramMap = new Map<Value, number>();
   for (const [leaf, id] of leafToId) {
     paramMap.set(leaf, id);
+  }
+
+  const t4 = performance.now();
+  const total = t4 - t0;
+  if (total > 10) {
+    console.log(`[GraphCanonicalizer] Total: ${total.toFixed(0)}ms | Phase1(discover): ${(t1-t0).toFixed(0)}ms | Phase2(assign): ${(t2-t1).toFixed(0)}ms | Phase3(expr): ${(t3-t2).toFixed(0)}ms [sorts: ${sortCalls} calls, ${sortTimeMs.toFixed(0)}ms] | Phase4(build): ${(t4-t3).toFixed(0)}ms | Nodes: ${visited.size}`);
   }
 
   return { canon, paramMap };

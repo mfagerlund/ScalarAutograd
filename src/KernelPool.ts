@@ -12,10 +12,10 @@ export interface KernelDescriptor {
   canonicalString: string;
 
   /** Compiled kernel function */
-  kernel: (allValues: number[], indices: number[], row: number[]) => number;
+  kernel: (allValues: number[], indices: number[], gradientIndices: number[], gradient: number[]) => number;
 
-  /** Number of parameters this kernel expects in Jacobian row */
-  numParams: number;
+  /** Number of graph inputs (for validating indices arrays) */
+  numInputs: number;
 }
 
 /**
@@ -26,6 +26,9 @@ export interface KernelDescriptor {
 export class KernelPool {
   /** @internal */
   public kernels = new Map<string, KernelDescriptor>();
+
+  /** Cache canonical strings by output Value (weak references to avoid memory leaks during compilation) */
+  private valueCanonCache = new WeakMap<Value, string>();
 
   /**
    * Get or compile a kernel for the given residual graph.
@@ -69,7 +72,24 @@ export class KernelPool {
     const paramIndexMap = new Map(params.map((p, i) => [p, i]));
     usedParams.sort((a, b) => paramIndexMap.get(a)! - paramIndexMap.get(b)!);
 
-    const { canon } = canonicalizeGraph(residual, usedParams);
+    // Check cache first (avoids re-canonicalizing same Value object)
+    let canon = this.valueCanonCache.get(residual);
+    let canonTime = 0;
+
+    if (!canon) {
+      // Canonicalize structure (param usage will be encoded in gradientIndices at runtime)
+      const canonStart = performance.now();
+      const result = canonicalizeGraph(residual, usedParams);
+      canon = result.canon;
+      canonTime = performance.now() - canonStart;
+
+      // Cache for future lookups
+      this.valueCanonCache.set(residual, canon);
+
+      if (canonTime > 10) {
+        console.log(`[KernelPool] Canonicalization took ${canonTime.toFixed(0)}ms for graph with ${usedParams.length} params`);
+      }
+    }
 
     // Ensure all leaf nodes in this graph are registered
     // (Even if kernel exists, this graph might have new constants)
@@ -91,16 +111,28 @@ export class KernelPool {
 
     // Check if we already have this kernel
     if (this.kernels.has(canon)) {
+      if (canonTime > 10) {
+        console.log(`[KernelPool] Cache HIT - reusing existing kernel (pool size: ${this.kernels.size})`);
+        console.log(`  Canon: ${canon.substring(0, 100)}...`);
+      }
       return this.kernels.get(canon)!;
     }
 
-    // Compile new kernel
+    if (canonTime > 10) {
+      console.log(`[KernelPool] Cache MISS - compiling new kernel (pool size: ${this.kernels.size + 1})`);
+      console.log(`  Canon: ${canon.substring(0, 100)}...`);
+    }
+
+    // Compile new kernel - it operates on local input indices
     const kernel = compileIndirectKernel(residual, params, registry);
+
+    // Count number of inputs this kernel expects
+    const numInputs = extractInputIndices(residual, registry).length;
 
     const descriptor: KernelDescriptor = {
       canonicalString: canon,
       kernel,
-      numParams: params.length
+      numInputs
     };
 
     this.kernels.set(canon, descriptor);

@@ -1,0 +1,203 @@
+
+> scalar-autograd@0.1.8 test
+> vitest run --globals
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Dev/ScalarAutograd[39m
+
+[90mstdout[2m | test/kernel-reuse/kernel-pool-reuse.spec.ts[2m > [22m[2mKernel Pool Reuse[2m > [22m[2mshould reuse kernels for identical distance constraints
+[22m[39mDistance constraints:
+  Residuals: 10
+  Kernels: 1
+  Reuse factor: 10.0x
+
+[90mstdout[2m | test/kernel-reuse/kernel-pool-reuse.spec.ts[2m > [22m[2mKernel Pool Reuse[2m > [22m[2mshould handle mixed kernel types
+[22m[39m
+Mixed operations:
+  Residuals: 5
+  Kernels: 2
+  Reuse factor: 2.5x
+
+[90mstdout[2m | test/kernel-reuse/kernel-pool-reuse.spec.ts[2m > [22m[2mKernel Pool Reuse[2m > [22m[2mshould dedupe constants across residuals
+[22m[39m
+Constant deduplication:
+  Residuals: 3
+  Kernels: 1
+
+[90mstdout[2m | test/kernel-reuse/kernel-pool-reuse.spec.ts[2m > [22m[2mKernel Pool Reuse[2m > [22m[2mshould handle 100 parallel line constraints
+[22m[39m
+Parallel line constraints:
+  Residuals: 100
+  Kernels: 1
+  Reuse factor: 100.0x
+
+[90mstdout[2m | test/kernel-reuse/kernel-pool-reuse.spec.ts[2m > [22m[2mKernel Pool Reuse[2m > [22m[2mshould work with curve fitting residuals
+[22m[39m
+Curve fitting:
+  Residuals: 6
+  Kernels: 1
+  Reuse factor: 6.0x
+
+ [32m✓[39m test/NonlinearLeastSquares.suite.spec.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m test/kernel-reuse/kernel-pool-reuse.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m test/Value.nn.spec.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 151[2mms[22m[39m
+ [32m✓[39m test/LBFGS-compiled-benchmark.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+ [32m✓[39m test/LBFGS.benchmark.spec.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+[90mstdout[2m | test/NonlinearLeastSquares.lm.spec.ts[2m > [22m[2mLevenberg-Marquardt vs Pure Gauss-Newton[2m > [22m[2mVerify LM behavior[2m > [22m[2mshould show lambda decreasing as optimization progresses
+[22m[39mIteration 0: cost=34.000000, ||∇||=5.83e+0, λ=1.00e+0
+  Jacobian shape: 2×2
+  Jacobian:
+    [1.0000, 0.0000]
+    [0.0000, 1.0000]
+  Residuals: [-5.0000, -3.0000]
+  Initial delta: [2.5000, 1.5000]
+  Delta norm: 2.9155
+  New params: [2.5000, 1.5000]
+  Inner iteration 0: λ=1.00e+0, cost=34.0000 → 8.5000, accepted=true
+Iteration 1: cost=8.500000, ||∇||=2.92e+0, λ=1.00e-1
+Iteration 2: cost=0.070248, ||∇||=2.65e-1, λ=1.00e-2
+Iteration 3: cost=0.000007, ||∇||=2.62e-3, λ=1.00e-3
+Iteration 4: cost=0.000000, ||∇||=2.62e-6, λ=1.00e-4
+
+ [32m✓[39m test/NonlinearLeastSquares.lm.spec.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 326[2mms[22m[39m
+ [32m✓[39m test/RobotArmIK.comparison.spec.ts [2m([22m[2m5 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m[33m 452[2mms[22m[39m
+   [33m[2m✓[22m[39m Robot Arm IK - Failing Cases[2m > [22mshould solve 6-joint arm from recorded failing position [33m 321[2mms[22m[39m
+[90mstdout[2m | demos/sketch-demo/src/__tests__/SketchSolver.spec.ts[2m > [22m[2mSolver Comparison - Adam vs Levenberg-Marquardt[2m > [22m[2mshould print Jacobian for horizontal line constraint
+[22m[39mIteration 0: cost=2500.000000, ||∇||=7.07e+1, λ=1.00e-3
+  Jacobian shape: 1×4
+  ⚠ Underdetermined: 3 degrees of freedom (nullspace dimension ≥ 3)
+  Jacobian:
+    [0.0000, -1.0000, 0.0000, 1.0000]
+  Residuals: [50.0000]
+  Initial delta: [0.0000, 24.9875, 0.0000, -24.9875]
+  Delta norm: 35.3377
+  New params: [0.0000, 24.9875, 100.0000, 25.0125]
+  Inner iteration 0: λ=1.00e-3, cost=2500.0000 → 0.0006, accepted=true
+Iteration 1: cost=0.000624, ||∇||=3.53e-2, λ=1.00e-4
+Iteration 2: cost=0.000000, ||∇||=1.77e-6, λ=1.00e-5
+
+ [32m✓[39m demos/sketch-demo/src/__tests__/SketchController.spec.ts [2m([22m[2m31 tests[22m[2m)[22m[33m 307[2mms[22m[39m
+ [32m✓[39m demos/sketch-demo/src/__tests__/SketchSolver.spec.ts [2m([22m[2m21 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[33m 656[2mms[22m[39m
+   [33m[2m✓[22m[39m Solver Comparison - Adam vs Levenberg-Marquardt[2m > [22mshould find optimal Adam learning rate for Corner fixture [33m 444[2mms[22m[39m
+ [32m✓[39m test/NonlinearLeastSquares.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+[90mstdout[2m | test/kernel-reuse/graph-canonicalization.spec.ts[2m > [22m[2mGraph Canonicalization[2m > [22m[2mshould match distance constraint graphs
+[22m[39mDistance constraint signature: [
+  [32m'leaf'[39m, [32m'leaf'[39m, [32m'-'[39m,
+  [32m'*'[39m,    [32m'leaf'[39m, [32m'leaf'[39m,
+  [32m'-'[39m,    [32m'*'[39m,    [32m'+'[39m,
+  [32m'sqrt'[39m, [32m'leaf'[39m, [32m'-'[39m
+]
+
+ [32m✓[39m test/kernel-reuse/graph-canonicalization.spec.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m test/kernel-reuse/value-registry.spec.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m test/LBFGS-compiled.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m test/Value.spec.ts [2m([22m[2m40 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m test/NonlinearLeastSquares.gradient.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m test/CircleFormation.comparison.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2479[2mms[22m[39m
+   [33m[2m✓[22m[39m Circle Formation - All Optimizers Comparison[2m > [22mshould compare NonlinearLeastSquares, SGD, Adam, and AdamW on circle fitting [33m 2472[2mms[22m[39m
+ [32m✓[39m demos/sketch-demo/src/__tests__/DataModel.spec.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m demos/sketch-demo/src/__tests__/Serialization.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m test/kernel-reuse/indirect-kernel-correctness.spec.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m test/kernel-reuse/registry-leaf-only.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m test/Geometry.spec.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+[90mstdout[2m | test/kernel-reuse/debug-distance.spec.ts[2m > [22m[2mDebug Distance Constraint[2m > [22m[2mshould debug distance constraint kernel
+[22m[39m
+=== Compiled Kernel ===
+function anonymous(allValues,indices,row
+) {
+
+    const idx_0 = indices[0];
+    const idx_1 = indices[1];
+    const idx_2 = indices[2];
+    const idx_3 = indices[3];
+    const idx_4 = indices[4];
+    const _v0 = allValues[idx_0];
+    const _v1 = allValues[idx_1];
+    const _v2 = (_v0 - _v1);
+    const _v3 = (_v2 * _v2);
+    const _v4 = allValues[idx_2];
+    const _v5 = allValues[idx_3];
+    const _v6 = (_v4 - _v5);
+    const _v7 = (_v6 * _v6);
+    const _v8 = (_v3 + _v7);
+    const _v9 = Math.sqrt(_v8);
+    const _v10 = allValues[idx_4];
+    const _v11 = (_v9 - _v10);
+    let grad__v0 = 0;
+    let grad__v1 = 0;
+    let grad__v2 = 0;
+    let grad__v3 = 0;
+    let grad__v4 = 0;
+    let grad__v5 = 0;
+    let grad__v6 = 0;
+    let grad__v7 = 0;
+    let grad__v8 = 0;
+    let grad__v9 = 0;
+    let grad__v10 = 0;
+    let grad__v11 = 0;
+    grad__v11 = 1;
+    grad__v9 += grad__v11; grad__v10 -= grad__v11;
+    grad__v8 += grad__v9 * 0.5 / Math.sqrt(_v8);
+    grad__v3 += grad__v8; grad__v7 += grad__v8;
+    grad__v6 += grad__v7 * _v6; grad__v6 += grad__v7 * _v6;
+    grad__v4 += grad__v6; grad__v5 -= grad__v6;
+    grad__v2 += grad__v3 * _v2; grad__v2 += grad__v3 * _v2;
+    grad__v0 += grad__v2; grad__v1 -= grad__v2;
+    row[0] = grad__v1;
+    row[1] = grad__v5;
+    row[2] = grad__v0;
+    row[3] = grad__v4;
+    return _v11;
+  
+}
+
+=== Registry ===
+Size: [33m5[39m
+Data array: [ [33m0[39m, [33m0[39m, [33m3[39m, [33m4[39m, [33m5[39m ]
+
+=== Indices ===
+Input indices: [ [33m2[39m, [33m0[39m, [33m3[39m, [33m1[39m, [33m4[39m ]
+
+=== Graph Info ===
+Parameters: [ [32m'x1=0 (id=0)'[39m, [32m'y1=0 (id=1)'[39m, [32m'x2=3 (id=2)'[39m, [32m'y2=4 (id=3)'[39m ]
+Residual value: [33m0[39m
+
+=== Kernel Results ===
+Value: [33m0[39m
+Jacobian: [ [33m-0.6000000000000001[39m, [33m-0.8[39m, [33m0.6000000000000001[39m, [33m0.8[39m ]
+
+=== Graph Results ===
+Value: [33m0[39m
+Gradients: [ [33m-0.6000000000000001[39m, [33m-0.8[39m, [33m0.6000000000000001[39m, [33m0.8[39m ]
+
+=== Comparison ===
+x1: kernel=-0.6000000000000001, graph=-0.6000000000000001, diff=0
+y1: kernel=-0.8, graph=-0.8, diff=0
+x2: kernel=0.6000000000000001, graph=0.6000000000000001, diff=0
+y2: kernel=0.8, graph=0.8, diff=0
+
+ [32m✓[39m test/kernel-reuse/debug-distance.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m test/Optimizers.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m test/Value.edge-cases.spec.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m test/Losses.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m test/hessian.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m test/Value.losses-edge-cases.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m test/Value.memory.spec.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m demos/sketch-demo/src/__tests__/DebugSolver.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m demos/sketch-demo/src/__tests__/SimpleSolverTest.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m test/Optimizers.edge-cases.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m test/Value.grad-flow.spec.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+[90mstderr[2m | test/developable-sphere-sweep.spec.ts
+[22m[39mUsing an object as a third argument is deprecated. Vitest 4 will throw an error if the third argument is not a timeout number. Please use the second argument for options. See more at https://vitest.dev/guide/migration
+
+ [2m[90m↓[39m[22m test/developable-sphere-sweep.spec.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m test/NonlinearLeastSquares.comparison.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 12555[2mms[22m[39m
+   [33m[2m✓[22m[39m Nonlinear Least Squares vs Gradient Descent Comparison[2m > [22mshould compare on 2D point cloud alignment problem (50 points) [33m 727[2mms[22m[39m
+   [33m[2m✓[22m[39m Nonlinear Least Squares vs Gradient Descent Comparison[2m > [22mshould compare on 3D distance constraint problem (30 points) [33m 3233[2mms[22m[39m
+   [33m[2m✓[22m[39m Nonlinear Least Squares vs Gradient Descent Comparison[2m > [22mshould compare on circle fitting with 100 noisy points [33m 8589[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m33 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (34)[39m
+[2m      Tests [22m [1m[32m258 passed[39m[22m[2m | [22m[33m6 skipped[39m[90m (264)[39m
+[2m   Start at [22m 09:25:09
+[2m   Duration [22m 15.12s[2m (transform 5.89s, setup 0ms, collect 18.48s, tests 17.94s, environment 31ms, prepare 21.07s)[22m
+

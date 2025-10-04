@@ -13,7 +13,7 @@ export class MeshRenderer {
   private meshObject: THREE.Mesh | null = null;
   private edgesObject: THREE.LineSegments | null = null;
   private controls: { isDragging: boolean; previousMousePosition: { x: number; y: number } };
-  private rotation: { x: number; y: number };
+  private rotationQuaternion: THREE.Quaternion;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -45,7 +45,7 @@ export class MeshRenderer {
       isDragging: false,
       previousMousePosition: { x: 0, y: 0 },
     };
-    this.rotation = { x: 0, y: 0 };
+    this.rotationQuaternion = new THREE.Quaternion();
 
     this.setupMouseControls(canvas);
   }
@@ -61,16 +61,28 @@ export class MeshRenderer {
         const deltaX = e.clientX - this.controls.previousMousePosition.x;
         const deltaY = e.clientY - this.controls.previousMousePosition.y;
 
-        this.rotation.y += deltaX * 0.005;
-        this.rotation.x += deltaY * 0.005;
+        // Trackball rotation: rotate around camera's axes (view space)
+        const rotationSpeed = 0.005;
+
+        // Create rotation quaternions for camera-relative axes
+        const deltaRotationY = new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(0, 1, 0), // Up axis (camera space Y)
+          -deltaX * rotationSpeed
+        );
+        const deltaRotationX = new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(1, 0, 0), // Right axis (camera space X)
+          deltaY * rotationSpeed
+        );
+
+        // Apply rotations in camera space (order matters!)
+        this.rotationQuaternion.multiplyQuaternions(deltaRotationY, this.rotationQuaternion);
+        this.rotationQuaternion.multiplyQuaternions(deltaRotationX, this.rotationQuaternion);
 
         if (this.meshObject) {
-          this.meshObject.rotation.y = this.rotation.y;
-          this.meshObject.rotation.x = this.rotation.x;
+          this.meshObject.setRotationFromQuaternion(this.rotationQuaternion);
         }
         if (this.edgesObject) {
-          this.edgesObject.rotation.y = this.rotation.y;
-          this.edgesObject.rotation.x = this.rotation.x;
+          this.edgesObject.setRotationFromQuaternion(this.rotationQuaternion);
         }
 
         this.controls.previousMousePosition = { x: e.clientX, y: e.clientY };
@@ -160,8 +172,7 @@ export class MeshRenderer {
     });
 
     this.meshObject = new THREE.Mesh(geometry, material);
-    this.meshObject.rotation.x = this.rotation.x;
-    this.meshObject.rotation.y = this.rotation.y;
+    this.meshObject.setRotationFromQuaternion(this.rotationQuaternion);
     this.scene.add(this.meshObject);
 
     // Add hinge edges (crease lines)
@@ -187,11 +198,11 @@ export class MeshRenderer {
       ];
 
       edges.forEach(([a, b]) => {
-        // Highlight edges where vertices have different classifications (boundary/crease)
+        // Highlight edges where BOTH vertices are seams (high curvature = ridge/crease)
         const aIsSeam = seamSet.has(a);
         const bIsSeam = seamSet.has(b);
 
-        if (aIsSeam !== bIsSeam) {
+        if (aIsSeam && bIsSeam) {
           // Create edge key (sorted to avoid duplicates)
           const key = a < b ? `${a}-${b}` : `${b}-${a}`;
           if (!edgeSet.has(key)) {
@@ -225,8 +236,7 @@ export class MeshRenderer {
     });
 
     this.edgesObject = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-    this.edgesObject.rotation.x = this.rotation.x;
-    this.edgesObject.rotation.y = this.rotation.y;
+    this.edgesObject.setRotationFromQuaternion(this.rotationQuaternion);
     this.scene.add(this.edgesObject);
   }
 

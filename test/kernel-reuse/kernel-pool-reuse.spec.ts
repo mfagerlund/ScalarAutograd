@@ -3,7 +3,7 @@
  */
 
 import { V } from "../../src/V";
-import { CompiledResiduals } from "../../src/CompiledResiduals";
+import { CompiledFunctions } from "../../src/CompiledFunctions";
 
 describe('Kernel Pool Reuse', () => {
   it('should reuse kernels for identical distance constraints', () => {
@@ -34,7 +34,7 @@ describe('Kernel Pool Reuse', () => {
       return res;
     };
 
-    const compiled = CompiledResiduals.compile(points, residuals);
+    const compiled = CompiledFunctions.compile(points, residuals);
 
     console.log(`Distance constraints:`);
     console.log(`  Residuals: ${compiled.numResiduals}`);
@@ -61,7 +61,7 @@ describe('Kernel Pool Reuse', () => {
       V.mul(p[1], p[2]),      // Type 2: multiplication (reuse kernel)
     ];
 
-    const compiled = CompiledResiduals.compile(params, residuals);
+    const compiled = CompiledFunctions.compile(params, residuals);
 
     console.log(`\nMixed operations:`);
     console.log(`  Residuals: ${compiled.numResiduals}`);
@@ -84,7 +84,7 @@ describe('Kernel Pool Reuse', () => {
       V.sub(p[0], V.C(10)), // Different constant 10
     ];
 
-    const compiled = CompiledResiduals.compile(params, residuals);
+    const compiled = CompiledFunctions.compile(params, residuals);
 
     console.log(`\nConstant deduplication:`);
     console.log(`  Residuals: ${compiled.numResiduals}`);
@@ -111,7 +111,7 @@ describe('Kernel Pool Reuse', () => {
       return [V.sub(dist, V.C(5))];
     };
 
-    const compiled = CompiledResiduals.compile(params, residualFn);
+    const compiled = CompiledFunctions.compile(params, residualFn);
 
     // Evaluate with compiled
     const result = compiled.evaluate(params);
@@ -151,7 +151,7 @@ describe('Kernel Pool Reuse', () => {
       return res;
     };
 
-    const compiled = CompiledResiduals.compile(points, residuals);
+    const compiled = CompiledFunctions.compile(points, residuals);
 
     console.log(`\nParallel line constraints:`);
     console.log(`  Residuals: ${compiled.numResiduals}`);
@@ -179,7 +179,7 @@ describe('Kernel Pool Reuse', () => {
       return res;
     };
 
-    const compiled = CompiledResiduals.compile(params, residuals);
+    const compiled = CompiledFunctions.compile(params, residuals);
 
     console.log(`\nCurve fitting:`);
     console.log(`  Residuals: ${compiled.numResiduals}`);

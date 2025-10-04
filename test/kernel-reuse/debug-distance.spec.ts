@@ -44,10 +44,17 @@ describe('Debug Distance Constraint', () => {
     console.log('Parameters:', params.map(p => `${p.label}=${p.data} (id=${p._registryId})`));
     console.log('Residual value:', residual.data);
 
+    // Build gradient indices mapping
+    const paramIds = params.map(p => registry.getId(p));
+    const gradientIndices = indices.map(idx => {
+      const paramIndex = paramIds.indexOf(idx);
+      return paramIndex >= 0 ? paramIndex : -1;
+    });
+
     // Run kernel
     const allValues = registry.getDataArray();
     const jacobianRow = new Array(params.length).fill(0);
-    const kernelValue = kernel(allValues, indices, jacobianRow);
+    const kernelValue = kernel(allValues, indices, gradientIndices, jacobianRow);
 
     console.log('\n=== Kernel Results ===');
     console.log('Value:', kernelValue);

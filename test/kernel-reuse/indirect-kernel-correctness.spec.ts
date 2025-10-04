@@ -29,10 +29,17 @@ function validateKernelMatchesGraph(
   testLog(`Graph inputs: ${indices.length}`);
   testLog(`Parameters: ${params.length}`);
 
+  // Build gradient indices mapping
+  const paramIds = params.map(p => registry.getId(p));
+  const gradientIndices = indices.map(idx => {
+    const paramIndex = paramIds.indexOf(idx);
+    return paramIndex >= 0 ? paramIndex : -1;
+  });
+
   // Get Jacobian row from compiled kernel
   const allValues = registry.getDataArray();
   const jacobianRow = new Array(params.length).fill(0);
-  const kernelValue = kernel(allValues, indices, jacobianRow);
+  const kernelValue = kernel(allValues, indices, gradientIndices, jacobianRow);
 
   testLog(`Kernel value: ${kernelValue}`);
   testLog(`Kernel Jacobian: [${jacobianRow.join(', ')}]`);

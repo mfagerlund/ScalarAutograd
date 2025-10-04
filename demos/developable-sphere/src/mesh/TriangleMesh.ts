@@ -23,7 +23,7 @@ export class TriangleMesh {
   private buildCache(): void {
     this._vertexStars.clear();
 
-    // Build vertex stars (incident faces)
+    // Build vertex stars (incident faces, spatially sorted)
     for (let faceIdx = 0; faceIdx < this.faces.length; faceIdx++) {
       const face = this.faces[faceIdx];
       for (const vertexIdx of face.vertices) {
@@ -32,6 +32,11 @@ export class TriangleMesh {
         }
         this._vertexStars.get(vertexIdx)!.push(faceIdx);
       }
+    }
+
+    // Sort all vertex stars spatially (ordered around vertex)
+    for (const [vertexIdx, star] of this._vertexStars) {
+      this._vertexStars.set(vertexIdx, this.sortVertexStar(vertexIdx, star));
     }
 
     this._cacheValid = true;
@@ -63,11 +68,68 @@ export class TriangleMesh {
     return this._faceAreas.get(faceIdx)!;
   }
 
+  /**
+   * Get vertex star (faces incident to the vertex, spatially sorted around the vertex).
+   * Faces are ordered by edge connectivity for contiguous spatial ordering.
+   */
   getVertexStar(vertexIdx: number): number[] {
     if (!this._cacheValid) {
       this.buildCache();
     }
     return this._vertexStars.get(vertexIdx) || [];
+  }
+
+  /**
+   * Sort vertex star faces in spatial order around the vertex.
+   * Uses edge connectivity to traverse the star in circular order.
+   */
+  private sortVertexStar(_vertexIdx: number, star: number[]): number[] {
+    if (star.length <= 1) return [...star];
+
+    // Build adjacency: which faces share edges with each face
+    const adjacency = new Map<number, number[]>();
+    for (const faceIdx of star) {
+      adjacency.set(faceIdx, []);
+      for (const otherIdx of star) {
+        if (faceIdx !== otherIdx && this.facesShareEdge(faceIdx, otherIdx)) {
+          adjacency.get(faceIdx)!.push(otherIdx);
+        }
+      }
+    }
+
+    // Start with first face and traverse by adjacency
+    const sorted: number[] = [star[0]];
+    const visited = new Set<number>([star[0]]);
+
+    while (sorted.length < star.length) {
+      const current = sorted[sorted.length - 1];
+      const neighbors = adjacency.get(current) || [];
+
+      // Find first unvisited neighbor
+      let found = false;
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          sorted.push(neighbor);
+          visited.add(neighbor);
+          found = true;
+          break;
+        }
+      }
+
+      // If no unvisited neighbor found, the star may not be fully connected
+      // (boundary vertex or non-manifold) - just append remaining unsorted
+      if (!found) {
+        for (const faceIdx of star) {
+          if (!visited.has(faceIdx)) {
+            sorted.push(faceIdx);
+            visited.add(faceIdx);
+          }
+        }
+        break;
+      }
+    }
+
+    return sorted;
   }
 
   getInteriorAngle(faceIdx: number, vertexIdx: number): Value {

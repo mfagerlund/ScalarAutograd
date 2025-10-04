@@ -1,6 +1,6 @@
 import { choleskySolve, computeJtJ, computeJtr, qrSolve } from "./LinearSolver";
 import { Value } from "./Value";
-import { CompiledResiduals } from "./CompiledResiduals";
+import { CompiledFunctions } from "./CompiledFunctions";
 
 /**
  * Configuration options for nonlinear least squares solver.
@@ -110,7 +110,7 @@ function solveNormalEquations(J: number[][], r: number[], lambda: number = 0, us
 function lineSearch(
   params: Value[],
   delta: number[],
-  residualFn: ((params: Value[]) => Value[]) | CompiledResiduals,
+  residualFn: ((params: Value[]) => Value[]) | CompiledFunctions,
   currentCost: number,
   maxSteps: number = 10
 ): number {
@@ -122,7 +122,7 @@ function lineSearch(
       p.data = originalData[idx] + alpha * delta[idx];
     });
 
-    const newCost = residualFn instanceof CompiledResiduals
+    const newCost = residualFn instanceof CompiledFunctions
       ? residualFn.evaluate(params).cost
       : (residualFn as (params: Value[]) => Value[])(params).reduce((sum, r) => sum + r.data * r.data, 0);
 
@@ -142,7 +142,7 @@ function lineSearch(
 
 export function nonlinearLeastSquares(
   params: Value[],
-  residualFn: ((params: Value[]) => Value[]) | CompiledResiduals,
+  residualFn: ((params: Value[]) => Value[]) | CompiledFunctions,
   options: NonlinearLeastSquaresOptions = {}
 ): NonlinearLeastSquaresResult {
   const {
@@ -166,7 +166,7 @@ export function nonlinearLeastSquares(
   let lambda = initialDamping;
 
   for (let iter = 0; iter < maxIterations; iter++) {
-    const { residuals, J, cost } = residualFn instanceof CompiledResiduals
+    const { residuals, J, cost } = residualFn instanceof CompiledFunctions
       ? residualFn.evaluate(params)
       : computeResidualsAndJacobian(params, residualFn as (params: Value[]) => Value[]);
 
@@ -278,7 +278,7 @@ export function nonlinearLeastSquares(
           console.log(`  New params: [${params.map(p => p.data.toFixed(4)).join(', ')}]`);
         }
 
-        const newCost = residualFn instanceof CompiledResiduals
+        const newCost = residualFn instanceof CompiledFunctions
           ? residualFn.evaluate(params).cost
           : (residualFn as (params: Value[]) => Value[])(params).reduce((sum, r) => sum + r.data * r.data, 0);
 
@@ -325,7 +325,7 @@ export function nonlinearLeastSquares(
     prevCost = cost;
   }
 
-  const { cost } = residualFn instanceof CompiledResiduals
+  const { cost } = residualFn instanceof CompiledFunctions
     ? residualFn.evaluate(params)
     : computeResidualsAndJacobian(params, residualFn as (params: Value[]) => Value[]);
   return {
