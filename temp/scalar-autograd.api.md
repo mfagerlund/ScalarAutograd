@@ -189,6 +189,7 @@ export class Value {
     lt(other: Value): Value;
     lte(other: Value): Value;
     static make(data: number, left: Value, right: Value | null, backwardFnBuilder: (out: Value) => BackwardFn, label: string, op?: string): Value;
+    static makeNary(data: number, inputs: Value[], backwardFnBuilder: (out: Value) => BackwardFn, label: string, op?: string): Value;
     max(other: Value): Value;
     static mean(vals: Value[]): Value;
     min(other: Value): Value;
@@ -203,6 +204,8 @@ export class Value {
     paramName?: string;
     pow(exp: number): Value;
     powValue(other: Value | number): Value;
+    // @internal (undocumented)
+    prev: Value[];
     reciprocal(): Value;
     // @internal
     _registryId?: number;

@@ -86,7 +86,7 @@ export class CompiledResiduals {
       const inputIndices = extractInputIndices(r, registry);
 
       return {
-        kernelHash: descriptor.signature.hash,
+        kernelHash: descriptor.canonicalString,
         inputIndices
       };
     });
