@@ -258,7 +258,21 @@ export class ValueArithmetic {
 
   static sum(vals: Value[]): Value {
     if (!vals.length) return new Value(0);
-    return vals.reduce((a, b) => a.add(b));
+    if (vals.length === 1) return vals[0];
+
+    // N-ary sum to avoid deep chains
+    const sum = vals.reduce((acc, v) => acc + v.data, 0);
+    return Value.makeNary(
+      sum,
+      vals,
+      (out) => () => {
+        for (const v of vals) {
+          if (v.requiresGrad) v.grad += out.grad;
+        }
+      },
+      `sum(${vals.length})`,
+      'sum'
+    );
   }
 
   static mean(vals: Value[]): Value {

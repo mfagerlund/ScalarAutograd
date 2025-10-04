@@ -1,6 +1,7 @@
-import { Value, V, Vec3, lbfgs } from 'scalar-autograd';
+import { Value, V, Vec3, lbfgs, CompiledResiduals } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
 import { DevelopableEnergy } from '../energy/DevelopableEnergy';
+import { BoundingBoxEnergy } from '../energy/BoundingBoxEnergy';
 
 export interface OptimizationOptions {
   maxIterations?: number;
@@ -9,6 +10,7 @@ export interface OptimizationOptions {
   captureInterval?: number; // Save mesh every N iterations
   onProgress?: (iteration: number, energy: number, history: TriangleMesh[]) => void;
   chunkSize?: number; // Number of iterations per chunk (for async optimization)
+  energyType?: 'variance' | 'boundingbox'; // Energy function to use
 }
 
 export interface OptimizationResult {
@@ -27,7 +29,7 @@ export class DevelopableOptimizer {
   private mesh: TriangleMesh;
   private history: TriangleMesh[] = [];
   private shouldStop = false;
-  private compiled: ReturnType<typeof V.compileObjective> | null = null;
+  private compiled: ReturnType<typeof CompiledResiduals.compile> | null = null;
   private params: Value[] = [];
 
   constructor(mesh: TriangleMesh) {
@@ -43,43 +45,34 @@ export class DevelopableOptimizer {
       maxIterations = 200,
       gradientTolerance = 1e-5,
       verbose = true,
-      captureInterval = 5,
-      onProgress,
+      energyType = 'boundingbox', // Default to better energy function
     } = options;
 
     // Convert mesh vertices to flat parameter array
     const params = this.meshToParams();
 
-    let iteration = 0;
+    // Choose energy function
+    const EnergyClass = energyType === 'boundingbox' ? BoundingBoxEnergy : DevelopableEnergy;
 
-    // Objective function wrapper
-    const objectiveFn = (p: Value[]): Value => {
-      // Update mesh with new parameters
+    // Compile residuals for efficient gradient computation
+    if (verbose) {
+      console.log(`Using ${energyType} energy with compiled residuals...`);
+    }
+
+    const compiled = CompiledResiduals.compile(params, (p: Value[]) => {
       this.paramsToMesh(p);
+      return EnergyClass.computeResiduals(this.mesh);
+    });
 
-      // Capture snapshot at intervals
-      if (iteration % captureInterval === 0) {
-        this.captureSnapshot();
-        if (verbose) {
-          console.log(`Iteration ${iteration} captured`);
-        }
-      }
+    if (verbose) {
+      console.log(`Compiled: ${compiled.kernelCount} kernels, ${compiled.kernelReuseFactor.toFixed(1)}x reuse`);
+    }
 
-      // Compute energy
-      const energy = DevelopableEnergy.compute(this.mesh);
-
-      // Report progress
-      if (onProgress && iteration % captureInterval === 0) {
-        onProgress(iteration, energy.data, this.history);
-      }
-
-      iteration++;
-
-      return energy;
-    };
+    // Capture initial state
+    this.captureSnapshot();
 
     // Run L-BFGS optimization
-    const result = lbfgs(params, objectiveFn, {
+    const result = lbfgs(params, compiled, {
       maxIterations,
       gradientTolerance,
       verbose,
@@ -98,6 +91,8 @@ export class DevelopableOptimizer {
       history: this.history,
       convergenceReason: result.convergenceReason,
       functionEvaluations: result.functionEvaluations,
+      kernelCount: compiled.kernelCount,
+      kernelReuseFactor: compiled.kernelReuseFactor,
     };
   }
 
@@ -134,6 +129,7 @@ export class DevelopableOptimizer {
       captureInterval = 5,
       chunkSize = 5,
       onProgress,
+      energyType = 'boundingbox',
     } = options;
 
     this.shouldStop = false;
@@ -141,17 +137,8 @@ export class DevelopableOptimizer {
 
     this.params = this.meshToParams();
 
-    // Compile the objective function ONCE for kernel reuse
     if (verbose) {
-      console.log('Compiling objective function with kernel reuse...');
-    }
-    this.compiled = V.compileObjective(this.params, (p: Value[]) => {
-      this.paramsToMesh(p);
-      return DevelopableEnergy.compute(this.mesh);
-    });
-
-    if (verbose) {
-      console.log(`Compiled with ${this.compiled.kernelCount} unique kernels (${this.compiled.numResiduals} residuals, ${this.compiled.kernelReuseFactor.toFixed(1)}x reuse)`);
+      console.log(`Using ${energyType} energy (non-compiled)...`);
     }
 
     let totalIterations = 0;
@@ -165,12 +152,18 @@ export class DevelopableOptimizer {
       onProgress(0, currentEnergy, this.history);
     }
 
+    // Non-compiled objective function
+    const objectiveFn = (p: Value[]) => {
+      this.paramsToMesh(p);
+      return DevelopableEnergy.compute(this.mesh);
+    };
+
     while (totalIterations < maxIterations && !this.shouldStop) {
       // Run a chunk of iterations
       const chunkIterations = Math.min(chunkSize, maxIterations - totalIterations);
 
-      // Use compiled objective for this chunk
-      const result = lbfgs(this.params, this.compiled!, {
+      // Use non-compiled objective for this chunk
+      const result = lbfgs(this.params, objectiveFn, {
         maxIterations: chunkIterations,
         gradientTolerance,
         verbose,

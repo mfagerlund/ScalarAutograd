@@ -50,7 +50,7 @@ export class Value {
   requiresGrad: boolean;
 
   private backwardFn: BackwardFn = () => {};
-  private prev: Value[] = [];
+  /** @internal */ prev: Value[] = [];
 
   /**
    * Optional label for debugging and visualization.
@@ -496,6 +496,26 @@ export class Value {
     const requiresGrad = !Value.no_grad_mode && [left, right].filter(Boolean).some(v => v!.requiresGrad);
     const out = new Value(data, label, requiresGrad);
     out.prev = Value.no_grad_mode ? [] : ([left, right].filter(Boolean) as Value[]);
+    out._op = op;
+    if (requiresGrad) {
+      out.backwardFn = backwardFnBuilder(out);
+    }
+    return out;
+  }
+
+  /**
+   * N-ary operation helper for operations with multiple inputs
+   */
+  static makeNary(
+    data: number,
+    inputs: Value[],
+    backwardFnBuilder: (out: Value) => BackwardFn,
+    label: string,
+    op?: string
+  ): Value {
+    const requiresGrad = !Value.no_grad_mode && inputs.some(v => v.requiresGrad);
+    const out = new Value(data, label, requiresGrad);
+    out.prev = Value.no_grad_mode ? [] : inputs;
     out._op = op;
     if (requiresGrad) {
       out.backwardFn = backwardFnBuilder(out);

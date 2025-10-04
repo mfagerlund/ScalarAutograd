@@ -24,6 +24,7 @@ export default function App() {
 
   const [subdivisions, setSubdivisions] = useState(3);
   const [maxIterations, setMaxIterations] = useState(50);
+  const [energyType, setEnergyType] = useState<'variance' | 'boundingbox'>('variance');
 
   const [metrics, setMetrics] = useState({
     hingeVertices: 0,
@@ -106,6 +107,7 @@ export default function App() {
       verbose: true,
       captureInterval: Math.max(1, Math.floor(maxIterations / 20)),
       chunkSize: 5, // Process 5 iterations at a time
+      energyType, // Pass energy type to optimizer
       onProgress: (iteration, energy, history) => {
         setProgress({ iteration, energy });
 
@@ -209,10 +211,12 @@ export default function App() {
       <div className="main-content">
         <div className="canvas-container">
           <canvas ref={canvasRef} width={800} height={600} />
+
+          {/* Title Overlay */}
           <div style={{
             position: 'absolute',
             top: '10px',
-            left: '10px',
+            right: '10px',
             background: 'rgba(0, 0, 0, 0.5)',
             color: 'white',
             padding: '8px 12px',
@@ -223,88 +227,75 @@ export default function App() {
           }}>
             Developable Sphere Demo
           </div>
-        </div>
 
-        <div className="controls-panel">
-          <div className="metrics-section">
-            <h3>Status</h3>
+          {/* Status Overlay - Top Left */}
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            background: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            padding: '12px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            pointerEvents: 'none',
+            minWidth: '200px'
+          }}>
             {isOptimizing && (
               <>
-                <div className="metric">
-                  <span className="label">Step:</span>
-                  <span className="value">{progress.iteration} / {maxIterations}</span>
-                </div>
-                <div className="metric">
-                  <span className="label">Energy:</span>
-                  <span className="value">{progress.energy.toExponential(3)}</span>
-                </div>
+                <div><strong>Optimizing...</strong></div>
+                <div>Step: {progress.iteration} / {maxIterations}</div>
+                <div>Energy: {progress.energy.toExponential(3)}</div>
               </>
             )}
             {convergenceInfo && !isOptimizing && (
               <>
-                <div className="metric">
-                  <span className="label">Reason:</span>
-                  <span className="value">{convergenceInfo.reason}</span>
-                </div>
+                <div><strong>{convergenceInfo.reason}</strong></div>
                 {convergenceInfo.gradientNorm !== undefined && (
-                  <div className="metric">
-                    <span className="label">Gradient Norm:</span>
-                    <span className="value">{convergenceInfo.gradientNorm.toExponential(3)}</span>
-                  </div>
+                  <div>Grad: {convergenceInfo.gradientNorm.toExponential(3)}</div>
                 )}
                 {convergenceInfo.functionEvals !== undefined && (
-                  <div className="metric">
-                    <span className="label">Function Evals:</span>
-                    <span className="value">{convergenceInfo.functionEvals}</span>
-                  </div>
+                  <div>F-evals: {convergenceInfo.functionEvals}</div>
                 )}
               </>
             )}
             {!isOptimizing && !convergenceInfo && (
-              <div className="metric">
-                <span className="value">Ready</span>
-              </div>
+              <div><strong>Ready</strong></div>
             )}
           </div>
+        </div>
+
+        <div className="controls-panel">
 
           <div className="metrics-section">
             <h3>Metrics</h3>
-            <div className="metric">
-              <span className="label">Hinge Vertices:</span>
-              <span className="value hinge-color">{metrics.hingeVertices}</span>
-            </div>
-            <div className="metric">
-              <span className="label">Seam Vertices:</span>
-              <span className="value seam-color">{metrics.seamVertices}</span>
-            </div>
-            <div className="metric">
-              <span className="label">Developable Ratio:</span>
-              <span className="value">{(metrics.developableRatio * 100).toFixed(1)}%</span>
-            </div>
-            <div className="metric">
-              <span className="label">Avg Energy:</span>
-              <span className="value">{metrics.averageEnergy.toExponential(3)}</span>
-            </div>
-            <div className="metric">
-              <span className="label">Total Vertices:</span>
-              <span className="value">{metrics.totalVertices}</span>
-            </div>
-            <div className="metric">
-              <span className="label">Function Evals:</span>
-              <span className="value">{metrics.functionEvals}</span>
-            </div>
-            <div className="metric">
-              <span className="label">Kernels:</span>
-              <span className="value">{metrics.kernelCount}</span>
-            </div>
-            <div className="metric">
-              <span className="label">Kernel Reuse:</span>
-              <span className="value">{metrics.kernelReuse.toFixed(1)}x</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '13px' }}>
+              <div><span className="hinge-color">●</span> Hinges: {metrics.hingeVertices}</div>
+              <div><span className="seam-color">●</span> Seams: {metrics.seamVertices}</div>
+              <div>Developable: {(metrics.developableRatio * 100).toFixed(1)}%</div>
+              <div>Vertices: {metrics.totalVertices}</div>
+              <div>Avg Energy: {metrics.averageEnergy.toExponential(2)}</div>
+              <div>F-evals: {metrics.functionEvals}</div>
+              <div>Kernels: {metrics.kernelCount}</div>
+              <div>Reuse: {metrics.kernelReuse.toFixed(1)}x</div>
             </div>
           </div>
 
           <div className="control-section">
-            <h3>Mesh Settings</h3>
+            <h3>Settings</h3>
+
+            <label>
+              Energy Function
+              <select
+                value={energyType}
+                onChange={(e) => setEnergyType(e.target.value as 'variance' | 'boundingbox')}
+                disabled={isOptimizing}
+              >
+                <option value="boundingbox">Bounding Box</option>
+                <option value="variance">Variance</option>
+              </select>
+            </label>
+
             <label>
               Subdivisions: {subdivisions}
               <input
@@ -316,11 +307,11 @@ export default function App() {
                 disabled={isOptimizing}
               />
               <span className="hint">
-                {subdivisions === 2 && '(162 vertices)'}
-                {subdivisions === 3 && '(642 vertices)'}
-                {subdivisions === 4 && '(2562 vertices)'}
-                {subdivisions === 5 && '(10242 vertices)'}
-                {subdivisions === 6 && '(40962 vertices)'}
+                {subdivisions === 2 && '162 verts'}
+                {subdivisions === 3 && '642 verts'}
+                {subdivisions === 4 && '2562 verts'}
+                {subdivisions === 5 && '10242 verts'}
+                {subdivisions === 6 && '40962 verts'}
               </span>
             </label>
 

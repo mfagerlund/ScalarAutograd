@@ -1,0 +1,69 @@
+
+> scalar-autograd@0.1.8 test
+> vitest run --globals developable-sphere-sweep
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Dev/ScalarAutograd[39m
+
+[90mstderr[2m | test/developable-sphere-sweep.spec.ts
+[22m[39mUsing an object as a third argument is deprecated. Vitest 4 will throw an error if the third argument is not a timeout number. Please use the second argument for options. See more at https://vitest.dev/guide/migration
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+============================================================
+PARAMETER SWEEP - DEVELOPABLE SPHERE
+Testing 2 configurations
+============================================================
+
+Testing: Variance, subdiv=2, maxIter=100, gradTol=0.000001
+  Compiled: 1 kernels, 1.0x reuse
+  Number of residuals: 1
+  Starting L-BFGS optimization...
+
+[90mstderr[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m  ✗ Failed: Maximum call stack size exceeded
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+Testing: AngleDefect, subdiv=2, maxIter=100, gradTol=0.000001
+  Compiled: 1 kernels, 1.0x reuse
+  Number of residuals: 1
+  Starting L-BFGS optimization...
+  L-BFGS finished: Initial gradient below tolerance
+  ✓ Developable: 0.00%
+    Energy: 9.557e-1
+    Iterations: 0
+    Convergence: Initial gradient below tolerance
+    Time: 848ms
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+============================================================
+RESULTS SUMMARY
+============================================================
+
+Top 5 configurations:
+
+1. 0.00% developable
+   Energy: AngleDefect, subdiv=2, maxIter=100, gradTol=0.000001
+   Final Energy: 9.557e-1, Time: 848ms
+   Convergence: Initial gradient below tolerance
+
+
+Best per subdivision level:
+
+Subdivision 2 (162 vertices):
+  0.00% developable
+  maxIter=100, gradTol=0.000001
+  Time: 848ms
+
+============================================================
+
+ [32m✓[39m test/developable-sphere-sweep.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2841[2mms[22m[39m
+   [33m[2m✓[22m[39m Developable Sphere Optimization[2m > [22mParameter sweep for optimal settings [33m 2838[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 00:36:52
+[2m   Duration [22m 4.44s[2m (transform 484ms, setup 0ms, collect 622ms, tests 2.84s, environment 0ms, prepare 407ms)[22m
+

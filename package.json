@@ -4,6 +4,9 @@
   "description": "Scalar-based reverse-mode automatic differentiation in TypeScript.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "workspaces": [
+    "demos/*"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

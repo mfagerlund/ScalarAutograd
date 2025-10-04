@@ -5,16 +5,32 @@ export class DevelopableEnergy {
   /**
    * Compute total developability energy for the mesh.
    * This is the sum of vertex energies over all vertices.
+   * Uses n-ary sum to avoid deep expression chains.
    */
   static compute(mesh: TriangleMesh): Value {
-    let total = V.C(0);
+    const vertexEnergies: Value[] = [];
+
+    for (let i = 0; i < mesh.vertices.length; i++) {
+      vertexEnergies.push(this.computeVertexEnergy(i, mesh));
+    }
+
+    return V.sum(vertexEnergies);
+  }
+
+  /**
+   * Compute per-vertex residuals for compiled optimization.
+   * Returns array of residuals (one per vertex) instead of summing them.
+   * This avoids deep expression chains and enables kernel compilation.
+   */
+  static computeResiduals(mesh: TriangleMesh): Value[] {
+    const residuals: Value[] = [];
 
     for (let i = 0; i < mesh.vertices.length; i++) {
       const vertexEnergy = this.computeVertexEnergy(i, mesh);
-      total = V.add(total, vertexEnergy);
+      residuals.push(vertexEnergy);
     }
 
-    return total;
+    return residuals;
   }
 
   /**
