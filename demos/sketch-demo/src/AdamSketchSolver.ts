@@ -1,45 +1,28 @@
-/**
- * Sketch solver using nonlinear least squares optimization.
- * Solves geometric constraints by minimizing residuals.
+﻿/**
+ * Sketch solver using Adam optimizer for gradient descent.
+ * Alternative to Levenberg-Marquardt for debugging.
  */
 
-import { V, Value, Vec2 } from '../../../src';
-import { nonlinearLeastSquares } from '../../../src/NonlinearLeastSquares';
+import { Adam, Losses, V, Value, Vec2 } from '../../../src';
 import type { ValueMap } from './ConstraintResiduals';
 import { computeConstraintResiduals } from './ConstraintResiduals';
 import { LineConstraintType } from './types/Entities';
 import type { Project } from './types/Project';
+import type { SolverOptions, SolverResult } from './SketchSolver';
 
-export interface SolverResult {
-  converged: boolean;
-  iterations: number;
-  residual: number;
-  error: string | null;
-}
-
-export interface SolverOptions {
-  tolerance?: number;
-  maxIterations?: number;
-  damping?: number;
-  verbose?: boolean;
-}
-
-export class SketchSolver {
+export class AdamSketchSolver {
   private tolerance: number;
   private maxIterations: number;
-  private damping: number;
-  private verbose: boolean;
+  private learningRate: number;
 
-  constructor(options: SolverOptions = {}) {
+  constructor(options: SolverOptions & { learningRate?: number } = {}) {
     this.tolerance = options.tolerance ?? 1e-6;
-    this.maxIterations = options.maxIterations ?? 100;
-    this.damping = options.damping ?? 1e-3;
-    this.verbose = options.verbose ?? false;
+    this.maxIterations = options.maxIterations ?? 1000; // Adam needs more iterations
+    this.learningRate = options.learningRate ?? 0.1;
   }
 
   /**
-   * Solve constraints for a project.
-   * Updates point positions and circle radii to satisfy constraints.
+   * Solve constraints using Adam optimizer.
    */
   solve(project: Project): SolverResult {
     // Collect all free variables (non-pinned points, free circle radii)
@@ -76,12 +59,11 @@ export class SketchSolver {
       }
     }
 
-    // Build residual function from all constraints
-    // IMPORTANT: Must rebuild residuals each time as parameters change during optimization
-    const residualFn = (vars: Value[]) => {
+    // Build loss function from all constraints
+    const computeLoss = () => {
       const residuals: Value[] = [];
 
-      // Add line constraints as residuals (fixed lengths, horizontal, vertical)
+      // Line constraints
       for (const line of project.lines) {
         const start = valueMap.points.get(line.start)!;
         const end = valueMap.points.get(line.end)!;
@@ -107,22 +89,25 @@ export class SketchSolver {
         }
       }
 
+      // Inter-entity constraints
       for (const constraint of project.constraints) {
         const constraintResiduals = computeConstraintResiduals(constraint, valueMap);
         residuals.push(...constraintResiduals);
       }
 
-      return residuals;
+      // Sum of squared residuals
+      let loss = V.C(0);
+      for (const r of residuals) {
+        loss = V.add(loss, V.mul(r, r));
+      }
+
+      return loss;
     };
 
     // If no variables to optimize, check if constraints are satisfied
     if (variables.length === 0) {
-      const residuals = residualFn([]);
-      const residualSumSquared = residuals.reduce(
-        (sum, r) => sum + r.data ** 2,
-        0
-      );
-      const residualMagnitude = Math.sqrt(residualSumSquared);
+      const loss = computeLoss();
+      const residualMagnitude = Math.sqrt(loss.data);
 
       return {
         converged: residualMagnitude < this.tolerance,
@@ -133,14 +118,45 @@ export class SketchSolver {
     }
 
     try {
-      // Solve using Levenberg-Marquardt
-      const result = nonlinearLeastSquares(variables, residualFn, {
-        costTolerance: this.tolerance,
-        maxIterations: this.maxIterations,
-        initialDamping: this.damping,
-        adaptiveDamping: true,
-        verbose: this.verbose,
-      });
+      // Create Adam optimizer
+      const optimizer = new Adam(variables, { learningRate: this.learningRate });
+
+      let bestLoss = Infinity;
+      let bestResidual = Infinity;
+      let iterations = 0;
+
+      for (let i = 0; i < this.maxIterations; i++) {
+        iterations = i + 1;
+
+        // Compute loss
+        const loss = computeLoss();
+
+        // Zero gradients
+        optimizer.zeroGrad();
+
+        // Backward pass
+        loss.backward();
+
+        // Update parameters
+        optimizer.step();
+
+        // Track best solution
+        const residualMagnitude = Math.sqrt(loss.data);
+        if (residualMagnitude < bestResidual) {
+          bestResidual = residualMagnitude;
+          bestLoss = loss.data;
+        }
+
+        // Check convergence
+        if (residualMagnitude < this.tolerance) {
+          break;
+        }
+
+        // Early stopping if not improving
+        if (i > 100 && residualMagnitude > bestResidual * 1.5) {
+          break;
+        }
+      }
 
       // Update project with solved values
       for (const point of project.points) {
@@ -158,19 +174,11 @@ export class SketchSolver {
         }
       }
 
-      // Compute final residual magnitude
-      const finalResiduals = residualFn(variables);
-      const residualSumSquared = finalResiduals.reduce(
-        (sum, r) => sum + r.data ** 2,
-        0
-      );
-      const residualMagnitude = Math.sqrt(residualSumSquared);
-
       return {
-        converged: result.success,
-        iterations: result.iterations,
-        residual: residualMagnitude,
-        error: result.success ? null : result.convergenceReason,
+        converged: bestResidual < this.tolerance,
+        iterations,
+        residual: bestResidual,
+        error: bestResidual < this.tolerance ? null : `Adam did not converge (best residual: ${bestResidual.toExponential(2)})`,
       };
     } catch (error) {
       return {
@@ -180,13 +188,5 @@ export class SketchSolver {
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
-  }
-
-  /**
-   * Check if a project's constraints are satisfied (within tolerance).
-   */
-  isValid(project: Project): boolean {
-    const result = this.solve(project);
-    return result.converged && result.residual < this.tolerance;
   }
 }

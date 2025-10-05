@@ -125,6 +125,82 @@ console.log('Radius:', params[2].data);
 
 The Levenberg-Marquardt algorithm typically converges 100-1000x faster than gradient descent for least squares problems.
 
+## Choosing the Right Optimizer
+
+ScalarAutograd provides three categories of optimizers, each suited for different problem types:
+
+### 1. Gradient Descent Optimizers (SGD, Adam, AdamW)
+**Best for:** Training neural networks, iterative refinement, online learning
+
+```typescript
+const opt = new Adam([w, b], { learningRate: 0.01 });
+for (let epoch = 0; epoch < 1000; epoch++) {
+  const loss = computeLoss();
+  opt.zeroGrad();
+  loss.backward();
+  opt.step();
+}
+```
+
+**Pros:** Simple, works on any differentiable objective, good for streaming data
+**Cons:** Slow convergence, requires tuning learning rate and iterations
+
+### 2. Levenberg-Marquardt (`V.nonlinearLeastSquares`)
+**Best for:** Nonlinear least squares: minimizing Σ rᵢ(x)²
+
+```typescript
+const result = V.nonlinearLeastSquares(
+  params,
+  (p) => points.map(pt => residualFunction(p, pt)), // Returns array of residuals
+  { maxIterations: 100 }
+);
+```
+
+**Use when:**
+- Problem is naturally formulated as sum of squared residuals
+- You have overdetermined systems (more equations than unknowns)
+- Examples: curve fitting, calibration, parameter estimation, circle/sphere fitting
+
+**Pros:** 10-100x faster than gradient descent, exploits Jacobian structure
+**Cons:** Only works for least squares problems, requires residual formulation
+
+### 3. L-BFGS (`lbfgs`)
+**Best for:** General unconstrained optimization
+
+```typescript
+import { lbfgs } from 'scalar-autograd';
+
+const result = lbfgs(
+  params,
+  (p) => computeObjective(p), // Returns single Value (the cost)
+  { maxIterations: 100 }
+);
+```
+
+**Use when:**
+- Objective has no special structure (not sum-of-squares)
+- High-dimensional problems (100s-1000s of parameters)
+- Memory constrained (stores only ~10 recent gradient pairs)
+- Examples: energy minimization, ML losses, geometric optimization, developable surfaces
+
+**Pros:** Memory efficient, handles non-quadratic objectives well, faster than gradient descent
+**Cons:** Not as fast as LM for least squares, requires smooth objectives
+
+### Quick Decision Guide
+
+```
+Can you write your objective as f(x) = Σ rᵢ(x)² ?
+├─ YES → Use V.nonlinearLeastSquares() (Levenberg-Marquardt)
+│         Fastest for curve fitting, calibration, parameter estimation
+│
+└─ NO → Is it a general smooth objective?
+    ├─ YES → Use lbfgs() for large-scale or L-BFGS for efficiency
+    │         Good for energy minimization, geometric optimization
+    │
+    └─ NO → Use Adam/AdamW for training neural networks
+              Good for online learning, streaming data
+```
+
 ## API Overview
 - **Core Value construction:**
     - `V.C(data, label?)` — constant (non-differentiable), e.g. for data/inputs.
@@ -142,8 +218,9 @@ The Levenberg-Marquardt algorithm typically converges 100-1000x faster than grad
     - `SGD`, `Adam`, `AdamW` - E.g. `const opt = new SGD([w, b], {learningRate: 0.01})`
 - **Losses:**
     - `Losses.mse()`, `Losses.mae()`, `Losses.binaryCrossEntropy()`, `Losses.categoricalCrossEntropy()`, `Losses.huber()`, `Losses.tukey()`
-- **Nonlinear Least Squares:**
-    - `V.nonlinearLeastSquares(params, residualFn, options)` — Levenberg-Marquardt solver for minimizing sum of squared residuals
+- **Advanced Optimization:**
+    - `V.nonlinearLeastSquares(params, residualFn, options)` — Levenberg-Marquardt solver for nonlinear least squares problems (minimizing Σ rᵢ²)
+    - `lbfgs(params, objectiveFn, options)` — L-BFGS optimizer for general unconstrained optimization
 - **Vector utilities:**
     - `Vec2`, `Vec3` — Differentiable 2D/3D vectors with dot, cross, normalize operations
 

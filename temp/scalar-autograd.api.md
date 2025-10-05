@@ -63,6 +63,7 @@ export interface NonlinearLeastSquaresOptions {
     paramTolerance?: number;
     // (undocumented)
     trustRegionRadius?: number;
+    useCompiled?: boolean;
     // (undocumented)
     useQR?: boolean;
     // (undocumented)
@@ -77,8 +78,6 @@ export interface NonlinearLeastSquaresResult {
     convergenceReason: string;
     // (undocumented)
     finalCost: number;
-    // (undocumented)
-    functionEvaluations?: number;
     // (undocumented)
     iterations: number;
     // (undocumented)

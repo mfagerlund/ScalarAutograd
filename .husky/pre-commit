@@ -1,4 +1,4 @@
-# Temporarily disabled
-# npm run build
-# npx api-extractor run --local
-# git add etc/scalar-autograd.api.md
+npm run build
+rm -f etc/scalar-autograd.api.md
+npx api-extractor run --local
+git add etc/scalar-autograd.api.md

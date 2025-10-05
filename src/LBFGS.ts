@@ -1,5 +1,4 @@
 import { Value } from "./Value";
-import { CompiledFunctions } from "./CompiledFunctions";
 
 /**
  * Configuration options for L-BFGS optimizer.
@@ -47,24 +46,20 @@ export interface LBFGSResult {
 
 /**
  * Computes objective value and gradient.
- * Uses compiled path if objectiveFn is CompiledFunctions, otherwise graph backward.
+ * Returns the objective as a Value (whose backward() gives gradients).
  */
 function computeObjectiveAndGradient(
   params: Value[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions
+  objectiveFn: (params: Value[]) => Value
 ): { cost: number; gradient: number[] } {
-  if (objectiveFn instanceof CompiledFunctions) {
-    // Compiled path: sum all functions and accumulate gradients
-    const { value, gradient } = objectiveFn.evaluateSumWithGradient(params);
-    return { cost: value, gradient };
-  }
-
-  // Graph backward path (original implementation)
+  // Zero out gradients
   params.forEach((p) => (p.grad = 0));
 
+  // Compute objective
   const objective = objectiveFn(params);
   const cost = objective.data;
 
+  // Compute gradient via backpropagation
   Value.zeroGradTree(objective);
   params.forEach(p => p.grad = 0);
   objective.backward();
@@ -81,10 +76,10 @@ function computeObjectiveAndGradient(
  * 1. Sufficient decrease (Armijo): f(x + α*d) ≤ f(x) + c1*α*∇f(x)ᵀd
  * 2. Curvature condition: |∇f(x + α*d)ᵀd| ≤ c2*|∇f(x)ᵀd|
  */
-async function wolfeLineSearch(
+function wolfeLineSearch(
   params: Value[],
   direction: number[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
+  objectiveFn: (params: Value[]) => Value,
   currentCost: number,
   currentGradient: number[],
   options: {
@@ -93,7 +88,7 @@ async function wolfeLineSearch(
     maxSteps: number;
     initialStepSize: number;
   }
-): Promise<{ stepSize: number; newCost: number; newGradient: number[]; evaluations: number }> {
+): { stepSize: number; newCost: number; newGradient: number[]; evaluations: number } {
   const { c1, c2, maxSteps, initialStepSize } = options;
   const originalData = params.map((p) => p.data);
 
@@ -121,7 +116,7 @@ async function wolfeLineSearch(
     });
 
     // Evaluate objective and gradient at new point
-    const { cost: newCost, gradient: newGradient } = await computeObjectiveAndGradient(params, objectiveFn);
+    const { cost: newCost, gradient: newGradient } = computeObjectiveAndGradient(params, objectiveFn);
     evaluations++;
 
     // Check for numerical issues
@@ -244,7 +239,6 @@ function twoLoopRecursion(
  * @returns Optimization result with convergence information
  *
  * @example
- * Basic usage with function:
  * ```typescript
  * const x = V.W(1.0);
  * const y = V.W(2.0);
@@ -261,32 +255,13 @@ function twoLoopRecursion(
  * console.log(`Solution: x=${x.data}, y=${y.data}`);
  * ```
  *
- * @example
- * Performance optimization with compiled objective (5-10x faster):
- * ```typescript
- * const x = V.W(1.0);
- * const y = V.W(2.0);
- * const params = [x, y];
- *
- * // Compile the objective function once
- * const compiled = V.compileObjective(params, (p) => {
- *   const [x, y] = p;
- *   const a = V.sub(V.C(1), x);
- *   const b = V.sub(y, V.pow(x, 2));
- *   return V.add(V.pow(a, 2), V.mul(V.C(100), V.pow(b, 2)));
- * });
- *
- * // Solve with compiled gradients
- * const result = lbfgs(params, compiled, { verbose: true });
- * ```
- *
  * @public
  */
-export async function lbfgs(
+export function lbfgs(
   params: Value[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
+  objectiveFn: (params: Value[]) => Value,
   options: LBFGSOptions = {}
-): Promise<LBFGSResult> {
+): LBFGSResult {
   const {
     maxIterations = 100,
     costTolerance = 1e-6,
@@ -316,7 +291,7 @@ export async function lbfgs(
   const rho_history: number[] = [];  // 1 / (y^T * s)
 
   // Initial evaluation
-  let { cost, gradient } = await computeObjectiveAndGradient(params, objectiveFn);
+  let { cost, gradient } = computeObjectiveAndGradient(params, objectiveFn);
   totalFunctionEvaluations++;
   let gradientNorm = Math.sqrt(gradient.reduce((sum, g) => sum + g * g, 0));
 
@@ -346,7 +321,7 @@ export async function lbfgs(
     const direction = twoLoopRecursion(gradient, s_history, y_history, rho_history);
 
     // Perform line search with Wolfe conditions
-    const lineSearchResult = await wolfeLineSearch(params, direction, objectiveFn, cost, gradient, {
+    const lineSearchResult = wolfeLineSearch(params, direction, objectiveFn, cost, gradient, {
       c1,
       c2,
       maxSteps: maxLineSearchSteps,

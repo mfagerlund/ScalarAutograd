@@ -7,17 +7,19 @@
  * - Deleting entities with cascade
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type {
+    Circle,
+    Line,
+    ParallelConstraint,
+    Point,
+    Project,
+} from '../types';
 import {
-  Point,
-  Line,
-  Circle,
-  Project,
-  LineConstraintType,
-  ConstraintType,
-  ParallelConstraint,
-  serializeProject,
-  deserializeProject,
+    ConstraintType,
+    deserializeProject,
+    LineConstraintType,
+    serializeProject,
 } from '../types';
 
 describe('Data Model - Create Operations', () => {

@@ -3,13 +3,13 @@
  * Provides intent-based methods for user actions
  */
 
-import type { SketchState } from './types/SketchState';
-import type { Point, Line, Circle, Entity } from './types/Entities';
+import { SketchSolver } from './SketchSolver';
 import type { Constraint } from './types/Constraints';
 import { ConstraintType } from './types/Constraints';
-import { isPoint, isLine, isCircle, LineConstraintType } from './types/Entities';
+import type { Circle, Entity, Line, Point } from './types/Entities';
+import { isCircle, isLine, isPoint, LineConstraintType } from './types/Entities';
+import type { SketchState } from './types/SketchState';
 import { ToolMode } from './types/SketchState';
-import { SketchSolver } from './SketchSolver';
 
 export class SketchController {
   private solver: SketchSolver;
@@ -244,7 +244,13 @@ export class SketchController {
     if (!point.pinned) {
       point.x = x;
       point.y = y;
-      this.solve();
+      try {
+        this.solve();
+      } catch (error) {
+        console.error('Solver error when moving point:', error);
+        console.log('Point:', point, 'Position:', x, y);
+        console.log('Project state:', this.state.project);
+      }
     }
   }
 
@@ -260,6 +266,7 @@ export class SketchController {
    */
   updateLineConstraint(line: Line, constraintType: LineConstraintType): void {
     line.constraintType = constraintType;
+    this.solve();
   }
 
   /**
@@ -267,6 +274,7 @@ export class SketchController {
    */
   updateLineLength(line: Line, length: number | undefined): void {
     line.fixedLength = length;
+    this.solve();
   }
 
   /**
@@ -274,6 +282,7 @@ export class SketchController {
    */
   updateCircleRadius(circle: Circle, radius: number): void {
     circle.radius = radius;
+    this.solve();
   }
 
   /**
@@ -378,7 +387,7 @@ export class SketchController {
    * Find entity at a given position (for hit testing)
    * Returns the topmost entity at the position, or null
    */
-  findEntityAt(x: number, y: number, tolerance = 5): Entity | null {
+  findEntityAt(x: number, y: number, tolerance = 8): Entity | null {
     // Check points first (highest priority)
     for (const point of this.state.project.points) {
       const dx = point.x - x;

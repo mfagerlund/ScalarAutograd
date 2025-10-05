@@ -5,36 +5,49 @@ A **juicy**, interactive parametric sketch editor inspired by Fusion 360's sketc
 
 ## Core Entities
 
-### Point
+### Point (`src/types/Entities.ts`)
 - Position: `(x, y)`
-- Can be free or constrained
+- **Intrinsic Constraint**: `pinned?: boolean` - If true, position is fixed (not optimized)
 - Visual: Circle with radius based on zoom level
 
-### Line
-- Connects two points (start, end)
-- Constraints:
-  - **Horizontal**: `y1 = y2`
-  - **Vertical**: `x1 = x2`
-  - **Fixed Length**: `distance(p1, p2) = length`
-  - **Free**: No intrinsic constraints
+### Line (`src/types/Entities.ts`)
+- Connects two points (start, end) - direct object references
+- **Intrinsic Constraints** (enum `LineConstraintType`):
+  - `Free` - No orientation constraint
+  - `Horizontal` - Forces `y1 = y2`
+  - `Vertical` - Forces `x1 = x2`
+  - `fixedLength?: number` - If defined, distance is constrained
 
-### Circle
-- Center point + radius
-- Constraints:
-  - **Fixed Radius**: `radius = value`
-  - **Free Radius**: Solver decides
+### Circle (`src/types/Entities.ts`)
+- Center point (reference) + radius
+- **Intrinsic Constraint**: `fixedRadius: boolean` - If true, radius is fixed
 
-## Inter-Entity Constraints
+## Inter-Entity Constraints (`src/types/Constraints.ts`)
 
-1. **Coincident** (implicit): Shared points between entities
-2. **Collinear**: Two lines share the same infinite line
-3. **Parallel**: Two lines have same direction
-4. **Perpendicular**: Two lines at 90°
-5. **Angle**: Two lines at specified angle (degrees)
-6. **Point-on-Line**: Point lies anywhere on line ray
-7. **Point-on-Circle**: Point lies on circle perimeter
-8. **Tangent**: Line is tangent to circle
-9. **Radial-Alignment**: Point, circle center, and another point are collinear (for tangent normal constraints)
+**Line-to-Line (4):**
+1. **Collinear**: Two lines share the same infinite line
+2. **Parallel**: Two lines have same direction
+3. **Perpendicular**: Two lines at 90°
+4. **Angle**: Two lines at specified angle (degrees)
+
+**Point-Entity (2):**
+5. **PointOnLine**: Point lies anywhere on line ray
+6. **PointOnCircle**: Point lies on circle perimeter
+
+**Line-Circle (2):**
+7. **Tangent**: Line is tangent to circle
+8. **RadialAlignment**: Point, circle center, and another point are collinear
+
+**Equality (2):**
+9. **EqualLength**: Multiple lines have equal length
+10. **EqualRadius**: Multiple circles have equal radius
+
+**Circle-Circle (2):**
+11. **CirclesIntersect**: Sum of radii equals distance between centers
+12. **CirclesTangent**: Difference or sum of radii equals distance between centers
+
+**Implicit:**
+- **Coincident**: Entities sharing the same Point object reference
 
 ## Solver Behavior
 
@@ -240,3 +253,53 @@ demos/sketch-demo/
 - Solver divergence → freeze last valid state, show error
 - Numerical instability → add small epsilon to prevent division by zero
 - Over-constrained → detect via solver failure + constraint count heuristic
+
+## Solver Optimization Notes
+
+### Current State (Post-Fix)
+- **Critical Bug Fixed (2025-01-03)**: Residuals were computed once and frozen, preventing any optimization progress. Now residuals rebuild on each evaluation. Performance improved from complete failure to 2-3 iterations.
+- LM solver now **200-500x faster** than Adam for typical constraints
+- Convergence: 2-3 iterations for simple systems (horizontal/vertical lines, L-shapes)
+
+### Known Limitations & Future Improvements
+
+#### Underdetermined Systems (All Free Points)
+When no points are pinned, systems have a **nullspace** (e.g., horizontal line can translate freely in x). Current behavior:
+- Solver finds *some* solution in nullspace (non-deterministic)
+- Works but solution depends on initial positions
+
+**Potential Improvements:**
+1. **Minimum-norm solution** - Use SVD pseudo-inverse for deterministic nullspace handling
+2. **Weak regularizer** - Add small penalty for moving from initial positions (`||x - x₀||²`)
+3. **Auto-pin heuristic** - Automatically pin one point when nullspace detected
+
+#### Solver Enhancements (from least squares literature)
+
+**Rank Deficiency Handling:**
+- **SVD-based detection** - Compute singular values, detect small σᵢ indicating rank deficiency
+- **Switch to QR/SVD** - Avoid normal equations (JᵀJ) for underdetermined systems
+  - Current: Cholesky on JᵀJ (default)
+  - Available: QR solver (`useQR: true` option)
+  - Future: SVD solver with truncated small singular values
+
+**Regularization Strategies:**
+- **Tikhonov (Ridge)** - Currently implemented as damping parameter λ
+  - `min ||Ax - b||² + λ||Lx||²`
+  - Current: L = I (identity)
+  - Future: L = discrete gradient/Laplacian for smoothness
+- **Truncated SVD** - Zero out small singular values (spectral filtering)
+- **Sparsity (LASSO)** - `min ||Ax - b||² + λ||x||₁` for sparse solutions
+
+**Numerical Robustness:**
+- **Column scaling** - Normalize feature scales before regularization (e.g., pixels vs angles)
+- **Adaptive λ selection** - Cross-validation, L-curve analysis, or GCV instead of fixed damping
+- **Nullspace inspection** - Show user which DOFs are unconstrained
+
+**Solver Alternatives:**
+- **LSQR/LSMR** - For large/sparse systems with optional Tikhonov damping
+- **Constrained QP** - Add bounds (x ≥ 0) or linear constraints as quadratic program
+
+**References:**
+- SVD pseudo-inverse: `x* = A⁺b = VΣ⁺Uᵀb` (minimum-norm solution)
+- Tikhonov: `x = (AᵀA + λI)⁻¹Aᵀb` (closed form with L=I)
+- See: Golub & Van Loan "Matrix Computations", Hansen "Regularization Tools"

@@ -4,17 +4,24 @@
  * When constraints are satisfied, all residuals should be zero.
  */
 
-import { Value, V, Vec2 } from '../../../src';
+import { V, Value, Vec2 } from '../../../src';
 import type {
-  Constraint,
-  CollinearConstraint,
-  ParallelConstraint,
-  PerpendicularConstraint,
-  AngleConstraint,
-  PointOnLineConstraint,
-  PointOnCircleConstraint,
-  TangentConstraint,
-  RadialAlignmentConstraint,
+    AngleConstraint,
+    CirclesTangentConstraint,
+    CoincidentConstraint,
+    CollinearConstraint,
+    ConcentricConstraint,
+    Constraint,
+    EqualLengthConstraint,
+    EqualRadiusConstraint,
+    MidpointConstraint,
+    ParallelConstraint,
+    PerpendicularConstraint,
+    PointOnCircleConstraint,
+    PointOnLineConstraint,
+    RadialAlignmentConstraint,
+    SymmetryConstraint,
+    TangentConstraint,
 } from './types/Constraints';
 import { ConstraintType } from './types/Constraints';
 
@@ -36,6 +43,10 @@ export function computeConstraintResiduals(
   valueMap: ValueMap
 ): Value[] {
   switch (constraint.type) {
+    case ConstraintType.Coincident:
+      return computeCoincidentResiduals(constraint, valueMap);
+    case ConstraintType.Midpoint:
+      return computeMidpointResiduals(constraint, valueMap);
     case ConstraintType.Collinear:
       return computeCollinearResiduals(constraint, valueMap);
     case ConstraintType.Parallel:
@@ -52,29 +63,45 @@ export function computeConstraintResiduals(
       return computeTangentResiduals(constraint, valueMap);
     case ConstraintType.RadialAlignment:
       return computeRadialAlignmentResiduals(constraint, valueMap);
+    case ConstraintType.EqualLength:
+      return computeEqualLengthResiduals(constraint, valueMap);
+    case ConstraintType.EqualRadius:
+      return computeEqualRadiusResiduals(constraint, valueMap);
+    case ConstraintType.CirclesTangent:
+      return computeCirclesTangentResiduals(constraint, valueMap);
+    case ConstraintType.Concentric:
+      return computeConcentricResiduals(constraint, valueMap);
+    case ConstraintType.Symmetry:
+      return computeSymmetryResiduals(constraint, valueMap);
     default:
       return [];
   }
 }
 
 /**
- * Collinear constraint: Three points lie on the same line.
- * Residual: Area of triangle formed by three points should be zero.
- * Area = 0.5 * |cross product of two edge vectors|
+ * Collinear constraint: Two lines lie on the same infinite line.
+ * Residual: Cross product of direction vectors should be zero (parallel)
+ * AND one line's start point should lie on the other line's infinite extension.
  */
 function computeCollinearResiduals(
   constraint: CollinearConstraint,
   valueMap: ValueMap
 ): Value[] {
-  const p1 = valueMap.points.get(constraint.point1)!;
-  const p2 = valueMap.points.get(constraint.point2)!;
-  const p3 = valueMap.points.get(constraint.point3)!;
+  const l1Start = valueMap.points.get(constraint.line1.start)!;
+  const l1End = valueMap.points.get(constraint.line1.end)!;
+  const l2Start = valueMap.points.get(constraint.line2.start)!;
+  const l2End = valueMap.points.get(constraint.line2.end)!;
 
-  const v1 = p2.sub(p1);
-  const v2 = p3.sub(p1);
-  const cross = Vec2.cross(v1, v2);
+  const dir1 = l1End.sub(l1Start);
+  const dir2 = l2End.sub(l2Start);
 
-  return [cross]; // Should be 0 when collinear
+  // Lines must be parallel (cross product = 0)
+  const cross = Vec2.cross(dir1, dir2);
+
+  // Line2's start point must lie on line1's infinite extension
+  const distance = Vec2.distanceToLine(l2Start, l1Start, l1End);
+
+  return [cross, distance]; // Both should be 0 when collinear
 }
 
 /**
@@ -216,4 +243,166 @@ function computeRadialAlignmentResiduals(
   const cross = Vec2.cross(v1, v2);
 
   return [cross]; // Should be 0 when collinear
+}
+
+/**
+ * Equal length constraint: Multiple lines have equal length.
+ * Residual: Difference between each line's length and the first line's length.
+ * Creates N-1 residuals for N lines.
+ */
+function computeEqualLengthResiduals(
+  constraint: EqualLengthConstraint,
+  valueMap: ValueMap
+): Value[] {
+  if (constraint.lines.length < 2) return [];
+
+  const residuals: Value[] = [];
+
+  // Get first line's length as reference
+  const firstStart = valueMap.points.get(constraint.lines[0].start)!;
+  const firstEnd = valueMap.points.get(constraint.lines[0].end)!;
+  const firstLength = firstEnd.sub(firstStart).magnitude;
+
+  // Compare all other lines to first line
+  for (let i = 1; i < constraint.lines.length; i++) {
+    const start = valueMap.points.get(constraint.lines[i].start)!;
+    const end = valueMap.points.get(constraint.lines[i].end)!;
+    const length = end.sub(start).magnitude;
+
+    residuals.push(V.sub(length, firstLength));
+  }
+
+  return residuals; // All should be 0 when lengths are equal
+}
+
+/**
+ * Equal radius constraint: Multiple circles have equal radius.
+ * Residual: Difference between each circle's radius and the first circle's radius.
+ * Creates N-1 residuals for N circles.
+ */
+function computeEqualRadiusResiduals(
+  constraint: EqualRadiusConstraint,
+  valueMap: ValueMap
+): Value[] {
+  if (constraint.circles.length < 2) return [];
+
+  const residuals: Value[] = [];
+
+  // Get first circle's radius as reference
+  const firstRadius = valueMap.circleRadii.get(constraint.circles[0]) ?? V.C(constraint.circles[0].radius);
+
+  // Compare all other circles to first circle
+  for (let i = 1; i < constraint.circles.length; i++) {
+    const radius = valueMap.circleRadii.get(constraint.circles[i]) ?? V.C(constraint.circles[i].radius);
+
+    residuals.push(V.sub(radius, firstRadius));
+  }
+
+  return residuals; // All should be 0 when radii are equal
+}
+
+/**
+ * Circles tangent constraint: Two circles are tangent (touch at exactly one point).
+ * Residual: Distance between centers equals sum (external tangent) or difference (internal tangent) of radii.
+ * We use external tangent: distance = r1 + r2
+ */
+function computeCirclesTangentResiduals(
+  constraint: CirclesTangentConstraint,
+  valueMap: ValueMap
+): Value[] {
+  const center1 = valueMap.points.get(constraint.circle1.center)!;
+  const center2 = valueMap.points.get(constraint.circle2.center)!;
+  const radius1 = valueMap.circleRadii.get(constraint.circle1) ?? V.C(constraint.circle1.radius);
+  const radius2 = valueMap.circleRadii.get(constraint.circle2) ?? V.C(constraint.circle2.radius);
+
+  const distance = center2.sub(center1).magnitude;
+
+  // External tangent: distance = r1 + r2
+  const targetDistance = V.add(radius1, radius2);
+  const residual = V.sub(distance, targetDistance);
+
+  return [residual]; // Should be 0 when circles are tangent
+}
+
+/**
+ * Coincident constraint: Two points share the same position.
+ * Residual: Distance between points should be zero (both x and y coordinates match).
+ */
+function computeCoincidentResiduals(
+  constraint: CoincidentConstraint,
+  valueMap: ValueMap
+): Value[] {
+  const p1 = valueMap.points.get(constraint.point1)!;
+  const p2 = valueMap.points.get(constraint.point2)!;
+
+  const dx = V.sub(p1.x, p2.x);
+  const dy = V.sub(p1.y, p2.y);
+
+  return [dx, dy]; // Both should be 0 when points are coincident
+}
+
+/**
+ * Midpoint constraint: Point is at the midpoint of a line.
+ * Residual: Point position should equal average of line endpoints.
+ */
+function computeMidpointResiduals(
+  constraint: MidpointConstraint,
+  valueMap: ValueMap
+): Value[] {
+  const point = valueMap.points.get(constraint.point)!;
+  const lineStart = valueMap.points.get(constraint.line.start)!;
+  const lineEnd = valueMap.points.get(constraint.line.end)!;
+
+  const midpoint = lineStart.add(lineEnd).mul(V.C(0.5));
+
+  const dx = V.sub(point.x, midpoint.x);
+  const dy = V.sub(point.y, midpoint.y);
+
+  return [dx, dy]; // Both should be 0 when point is at midpoint
+}
+
+/**
+ * Concentric constraint: Two circles share the same center.
+ * Residual: Distance between centers should be zero.
+ */
+function computeConcentricResiduals(
+  constraint: ConcentricConstraint,
+  valueMap: ValueMap
+): Value[] {
+  const center1 = valueMap.points.get(constraint.circle1.center)!;
+  const center2 = valueMap.points.get(constraint.circle2.center)!;
+
+  const dx = V.sub(center1.x, center2.x);
+  const dy = V.sub(center1.y, center2.y);
+
+  return [dx, dy]; // Both should be 0 when centers are coincident
+}
+
+/**
+ * Symmetry constraint: Two points are symmetric about a line (mirror reflection).
+ * Residual:
+ * 1. Midpoint of p1-p2 should lie on symmetry line
+ * 2. Line p1-p2 should be perpendicular to symmetry line
+ */
+function computeSymmetryResiduals(
+  constraint: SymmetryConstraint,
+  valueMap: ValueMap
+): Value[] {
+  const p1 = valueMap.points.get(constraint.point1)!;
+  const p2 = valueMap.points.get(constraint.point2)!;
+  const lineStart = valueMap.points.get(constraint.symmetryLine.start)!;
+  const lineEnd = valueMap.points.get(constraint.symmetryLine.end)!;
+
+  // Midpoint of p1-p2
+  const midpoint = p1.add(p2).mul(V.C(0.5));
+
+  // Residual 1: Midpoint should lie on symmetry line
+  const distanceToLine = Vec2.distanceToLine(midpoint, lineStart, lineEnd);
+
+  // Residual 2: Vector p1-p2 should be perpendicular to symmetry line
+  const p1p2 = p2.sub(p1);
+  const lineDir = lineEnd.sub(lineStart);
+  const dotProduct = Vec2.dot(p1p2, lineDir);
+
+  return [distanceToLine, dotProduct]; // Both should be 0 when symmetric
 }

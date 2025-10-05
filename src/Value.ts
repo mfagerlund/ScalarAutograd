@@ -16,6 +16,7 @@ const EPS = 1e-12;
 import { ValueActivation } from './ValueActivation';
 import { ValueArithmetic } from './ValueArithmetic';
 import { ValueComparison } from './ValueComparison';
+import { ValueTrig } from './ValueTrig';
 
 /**
  * Represents a scalar value in the computational graph for automatic differentiation.
@@ -93,6 +94,53 @@ export class Value {
     return typeof x === 'number' ? new Value(x) : x;
   }
 
+  /**
+   * Returns sin(this).
+   * @returns New Value with sin.
+   */
+  sin(): Value {
+    return ValueTrig.sin(this);
+  }
+
+  /**
+   * Returns cos(this).
+   * @returns New Value with cos.
+   */
+  cos(): Value {
+    return ValueTrig.cos(this);
+  }
+
+  /**
+   * Returns tan(this).
+   * @returns New Value with tan.
+   */
+  tan(): Value {
+    return ValueTrig.tan(this);
+  }
+
+  /**
+   * Returns asin(this).
+   * @returns New Value with asin.
+   */
+  asin(): Value {
+    return ValueTrig.asin(this);
+  }
+
+  /**
+   * Returns acos(this).
+   * @returns New Value with acos.
+   */
+  acos(): Value {
+    return ValueTrig.acos(this);
+  }
+
+  /**
+   * Returns atan(this).
+   * @returns New Value with atan.
+   */
+  atan(): Value {
+    return ValueTrig.atan(this);
+  }
 
   /**
    * Returns relu(this).

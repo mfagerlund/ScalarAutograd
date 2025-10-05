@@ -2,7 +2,7 @@
  * Constraint types for geometric relationships
  */
 
-import type { Line, Point, Circle } from './Entities';
+import type { Circle, Line, Point } from './Entities';
 
 /**
  * Base constraint interface
@@ -16,6 +16,10 @@ export interface BaseConstraint {
  * All constraint types
  */
 export enum ConstraintType {
+  // Point constraints
+  Coincident = 'coincident',           // Two points share same position
+  Midpoint = 'midpoint',               // Point is midpoint of line
+
   // Line-to-line constraints
   Collinear = 'collinear',
   Parallel = 'parallel',
@@ -29,6 +33,17 @@ export enum ConstraintType {
   // Line-circle constraints
   Tangent = 'tangent',
   RadialAlignment = 'radial-alignment',  // Point-circle-point collinearity
+
+  // Equality constraints
+  EqualLength = 'equal-length',
+  EqualRadius = 'equal-radius',
+
+  // Circle-circle constraints
+  CirclesTangent = 'circles-tangent',
+  Concentric = 'concentric',           // Circles share same center
+
+  // Symmetry
+  Symmetry = 'symmetry',               // Two points symmetric about line
 }
 
 /**
@@ -107,9 +122,73 @@ export interface RadialAlignmentConstraint extends BaseConstraint {
 }
 
 /**
+ * Multiple lines have equal length
+ */
+export interface EqualLengthConstraint extends BaseConstraint {
+  type: ConstraintType.EqualLength;
+  lines: Line[];
+}
+
+/**
+ * Multiple circles have equal radius
+ */
+export interface EqualRadiusConstraint extends BaseConstraint {
+  type: ConstraintType.EqualRadius;
+  circles: Circle[];
+}
+
+/**
+ * Two circles are tangent (difference or sum of radii equals distance between centers)
+ */
+export interface CirclesTangentConstraint extends BaseConstraint {
+  type: ConstraintType.CirclesTangent;
+  circle1: Circle;
+  circle2: Circle;
+}
+
+/**
+ * Two circles share the same center point (concentric)
+ */
+export interface ConcentricConstraint extends BaseConstraint {
+  type: ConstraintType.Concentric;
+  circle1: Circle;
+  circle2: Circle;
+}
+
+/**
+ * Two points share the same position (coincident)
+ */
+export interface CoincidentConstraint extends BaseConstraint {
+  type: ConstraintType.Coincident;
+  point1: Point;
+  point2: Point;
+}
+
+/**
+ * Point is at the midpoint of a line
+ */
+export interface MidpointConstraint extends BaseConstraint {
+  type: ConstraintType.Midpoint;
+  point: Point;
+  line: Line;
+}
+
+/**
+ * Two points are symmetric about a line (mirror symmetry)
+ */
+export interface SymmetryConstraint extends BaseConstraint {
+  type: ConstraintType.Symmetry;
+  point1: Point;
+  point2: Point;
+  symmetryLine: Line;
+}
+
+/**
  * Union type for all constraints
  */
 export type Constraint =
+  | CoincidentConstraint
+  | MidpointConstraint
   | CollinearConstraint
   | ParallelConstraint
   | PerpendicularConstraint
@@ -117,4 +196,9 @@ export type Constraint =
   | PointOnLineConstraint
   | PointOnCircleConstraint
   | TangentConstraint
-  | RadialAlignmentConstraint;
+  | RadialAlignmentConstraint
+  | EqualLengthConstraint
+  | EqualRadiusConstraint
+  | CirclesTangentConstraint
+  | ConcentricConstraint
+  | SymmetryConstraint;
