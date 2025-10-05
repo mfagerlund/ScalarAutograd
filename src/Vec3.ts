@@ -45,6 +45,63 @@ export class Vec3 {
     return new Vec3(V.div(this.x, mag), V.div(this.y, mag), V.div(this.z, mag));
   }
 
+  /**
+   * Normalized vector with custom analytical gradients.
+   * More efficient than autodiff through magnitude and division.
+   *
+   * Gradient formula: ∂(v/|v|)/∂v = (I - nn^T)/|v| where n = v/|v|
+   */
+  normalizedCustomGrad(): Vec3 {
+    // Forward pass: compute normalized vector using .data (no autodiff graph)
+    const mag = Math.sqrt(this.x.data * this.x.data + this.y.data * this.y.data + this.z.data * this.z.data);
+    const nx = this.x.data / mag;
+    const ny = this.y.data / mag;
+    const nz = this.z.data / mag;
+    const invMag = 1.0 / mag;
+
+    // Create output Values with custom backward pass
+    const outX = Value.makeNary(
+      nx,
+      [this.x, this.y, this.z],
+      (out) => () => {
+        // ∂nx/∂vx = (1 - nx*nx)/|v|, ∂nx/∂vy = -nx*ny/|v|, ∂nx/∂vz = -nx*nz/|v|
+        this.x.grad += out.grad * (1 - nx * nx) * invMag;
+        this.y.grad += out.grad * (-nx * ny) * invMag;
+        this.z.grad += out.grad * (-nx * nz) * invMag;
+      },
+      'normalize_x',
+      'normalize_x'
+    );
+
+    const outY = Value.makeNary(
+      ny,
+      [this.x, this.y, this.z],
+      (out) => () => {
+        // ∂ny/∂vx = -ny*nx/|v|, ∂ny/∂vy = (1 - ny*ny)/|v|, ∂ny/∂vz = -ny*nz/|v|
+        this.x.grad += out.grad * (-ny * nx) * invMag;
+        this.y.grad += out.grad * (1 - ny * ny) * invMag;
+        this.z.grad += out.grad * (-ny * nz) * invMag;
+      },
+      'normalize_y',
+      'normalize_y'
+    );
+
+    const outZ = Value.makeNary(
+      nz,
+      [this.x, this.y, this.z],
+      (out) => () => {
+        // ∂nz/∂vx = -nz*nx/|v|, ∂nz/∂vy = -nz*ny/|v|, ∂nz/∂vz = (1 - nz*nz)/|v|
+        this.x.grad += out.grad * (-nz * nx) * invMag;
+        this.y.grad += out.grad * (-nz * ny) * invMag;
+        this.z.grad += out.grad * (1 - nz * nz) * invMag;
+      },
+      'normalize_z',
+      'normalize_z'
+    );
+
+    return new Vec3(outX, outY, outZ);
+  }
+
   static dot(a: Vec3, b: Vec3): Value {
     return V.add(V.add(V.mul(a.x, b.x), V.mul(a.y, b.y)), V.mul(a.z, b.z));
   }

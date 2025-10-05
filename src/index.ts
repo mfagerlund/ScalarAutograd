@@ -1,3 +1,4 @@
+import './EigenvalueHelpers';
 export { CompiledFunctions } from './CompiledFunctions';
 export { CompiledResiduals } from './CompiledResiduals';
 export { Geometry } from './Geometry';

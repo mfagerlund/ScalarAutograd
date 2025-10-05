@@ -199,9 +199,10 @@ export class DevelopableOptimizer {
       // Use async compilation to avoid freezing the browser
       compiled = await CompiledResiduals.compileAsync(this.params, (p: Value[]) => {
         this.paramsToMesh(p);
-        return energyFunction.computeResiduals(this.mesh);
-      }, 50, options.onCompileProgress); // Process 50 residuals at a time, with progress callback
-
+        const residuals = energyFunction.computeResiduals(this.mesh);
+        return residuals;
+      }, 50); // Process 50 residuals at a time, with progress callback , options.onCompileProgressyou're 
+        
       compilationTime = (Date.now() - compileStart) / 1000;
       kernelCount = compiled.kernelCount;
       kernelReuseFactor = compiled.kernelReuseFactor;

@@ -510,6 +510,9 @@ export class Value {
 
   /**
    * N-ary operation helper for operations with multiple inputs
+   *
+   * TODO: Move code generation logic into makeNary instead of centralized switches.
+   * This would co-locate runtime and codegen logic at operation definition sites.
    */
   static makeNary(
     data: number,
@@ -550,6 +553,7 @@ export class Value {
     }
   }
 
+  // TODO: Move code generation into make/makeNary to co-locate with runtime logic
   getForwardCode(childCodes: string[]): string {
     if (this.paramName) return this.paramName;
 
@@ -586,6 +590,12 @@ export class Value {
       }
     }
 
+    // N-ary operations (6 inputs)
+    if (this.prev.length === 6 && this._op === 'eigenvalue_custom') {
+      const [c00, c01, c02, c11, c12, c22] = childCodes;
+      return `window.__eigenHelpers.computeSmallestEigenvalue(${c00}, ${c01}, ${c02}, ${c11}, ${c12}, ${c22})`;
+    }
+
     const [left, right] = childCodes;
     switch (this._op) {
       case '+': return `(${left} + ${right})`;
@@ -600,6 +610,7 @@ export class Value {
     }
   }
 
+  // TODO: Move code generation into make/makeNary to co-locate with runtime logic
   getBackwardCode(gradVar: string, childGrads: string[], childVars: string[]): string {
     if (this.prev.length === 1) {
       const [childGrad] = childGrads;
@@ -663,6 +674,20 @@ export class Value {
         default:
           return '';
       }
+    }
+
+    // N-ary operations (6 inputs)
+    if (this.prev.length === 6 && this._op === 'eigenvalue_custom') {
+      const [g00, g01, g02, g11, g12, g22] = childGrads;
+      const [v00, v01, v02, v11, v12, v22] = childVars;
+      return `{
+        const grads = window.__eigenHelpers.applyEigenvalueGradients(
+          ${gradVar}, ${v00}, ${v01}, ${v02}, ${v11}, ${v12}, ${v22},
+          ${g00}, ${g01}, ${g02}, ${g11}, ${g12}, ${g22}
+        );
+        ${g00} = grads[0]; ${g01} = grads[1]; ${g02} = grads[2];
+        ${g11} = grads[3]; ${g12} = grads[4]; ${g22} = grads[5];
+      }`;
     }
 
     const [leftGrad, rightGrad] = childGrads;

@@ -149,6 +149,7 @@ export class CompiledFunctions {
     chunkSize: number = 50,
     onProgress?: (current: number, total: number, percent: number) => void
   ): Promise<CompiledFunctions> {
+
     // Ensure params have names for compilation
     params.forEach((p, i) => {
       if (!p.paramName) {
@@ -167,8 +168,6 @@ export class CompiledFunctions {
 
     // Build param index map for gradient mapping
     const paramIndexMap = new Map(params.map((p, i) => [registry.getId(p), i]));
-
-    // Compile kernels with reuse (in chunks to avoid freezing)
     console.log(`[CompiledFunctions] Compiling ${functionValues.length} functions...`);
     const functionDescriptors: FunctionDescriptor[] = [];
     const totalChunks = Math.ceil(functionValues.length / chunkSize);
@@ -198,6 +197,7 @@ export class CompiledFunctions {
         totalGraphSize += graphSize;
 
         const descriptor = kernelPool.getOrCompile(f, params, registry);
+
         const inputIndices = extractInputIndices(f, registry);
         const gradientIndices = inputIndices.map(regId =>
           paramIndexMap.has(regId) ? paramIndexMap.get(regId)! : -1

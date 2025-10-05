@@ -81,6 +81,7 @@ const OP_HASHES: { [op: string]: Hash64 } = {
   'relu': { h1: 0x2f3779b9, h2: 0xa5ebca6b },
   'softplus': { h1: 0x3f3779b9, h2: 0xb5ebca6b },
   'sum': { h1: 0x9e3779b9, h2: 0x85ebca6b }, // Alias for '+'
+  'eigenvalue_custom': { h1: 0x4f3779b9, h2: 0xc5ebca6b },
 };
 
 /**
@@ -186,74 +187,35 @@ export function canonicalizeGraphHash(
   }
   const t2 = performance.now();
 
-  // Phase 3: Build hash-based canonical expression (iterative, no recursion)
+  // Phase 3: Compute hashes recursively with memoization
   const memoized = new Map<Value, Hash64>();
   const debugExprs = debug ? new Map<Value, string>() : null;
 
-  // Topological sort to process nodes bottom-up
-  const topoOrder: Value[] = [];
-  const topoVisited = new Set<Value>();
-  const topoPushed = new Set<Value>();
-  const topoStack: Value[] = [output];
-  topoPushed.add(output);
-
-  while (topoStack.length > 0) {
-    const node = topoStack[topoStack.length - 1];
-
-    if (topoVisited.has(node)) {
-      topoStack.pop();
-      continue;
+  function computeHash(node: Value): Hash64 {
+    // Return cached if already computed
+    if (memoized.has(node)) {
+      return memoized.get(node)!;
     }
 
-    const prev = (node as any).prev as Value[];
-
-    // If leaf, mark visited and add to order
-    if (prev.length === 0 || leafToId.has(node)) {
-      topoVisited.add(node);
-      topoOrder.push(node);
-      topoStack.pop();
-      continue;
-    }
-
-    // Check if all children processed
-    let allChildrenProcessed = true;
-    for (let i = prev.length - 1; i >= 0; i--) {
-      if (!topoVisited.has(prev[i])) {
-        allChildrenProcessed = false;
-        if (!topoPushed.has(prev[i])) {
-          topoStack.push(prev[i]);
-          topoPushed.add(prev[i]);
-        }
-      }
-    }
-
-    if (allChildrenProcessed) {
-      topoVisited.add(node);
-      topoOrder.push(node);
-      topoStack.pop();
-    }
-  }
-
-  // Process nodes in topological order (leaves first)
-  for (const node of topoOrder) {
-    // Skip if already memoized
-    if (memoized.has(node)) continue;
-
-    // Leaf node - PURE INTEGER HASH
+    // Leaf node
     if (leafToId.has(node)) {
       const id = leafToId.get(node)!;
       const result = hashLeaf(id, node.requiresGrad);
       memoized.set(node, result);
-
       if (debugExprs) {
         const gradFlag = node.requiresGrad ? 'g' : '';
         debugExprs.set(node, `${id}${gradFlag}`);
       }
-      continue;
+      return result;
     }
 
     const prev = (node as any).prev as Value[];
-    if (prev.length === 0) continue; // Skip empty prev
+    if (prev.length === 0) {
+      // Empty prev (shouldn't happen but handle it)
+      const result = hashLeaf(0, false);
+      memoized.set(node, result);
+      return result;
+    }
 
     let op = node._op || 'unknown';
 
@@ -262,15 +224,14 @@ export function canonicalizeGraphHash(
       const exponent = prev[1];
       if (leafToId.has(exponent) && exponent.data === 2 && !exponent.requiresGrad) {
         op = 'square';
-        const childHash = memoized.get(prev[0])!;
+        const childHash = computeHash(prev[0]);  // Recursive
         const opHash = getOpHash(op);
         const result = combineHashes(opHash, childHash, 0);
         memoized.set(node, result);
-
         if (debugExprs) {
           debugExprs.set(node, `(${op},${debugExprs.get(prev[0])})`);
         }
-        continue;
+        return result;
       }
     }
 
@@ -279,26 +240,27 @@ export function canonicalizeGraphHash(
       op = '+';
     }
 
-    // All operations: combine children in ONE pass (no intermediate arrays)
+    // Recursively hash children
+    const childHashes: Hash64[] = prev.map(c => computeHash(c));
+
+    // Combine hashes
     const opHash = getOpHash(op);
     let combinedHash = opHash;
-
-    for (let i = 0; i < prev.length; i++) {
-      const childHash = memoized.get(prev[i])!;
-      combinedHash = combineHashes(combinedHash, childHash, i);
+    for (let i = 0; i < childHashes.length; i++) {
+      combinedHash = combineHashes(combinedHash, childHashes[i], i);
     }
 
     memoized.set(node, combinedHash);
 
     if (debugExprs) {
-      const childDebugStrs: string[] = [];
-      for (let j = 0; j < prev.length; j++) {
-        childDebugStrs.push(debugExprs.get(prev[j])!);
-      }
+      const childDebugStrs = prev.map(c => debugExprs.get(c)!);
       debugExprs.set(node, `(${op},${childDebugStrs.join(',')})`);
     }
+
+    return combinedHash;
   }
 
+  computeHash(output);  // Compute hash for output node
   const t3 = performance.now();
 
   // Phase 4: Build param list and get output hash

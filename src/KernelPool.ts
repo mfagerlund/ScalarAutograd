@@ -124,11 +124,6 @@ export class KernelPool {
       return this.kernels.get(canon)!;
     }
 
-    if (canonTime > 10) {
-      console.log(`[KernelPool] Cache MISS - compiling new kernel (pool size: ${this.kernels.size + 1})`);
-      console.log(`  Canon: ${canon.substring(0, 300)}${canon.length > 300 ? '...' : ''}`);
-    }
-
     // Compile new kernel - it operates on local input indices
     const kernel = compileIndirectKernel(residual, params, registry);
 

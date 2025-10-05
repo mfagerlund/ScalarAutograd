@@ -19,8 +19,8 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class PaperCovarianceEnergyELambda {
   static readonly name = 'PaperCovarianceEnergyELambda';
-  static readonly description = 'Paper: E^λ = Σλ_min(A_i), angle-weighted';
-  static readonly supportsCompilation = false;
+  static readonly description = 'Paper: E^λ = Σλ_min(A_i), angle-weighted, custom grad';
+  static readonly supportsCompilation = true;
 
   /**
    * Compute total covariance energy for the mesh.
@@ -84,8 +84,8 @@ export class PaperCovarianceEnergyELambda {
       c22 = V.add(c22, V.mul(angle, V.mul(normal.z, normal.z)));
     }
 
-    // Compute smallest eigenvalue
-    const lambda = Matrix3x3.smallestEigenvalue(c00, c01, c02, c11, c12, c22);
+    // Compute smallest eigenvalue with custom analytical gradients
+    const lambda = Matrix3x3.smallestEigenvalueCustomGrad(c00, c01, c02, c11, c12, c22);
 
     // Return absolute value (should be non-negative, but numerical issues can occur)
     return V.abs(lambda);

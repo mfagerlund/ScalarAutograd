@@ -823,7 +823,13 @@ Convergence: ${convergenceInfo.reason}`;
                 value={optimizer}
                 onChange={(e) => setOptimizer(e.target.value as 'lbfgs' | 'leastsquares')}
                 disabled={isOptimizing}
-                style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  backgroundColor: isOptimizing ? '#fff' : undefined,
+                  color: isOptimizing ? '#000' : undefined,
+                  fontWeight: isOptimizing ? 'bold' : undefined
+                }}
               >
                 <option value="lbfgs">L-BFGS (Quasi-Newton)</option>
                 <option value="leastsquares">Levenberg-Marquardt (Least Squares)</option>
@@ -836,7 +842,13 @@ Convergence: ${convergenceInfo.reason}`;
                 value={energyType}
                 onChange={(e) => setEnergyType(e.target.value)}
                 disabled={isOptimizing}
-                style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  backgroundColor: isOptimizing ? '#fff' : undefined,
+                  color: isOptimizing ? '#000' : undefined,
+                  fontWeight: isOptimizing ? 'bold' : undefined
+                }}
                 title={EnergyRegistry.get(energyType)?.description || ''}
               >
                 {EnergyRegistry.getAll().map((energy) => {
@@ -902,6 +914,25 @@ Convergence: ${convergenceInfo.reason}`;
             <label>
               Subdivisions: {subdivisions}
               <div style={{ position: 'relative' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  position: 'absolute',
+                  width: '100%',
+                  top: '9px',
+                  pointerEvents: 'none'
+                }}>
+                  {[0, 1, 2, 3, 4, 5, 6].map(v => (
+                    <div key={v} style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: '#808080',
+                      marginLeft: v === 0 ? '0' : '-3px',
+                      marginRight: v === 6 ? '0' : '-3px'
+                    }} />
+                  ))}
+                </div>
                 <input
                   type="range"
                   min="0"
@@ -950,6 +981,25 @@ Convergence: ${convergenceInfo.reason}`;
             <label>
               Max Iterations: {maxIterations}
               <div style={{ position: 'relative' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  position: 'absolute',
+                  width: '100%',
+                  top: '9px',
+                  pointerEvents: 'none'
+                }}>
+                  {[20, 50, 100, 150, 200, 300].map(v => (
+                    <div key={v} style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: '#808080',
+                      marginLeft: v === 20 ? '0' : '-3px',
+                      marginRight: v === 300 ? '0' : '-3px'
+                    }} />
+                  ))}
+                </div>
                 <input
                   type="range"
                   min="20"

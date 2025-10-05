@@ -1,4 +1,4 @@
-import { Value, V, Vec3 } from 'scalar-autograd';
+import { Value, V, Vec3, Matrix3x3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
 import { EnergyRegistry } from './EnergyRegistry';
 
@@ -19,8 +19,8 @@ import { EnergyRegistry } from './EnergyRegistry';
  * - Fixed midpoint split (not paper's approach)
  */
 export class EigenProxyEnergy {
-  static readonly name = 'Eigenvalue Proxy (Trace - Frobenius)';
-  static readonly description = 'Custom: Tr(C) - √||C||²_F approximation';
+  static readonly name = 'Eigenvalue Proxy (Custom Grad)';
+  static readonly description = 'Custom: exact λ_min with analytical gradients';
   static readonly supportsCompilation = true;
   /**
    * Compute total eigenvalue proxy energy for the mesh.
@@ -42,6 +42,8 @@ export class EigenProxyEnergy {
     const residuals: Value[] = [];
 
     for (let i = 0; i < mesh.vertices.length; i++) {
+      if (i % 100 === 0) {
+      }
       const vertexEnergy = this.computeVertexEnergy(i, mesh);
       residuals.push(vertexEnergy);
     }
@@ -51,27 +53,24 @@ export class EigenProxyEnergy {
 
   /**
    * Compute eigenvalue proxy energy for a single vertex.
-   * Splits star into two regions to allow hinge formation.
+   * Uses all faces in the star (no splitting).
    */
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
     if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
-    // Split into two regions
-    const mid = Math.floor(star.length / 2);
-    const region1 = star.slice(0, mid);
-    const region2 = star.slice(mid);
-
-    const energy1 = this.computeRegionEigenProxy(region1, mesh);
-    const energy2 = this.computeRegionEigenProxy(region2, mesh);
-
-    return V.add(energy1, energy2);
+    return this.computeRegionEigenProxy(star, mesh);
   }
 
   /**
-   * Compute smallest eigenvalue proxy for a region's normals.
-   * Uses: λ_min ≈ Trace(C) - sqrt(||C||²_F)
+   * Compute smallest eigenvalue for a region's normals.
+   * Uses exact eigenvalue computation (no proxy approximation).
+   *
+   * **Properties**:
+   * - Exact smallest eigenvalue of centered covariance matrix
+   * - Differentiable (except at repeated eigenvalues)
+   * - Ridge regularization ε·I improves stability
    */
   private static computeRegionEigenProxy(region: number[], mesh: TriangleMesh): Value {
     if (region.length === 0) return V.C(0);
@@ -109,36 +108,32 @@ export class EigenProxyEnergy {
       c22 = V.add(c22, V.mul(dz, dz));
     }
 
-    // Normalize by n
-    c00 = V.div(c00, n);
+    // Normalize by n and add strong ridge for numerical stability
+    const ridge = V.C(1e-4);
+    c00 = V.add(V.div(c00, n), ridge);
     c01 = V.div(c01, n);
     c02 = V.div(c02, n);
-    c11 = V.div(c11, n);
+    c11 = V.add(V.div(c11, n), ridge);
     c12 = V.div(c12, n);
-    c22 = V.div(c22, n);
+    c22 = V.add(V.div(c22, n), ridge);
 
-    // Compute trace: Tr(C) = c00 + c11 + c22
+    // Normalize by trace to improve conditioning
     const trace = V.add(V.add(c00, c11), c22);
+    const epsilon = V.C(1e-12);
+    const safeTrace = V.max(trace, epsilon);
 
-    // Compute Frobenius norm squared: ||C||²_F = sum of all squared elements
-    // For symmetric matrix: ||C||²_F = c00² + c11² + c22² + 2(c01² + c02² + c12²)
-    const frobSq = V.add(
-      V.add(V.mul(c00, c00), V.mul(c11, c11)),
-      V.add(
-        V.mul(c22, c22),
-        V.mul(
-          V.C(2),
-          V.add(V.add(V.mul(c01, c01), V.mul(c02, c02)), V.mul(c12, c12))
-        )
-      )
-    );
+    c00 = V.div(c00, safeTrace);
+    c01 = V.div(c01, safeTrace);
+    c02 = V.div(c02, safeTrace);
+    c11 = V.div(c11, safeTrace);
+    c12 = V.div(c12, safeTrace);
+    c22 = V.div(c22, safeTrace);
 
-    // Smallest eigenvalue proxy: λ_min ≈ Trace - sqrt(||C||²_F)
-    const sqrtFrob = V.sqrt(frobSq);
-    const lambdaMinProxy = V.sub(trace, sqrtFrob);
+    // Exact smallest eigenvalue with custom analytical gradients
+    const lambda = Matrix3x3.smallestEigenvalueCustomGrad(c00, c01, c02, c11, c12, c22);
 
-    // Return absolute value (proxy can be slightly negative due to approximation)
-    return V.abs(lambdaMinProxy);
+    // Scale back and clamp to zero
+    return V.max(V.mul(lambda, safeTrace), V.C(0));
   }
 
   /**

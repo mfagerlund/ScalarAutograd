@@ -134,12 +134,18 @@ export function compileIndirectKernel(
     return ${outputVar};
   `;
 
-  return new Function('allValues', 'indices', 'gradientIndices', 'gradient', functionBody) as (
-    allValues: number[],
-    indices: number[],
-    gradientIndices: number[],
-    gradient: number[]
-  ) => number;
+  try {
+    return new Function('allValues', 'indices', 'gradientIndices', 'gradient', functionBody) as (
+      allValues: number[],
+      indices: number[],
+      gradientIndices: number[],
+      gradient: number[]
+    ) => number;
+  } catch (error) {
+    console.error(`[compileIndirectKernel] COMPILATION ERROR:`, error);
+    console.error(`[compileIndirectKernel] Function body:\n${functionBody}`);
+    throw error;
+  }
 }
 
 /**
