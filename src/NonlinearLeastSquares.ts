@@ -32,6 +32,7 @@ export interface NonlinearLeastSquaresResult {
   finalCost: number;
   convergenceReason: string;
   computationTime: number;
+  functionEvaluations?: number;
 }
 
 function computeResidualsAndJacobian(

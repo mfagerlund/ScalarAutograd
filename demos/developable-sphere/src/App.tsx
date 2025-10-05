@@ -20,6 +20,8 @@ import './energy/ContiguousBimodalEnergy';
 import './energy/EigenProxyEnergy';
 import './energy/StochasticCovarianceEnergy';
 import './energy/GreatCircleEnergy';
+import './energy/GreatCircleEnergyEx';
+import './energy/DifferentiablePlaneAlignment';
 
 const VERSION = 'v0';
 
@@ -51,6 +53,7 @@ export default function App() {
   const [maxIterations, setMaxIterations] = useState(50);
   const [energyType, setEnergyType] = useState<string>(EnergyRegistry.getNames()[0] || 'bimodal');
   const [useCompiled, setUseCompiled] = useState(false);
+  const [optimizer, setOptimizer] = useState<'lbfgs' | 'leastsquares'>('lbfgs');
   const [iterationsPerSecond, setIterationsPerSecond] = useState<number>(0);
 
   // Multi-resolution settings
@@ -194,11 +197,17 @@ export default function App() {
         developableBefore = initialClassification.hingeVertices.length / sphere.vertices.length;
         regionsBefore = CurvatureClassifier.countDevelopableRegions(sphere);
 
-        const optimizer = new DevelopableOptimizer(sphere);
-        optimizerRef.current = optimizer;
+        // Immediately render the fresh sphere
+        renderer.updateMesh(sphere, initialClassification);
+        renderer.render();
+        updateMetrics(sphere);
+        setCurrentMesh(sphere);
+
+        const opt = new DevelopableOptimizer(sphere);
+        optimizerRef.current = opt;
 
         // Run async optimization (non-blocking)
-        result = await optimizer.optimizeAsync({
+        result = await opt.optimizeAsync({
           maxIterations,
           gradientTolerance: 1e-8, // Relaxed from 1e-5 to allow more iterations
           verbose: true,
@@ -206,6 +215,7 @@ export default function App() {
           chunkSize: 5, // Process 5 iterations at a time
           energyType, // Pass energy type to optimizer
           useCompiled, // Use compiled gradients
+          optimizer, // Pass optimizer selection
           onProgress: (iteration, energy, history) => {
             // End compilation phase when optimization starts
             if (isCompiling) {
@@ -380,22 +390,6 @@ export default function App() {
         <div className="canvas-container">
           <canvas ref={canvasRef} width={800} height={600} />
 
-          {/* Title Overlay */}
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'rgba(0, 0, 0, 0.5)',
-            color: 'white',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            pointerEvents: 'none'
-          }}>
-            Developable Sphere Demo {VERSION}
-          </div>
-
           {/* Status Overlay - Top Left */}
           <div style={{
             position: 'absolute',
@@ -532,7 +526,21 @@ Convergence: ${convergenceInfo.reason}`;
         <div className="controls-panel">
 
           <div className="metrics-section">
-            <h3>Metrics</h3>
+            <h3>Developable Sphere Demo {VERSION}</h3>
+            <h4 style={{ margin: '8px 0', fontSize: '14px', fontWeight: 'normal', opacity: 0.8 }}>Metrics</h4>
+
+            <label style={{ marginBottom: '8px' }}>
+              Optimizer
+              <select
+                value={optimizer}
+                onChange={(e) => setOptimizer(e.target.value as 'lbfgs' | 'leastsquares')}
+                disabled={isOptimizing}
+                style={{ fontFamily: 'monospace', fontSize: '12px' }}
+              >
+                <option value="lbfgs">L-BFGS (Quasi-Newton)</option>
+                <option value="leastsquares">Levenberg-Marquardt (Least Squares)</option>
+              </select>
+            </label>
 
             <label style={{ marginBottom: '8px' }}>
               Energy Function

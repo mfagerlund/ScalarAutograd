@@ -4,7 +4,7 @@
 
 import { V } from "../src/V";
 import { CompiledFunctions } from "../src/CompiledFunctions";
-import { canonicalizeGraph } from "../src/GraphCanonicalizer";
+import { canonicalizeGraphNoSort } from "../src/GraphCanonicalizer";
 
 describe('Debug Jacobian Issue', () => {
   it('should show canonical strings for different param usage', () => {
@@ -17,8 +17,8 @@ describe('Debug Jacobian Issue', () => {
     const r2 = V.sub(y, V.C(3));  // y - 3
 
     // Check their canonical strings
-    const { canon: canon1 } = canonicalizeGraph(r1, params);
-    const { canon: canon2 } = canonicalizeGraph(r2, params);
+    const { canon: canon1 } = canonicalizeGraphNoSort(r1, params);
+    const { canon: canon2 } = canonicalizeGraphNoSort(r2, params);
 
     console.log('r1 (x-5) canonical:', canon1);
     console.log('r2 (y-3) canonical:', canon2);

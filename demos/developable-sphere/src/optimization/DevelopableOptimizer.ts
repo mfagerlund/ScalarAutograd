@@ -1,4 +1,4 @@
-import { Value, V, Vec3, lbfgs, CompiledResiduals } from 'scalar-autograd';
+import { Value, V, Vec3, lbfgs, nonlinearLeastSquares, CompiledResiduals } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
 import { SubdividedMesh } from '../mesh/SubdividedMesh';
 import { EnergyRegistry } from '../energy/EnergyRegistry';
@@ -15,6 +15,8 @@ import '../energy/ContiguousBimodalEnergy';
 import '../energy/EigenProxyEnergy';
 import '../energy/StochasticCovarianceEnergy';
 
+export type CompilationMode = 'none' | 'eager' | 'lazy';
+
 export interface OptimizationOptions {
   maxIterations?: number;
   gradientTolerance?: number;
@@ -25,6 +27,8 @@ export interface OptimizationOptions {
   chunkSize?: number; // Number of iterations per chunk (for async optimization)
   energyType?: string; // Energy function name (from registry)
   useCompiled?: boolean; // Use compiled gradients (default: true)
+  compilationMode?: CompilationMode; // 'none' | 'eager' | 'lazy' (default: 'eager')
+  optimizer?: 'lbfgs' | 'leastsquares'; // Optimizer selection (default: lbfgs)
 }
 
 export interface OptimizationResult {
@@ -78,6 +82,7 @@ export class DevelopableOptimizer {
       gradientTolerance = 1e-5,
       verbose = true,
       energyType = 'boundingbox', // Default to better energy function
+      optimizer = 'lbfgs', // Default optimizer
     } = options;
 
     // Convert mesh vertices to flat parameter array
@@ -91,7 +96,7 @@ export class DevelopableOptimizer {
 
     // Compile residuals for efficient gradient computation
     if (verbose) {
-      console.log(`Using ${energyType} energy with compiled residuals...`);
+      console.log(`Using ${energyType} energy with ${optimizer} optimizer and compiled residuals...`);
     }
 
     const compiled = CompiledResiduals.compile(params, (p: Value[]) => {
@@ -110,12 +115,21 @@ export class DevelopableOptimizer {
     // Capture initial state
     this.captureSnapshot();
 
-    // Run L-BFGS optimization
-    const result = lbfgs(params, compiled, {
-      maxIterations,
-      gradientTolerance,
-      verbose,
-    });
+    // Run optimization based on selected optimizer
+    let result;
+    if (optimizer === 'leastsquares') {
+      result = nonlinearLeastSquares(params, compiled, {
+        maxIterations,
+        gradientTolerance,
+        verbose,
+      });
+    } else {
+      result = lbfgs(params, compiled, {
+        maxIterations,
+        gradientTolerance,
+        verbose,
+      });
+    }
 
     // Update mesh with final parameters
     this.paramsToMesh(params);

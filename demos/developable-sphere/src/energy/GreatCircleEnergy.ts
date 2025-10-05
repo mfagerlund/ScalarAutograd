@@ -3,7 +3,10 @@ import { TriangleMesh } from '../mesh/TriangleMesh';
 import { EnergyRegistry } from './EnergyRegistry';
 
 /**
- * Great Circle Energy - measures deviation from normals lying on a great circle.
+ * Great Circle Energy - CUSTOM IMPLEMENTATION (not from Stein et al. 2018 paper).
+ *
+ * This is an experimental alternative to the paper's covariance energy.
+ * Measures deviation from normals lying on a great circle.
  *
  * **Concept**:
  * A developable vertex has normals forming a 1D arc on the Gaussian sphere (not a 2D patch).
@@ -21,6 +24,10 @@ import { EnergyRegistry } from './EnergyRegistry';
  * - For each vertex, find max-separated normal pair (i, j)
  * - Compute plane normal: p = normalize(n_i × n_j)
  * - Energy = Σ |n_k · p|² for all normals n_k
+ *
+ * **Limitations**:
+ * - Uses discrete max-selection (non-differentiable choice)
+ * - No angle weighting (not tessellation-invariant like paper's version)
  *
  * This is simpler than eigenvalue methods and directly targets collapsing
  * the Gauss image onto a 1D curve.

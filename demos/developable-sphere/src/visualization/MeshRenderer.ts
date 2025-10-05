@@ -14,6 +14,7 @@ export class MeshRenderer {
   private edgesObject: THREE.LineSegments | null = null;
   private controls: { isDragging: boolean; previousMousePosition: { x: number; y: number } };
   private rotationQuaternion: THREE.Quaternion;
+  private axisIndicator: THREE.Group;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -47,7 +48,70 @@ export class MeshRenderer {
     };
     this.rotationQuaternion = new THREE.Quaternion();
 
+    // Create axis indicator
+    this.axisIndicator = this.createAxisIndicator();
+    this.scene.add(this.axisIndicator);
+
     this.setupMouseControls(canvas);
+  }
+
+  private createAxisIndicator(): THREE.Group {
+    const group = new THREE.Group();
+    const axisLength = 0.15;
+    const circleRadius = 0.025;
+
+    // X axis (red)
+    const xGeometry = new THREE.CylinderGeometry(0.003, 0.003, axisLength, 8);
+    const xMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const xAxis = new THREE.Mesh(xGeometry, xMaterial);
+    xAxis.rotation.z = -Math.PI / 2;
+    xAxis.position.x = axisLength / 2;
+    group.add(xAxis);
+
+    // X label circle
+    const xCircle = new THREE.Mesh(
+      new THREE.CircleGeometry(circleRadius, 32),
+      new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    );
+    xCircle.position.x = axisLength;
+    group.add(xCircle);
+
+    // Y axis (green)
+    const yGeometry = new THREE.CylinderGeometry(0.003, 0.003, axisLength, 8);
+    const yMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const yAxis = new THREE.Mesh(yGeometry, yMaterial);
+    yAxis.position.y = axisLength / 2;
+    group.add(yAxis);
+
+    // Y label circle
+    const yCircle = new THREE.Mesh(
+      new THREE.CircleGeometry(circleRadius, 32),
+      new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    );
+    yCircle.position.y = axisLength;
+    group.add(yCircle);
+
+    // Z axis (blue)
+    const zGeometry = new THREE.CylinderGeometry(0.003, 0.003, axisLength, 8);
+    const zMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const zAxis = new THREE.Mesh(zGeometry, zMaterial);
+    zAxis.rotation.x = Math.PI / 2;
+    zAxis.position.z = axisLength / 2;
+    group.add(zAxis);
+
+    // Z label circle
+    const zCircle = new THREE.Mesh(
+      new THREE.CircleGeometry(circleRadius, 32),
+      new THREE.MeshBasicMaterial({ color: 0x0000ff })
+    );
+    zCircle.position.z = axisLength;
+    group.add(zCircle);
+
+    // Position in top-right corner
+    group.position.set(0.85, 0.65, -2);
+    group.scale.set(3, 3, 3);
+
+    return group;
   }
 
   private setupMouseControls(canvas: HTMLCanvasElement): void {
@@ -67,7 +131,7 @@ export class MeshRenderer {
         // Create rotation quaternions for camera-relative axes
         const deltaRotationY = new THREE.Quaternion().setFromAxisAngle(
           new THREE.Vector3(0, 1, 0), // Up axis (camera space Y)
-          -deltaX * rotationSpeed
+          deltaX * rotationSpeed
         );
         const deltaRotationX = new THREE.Quaternion().setFromAxisAngle(
           new THREE.Vector3(1, 0, 0), // Right axis (camera space X)
@@ -84,6 +148,7 @@ export class MeshRenderer {
         if (this.edgesObject) {
           this.edgesObject.setRotationFromQuaternion(this.rotationQuaternion);
         }
+        this.axisIndicator.setRotationFromQuaternion(this.rotationQuaternion);
 
         this.controls.previousMousePosition = { x: e.clientX, y: e.clientY };
         this.render();

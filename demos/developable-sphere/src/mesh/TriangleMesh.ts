@@ -49,23 +49,19 @@ export class TriangleMesh {
   }
 
   getFaceNormal(faceIdx: number): Vec3 {
-    if (!this._faceNormals.has(faceIdx)) {
-      const face = this.faces[faceIdx];
-      const [i, j, k] = face.vertices;
-      const normal = Geometry.triangleNormal(this.vertices[i], this.vertices[j], this.vertices[k]);
-      this._faceNormals.set(faceIdx, normal);
-    }
-    return this._faceNormals.get(faceIdx)!;
+    // NEVER cache computation graphs! Always recompute for gradient flow
+    const face = this.faces[faceIdx];
+    const [i, j, k] = face.vertices;
+    const normal = Geometry.triangleNormal(this.vertices[i], this.vertices[j], this.vertices[k]);
+    return normal;
   }
 
   getFaceArea(faceIdx: number): Value {
-    if (!this._faceAreas.has(faceIdx)) {
-      const face = this.faces[faceIdx];
-      const [i, j, k] = face.vertices;
-      const area = Geometry.triangleArea(this.vertices[i], this.vertices[j], this.vertices[k]);
-      this._faceAreas.set(faceIdx, area);
-    }
-    return this._faceAreas.get(faceIdx)!;
+    // NEVER cache computation graphs! Always recompute for gradient flow
+    const face = this.faces[faceIdx];
+    const [i, j, k] = face.vertices;
+    const area = Geometry.triangleArea(this.vertices[i], this.vertices[j], this.vertices[k]);
+    return area;
   }
 
   /**

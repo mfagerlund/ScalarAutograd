@@ -3,6 +3,7 @@ export { Geometry } from './Geometry';
 export { lbfgs, type LBFGSOptions, type LBFGSResult } from './LBFGS';
 export { Losses } from './Losses';
 export { Matrix3x3 } from './Matrix3x3';
+export { nonlinearLeastSquares, type NonlinearLeastSquaresOptions, type NonlinearLeastSquaresResult } from './NonlinearLeastSquares';
 export { Adam, AdamW, Optimizer, SGD } from './Optimizers';
 export { V } from './V';
 export { Value } from './Value';

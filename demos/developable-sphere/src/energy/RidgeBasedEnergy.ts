@@ -3,7 +3,9 @@ import { TriangleMesh } from '../mesh/TriangleMesh';
 import { EnergyRegistry } from './EnergyRegistry';
 
 /**
- * Ridge-Based Bimodal Energy
+ * Ridge-Based Bimodal Energy - CUSTOM IMPLEMENTATION (not from Stein et al. 2018 paper).
+ *
+ * Experimental heuristic using dihedral angle detection.
  *
  * PRINCIPLE: Find natural hinge edges by detecting dihedral angle discontinuities.
  *
@@ -19,6 +21,10 @@ import { EnergyRegistry } from './EnergyRegistry';
  *
  * This is geometrically motivated: hinges form at ridges/valleys where
  * the surface bends sharply.
+ *
+ * **Limitations**:
+ * - Discrete ridge selection (non-differentiable)
+ * - Not the paper's recommended energy function
  */
 export class RidgeBasedEnergy {
   static readonly name = 'Bimodal Alignment (Ridge Detection)';

@@ -3,13 +3,20 @@ import { TriangleMesh } from '../mesh/TriangleMesh';
 import { EnergyRegistry } from './EnergyRegistry';
 
 /**
- * Eigenvalue proxy energy for developable surfaces.
- * Approximates the smallest eigenvalue of the covariance matrix.
+ * Eigenvalue Proxy Energy - CUSTOM IMPLEMENTATION (not from Stein et al. 2018 paper).
+ *
+ * Experimental approximation of the paper's covariance energy using a closed-form proxy.
+ * Approximates the smallest eigenvalue of the covariance matrix without eigensolver.
  *
  * Theory:
  * - Smallest eigenvalue λ_min ≈ Trace(C) - sqrt(||C||²_F)
  * - Line distribution: λ_min ≈ 0 (developable ✓)
  * - Plane distribution: λ_min > 0 (NOT developable ✗)
+ *
+ * **Limitations**:
+ * - Approximation may not be accurate for all normal distributions
+ * - Uses centered covariance (different from paper's outer product formulation)
+ * - Fixed midpoint split (not paper's approach)
  */
 export class EigenProxyEnergy {
   static readonly name = 'Eigenvalue Proxy (Trace - Frobenius)';

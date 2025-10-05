@@ -3,7 +3,9 @@ import { TriangleMesh } from '../mesh/TriangleMesh';
 import { EnergyRegistry } from './EnergyRegistry';
 
 /**
- * Alignment-based Bimodal Energy
+ * Alignment-based Bimodal Energy - CUSTOM IMPLEMENTATION (not from Stein et al. 2018 paper).
+ *
+ * Experimental alternative using alignment metric instead of variance.
  *
  * Instead of minimizing variance (scatter around mean), this energy measures
  * how well normals align with their group's average normal direction.
@@ -16,7 +18,9 @@ import { EnergyRegistry } from './EnergyRegistry';
  * normals in each group to point in the same direction (dot product = 1),
  * not just cluster together in space.
  *
- * Uses the same quasi-random midpoint split as DevelopableEnergy.
+ * **Limitations**:
+ * - Uses fixed midpoint split (not optimal partition search like paper's E^P)
+ * - Not the paper's recommended energy function
  */
 export class AlignmentBimodalEnergy {
   static readonly name = 'Bimodal Alignment (Spatial Midpoint)';

@@ -4,7 +4,7 @@
  */
 
 import { V } from "../../src/V";
-import { canonicalizeGraph } from "../../src/GraphCanonicalizer";
+import { canonicalizeGraphNoSort } from "../../src/GraphCanonicalizer";
 
 describe('Graph Canonicalization', () => {
   it('should match identical graph structures', () => {
@@ -16,8 +16,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.add(a0, b0);
     const graph2 = V.add(a1, b1);
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a0, b0]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a1, b1]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a0, b0]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a1, b1]);
 
     expect(canon1).toBe(canon2);
   });
@@ -29,8 +29,8 @@ describe('Graph Canonicalization', () => {
     const add = V.add(a, b);
     const mul = V.mul(a, b);
 
-    const { canon: canon1 } = canonicalizeGraph(add, [a, b]);
-    const { canon: canon2 } = canonicalizeGraph(mul, [a, b]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(add, [a, b]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(mul, [a, b]);
 
     expect(canon1).not.toBe(canon2);
     expect(canon1).toContain('(+');
@@ -45,8 +45,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.mul(V.add(a, b), c);  // (a+b)*c
     const graph2 = V.mul(a, V.add(b, c));  // a*(b+c)
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a, b, c]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a, b, c]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b, c]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b, c]);
 
     expect(canon1).not.toBe(canon2);
   });
@@ -62,8 +62,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.mul(V.add(a0, b0), c0);  // (a0+b0)*c0
     const graph2 = V.mul(V.add(a1, b1), c1);  // (a1+b1)*c1
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a0, b0, c0]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a1, b1, c1]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a0, b0, c0]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a1, b1, c1]);
 
     expect(canon1).toBe(canon2);
   });
@@ -93,8 +93,8 @@ describe('Graph Canonicalization', () => {
     const dist2 = V.sqrt(distSq2);
     const r2 = V.sub(dist2, V.C(10.0)); // Different target, but same structure
 
-    const { canon: canon1 } = canonicalizeGraph(r1, [x1_1, y1_1, x2_1, y2_1]);
-    const { canon: canon2 } = canonicalizeGraph(r2, [x1_2, y1_2, x2_2, y2_2]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(r1, [x1_1, y1_1, x2_1, y2_1]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(r2, [x1_2, y1_2, x2_2, y2_2]);
 
     expect(canon1).toBe(canon2);
     console.log('Distance constraint signature:', canon1);
@@ -107,8 +107,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.add(a, b);
     const graph2 = V.add(b, a);  // Commutative reordering
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a, b]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a, b]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b]);
 
     expect(canon1).toBe(canon2);
   });
@@ -121,8 +121,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.add(V.add(a, b), c);  // (a+b)+c
     const graph2 = V.add(a, V.add(b, c));  // a+(b+c)
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a, b, c]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a, b, c]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b, c]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b, c]);
 
     expect(canon1).toBe(canon2);
     expect(canon1).toContain('(+,0g,1g,2g)');  // Flattened
@@ -135,8 +135,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.add(V.cos(a), V.sin(b));
     const graph2 = V.add(V.sin(b), V.cos(a));
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a, b]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a, b]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b]);
 
     expect(canon1).toBe(canon2);
     expect(canon1).toContain('(cos');
@@ -146,7 +146,7 @@ describe('Graph Canonicalization', () => {
   it('should handle single node graph', () => {
     const a = V.W(5);
 
-    const { canon } = canonicalizeGraph(a, [a]);
+    const { canon } = canonicalizeGraphNoSort(a, [a]);
 
     expect(canon).toBe('0g|0g');
   });
@@ -159,8 +159,8 @@ describe('Graph Canonicalization', () => {
     const graph1 = V.add(V.square(x), V.square(y));  // Both need grads
     const graph2 = V.add(V.square(x), V.square(c));  // Only x needs grad
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [x, y]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [x, c]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [x, y]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [x, c]);
 
     expect(canon1).not.toBe(canon2);
     expect(canon1).toContain('0g,1g');  // Both grad
@@ -172,7 +172,7 @@ describe('Graph Canonicalization', () => {
 
     const squareGraph = V.square(x);  // Implemented as pow(x, 2)
 
-    const { canon } = canonicalizeGraph(squareGraph, [x]);
+    const { canon } = canonicalizeGraphNoSort(squareGraph, [x]);
 
     expect(canon).toContain('(square,0g)');  // Normalized
   });
@@ -183,7 +183,7 @@ describe('Graph Canonicalization', () => {
 
     const powGraph = V.powValue(x, n);
 
-    const { canon } = canonicalizeGraph(powGraph, [x, n]);
+    const { canon } = canonicalizeGraphNoSort(powGraph, [x, n]);
 
     expect(canon).toContain('powValue');  // Not normalized
   });
@@ -210,8 +210,8 @@ describe('Graph Canonicalization', () => {
     const dist2 = V.sqrt(V.add(V.square(dx2), V.square(dy2)));
     const r2 = V.sub(dist2, V.C(10.0));  // Target = 10.0 (different!)
 
-    const { canon: canon1 } = canonicalizeGraph(r1, [x1, y1, x2, y2]);
-    const { canon: canon2 } = canonicalizeGraph(r2, [x3, y3, x4, y4]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(r1, [x1, y1, x2, y2]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(r2, [x3, y3, x4, y4]);
 
     expect(canon1).toBe(canon2);  // Should match despite different constant values
     // Constants are just numbered leaves like params, no special treatment needed
@@ -230,8 +230,8 @@ describe('Graph Canonicalization', () => {
     // Structure 2: x^2 * y^2 - constant (different operation!)
     const graph2 = V.sub(V.mul(V.square(x2), V.square(y2)), V.C(10.0));
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [x1, y1]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [x2, y2]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [x1, y1]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [x2, y2]);
 
     expect(canon1).not.toBe(canon2);  // Different structures
     expect(canon1).toContain('(+');   // Addition
@@ -251,8 +251,8 @@ describe('Graph Canonicalization', () => {
     // Topology 2: (a + b) - const
     const graph2 = V.sub(V.add(a2, b2), V.C(15.0));
 
-    const { canon: canon1 } = canonicalizeGraph(graph1, [a1, b1]);
-    const { canon: canon2 } = canonicalizeGraph(graph2, [a2, b2]);
+    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a1, b1]);
+    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a2, b2]);
 
     expect(canon1).not.toBe(canon2);  // Different topologies
   });
@@ -270,7 +270,7 @@ describe('Graph Canonicalization', () => {
       const dy = V.sub(c.y2, c.y1);
       const dist = V.sqrt(V.add(V.square(dx), V.square(dy)));
       const residual = V.sub(dist, V.C(c.target));
-      const { canon } = canonicalizeGraph(residual, [c.x1, c.y1, c.x2, c.y2]);
+      const { canon } = canonicalizeGraphNoSort(residual, [c.x1, c.y1, c.x2, c.y2]);
       return canon;
     });
 

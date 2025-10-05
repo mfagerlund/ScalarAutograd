@@ -1,7 +1,7 @@
 /**
  * Legacy export for backward compatibility.
- * New code should use GraphCanonicalizer directly.
- * @deprecated Use canonicalizeGraph from GraphCanonicalizer instead
+ * New code should use GraphCanonicalizerNoSort directly.
+ * @deprecated Use canonicalizeGraphNoSort from GraphCanonicalizerNoSort instead
  * @internal
  */
-export { canonicalizeGraph, type CanonicalResult as GraphSignature } from './GraphCanonicalizer';
+export { canonicalizeGraphNoSort as canonicalizeGraph, type CanonicalResult as GraphSignature } from './GraphCanonicalizerNoSort';

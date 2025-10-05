@@ -1,6 +1,7 @@
 import { Value } from './Value';
 import { ValueRegistry } from './ValueRegistry';
-import { canonicalizeGraph } from './GraphCanonicalizer';
+import { canonicalizeGraphHash } from './GraphHashCanonicalizer';
+import { canonicalizeGraphNoSort } from './GraphCanonicalizerNoSort';
 import { compileIndirectKernel, extractInputIndices } from './compileIndirectKernel';
 
 /**
@@ -29,6 +30,9 @@ export class KernelPool {
 
   /** Cache canonical strings by output Value (weak references to avoid memory leaks during compilation) */
   private valueCanonCache = new WeakMap<Value, string>();
+
+  /** Canonicalization mode: 'no-sort' | 'hash' */
+  private canonMode: 'no-sort' | 'hash' = 'no-sort';
 
   /**
    * Get or compile a kernel for the given residual graph.
@@ -79,7 +83,9 @@ export class KernelPool {
     if (!canon) {
       // Canonicalize structure (param usage will be encoded in gradientIndices at runtime)
       const canonStart = performance.now();
-      const result = canonicalizeGraph(residual, usedParams);
+      const result =
+        this.canonMode === 'hash' ? canonicalizeGraphHash(residual, usedParams) :
+        canonicalizeGraphNoSort(residual, usedParams);
       canon = result.canon;
       canonTime = performance.now() - canonStart;
 
@@ -87,7 +93,7 @@ export class KernelPool {
       this.valueCanonCache.set(residual, canon);
 
       if (canonTime > 10) {
-        console.log(`[KernelPool] Canonicalization took ${canonTime.toFixed(0)}ms for graph with ${usedParams.length} params`);
+        console.log(`[KernelPool] Canonicalization took ${canonTime.toFixed(0)}ms for graph with ${usedParams.length} params (mode: ${this.canonMode})`);
       }
     }
 
@@ -113,14 +119,14 @@ export class KernelPool {
     if (this.kernels.has(canon)) {
       if (canonTime > 10) {
         console.log(`[KernelPool] Cache HIT - reusing existing kernel (pool size: ${this.kernels.size})`);
-        console.log(`  Canon: ${canon.substring(0, 100)}...`);
+        console.log(`  Canon: ${canon.substring(0, 300)}${canon.length > 300 ? '...' : ''}`);
       }
       return this.kernels.get(canon)!;
     }
 
     if (canonTime > 10) {
       console.log(`[KernelPool] Cache MISS - compiling new kernel (pool size: ${this.kernels.size + 1})`);
-      console.log(`  Canon: ${canon.substring(0, 100)}...`);
+      console.log(`  Canon: ${canon.substring(0, 300)}${canon.length > 300 ? '...' : ''}`);
     }
 
     // Compile new kernel - it operates on local input indices
@@ -137,6 +143,16 @@ export class KernelPool {
 
     this.kernels.set(canon, descriptor);
     return descriptor;
+  }
+
+  /**
+   * Set canonicalization mode for kernel matching.
+   * - 'no-sort': ID-based (fast, exact graph matching)
+   * - 'hash': Hash-based (fastest for very large graphs, uses 64-bit FNV-1a)
+   * @param mode - Canonicalization mode
+   */
+  setCanonMode(mode: 'no-sort' | 'hash'): void {
+    this.canonMode = mode;
   }
 
   /**
