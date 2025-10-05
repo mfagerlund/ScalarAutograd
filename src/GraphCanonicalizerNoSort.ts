@@ -176,7 +176,15 @@ export function canonicalizeGraphNoSort(output: Value, params: Value[]): Canonic
     exprParts.push(`n${nodeId}:(${op},${childRefs})`);
   }
 
-  const expr = exprParts.join(';');
+  let expr = exprParts.join(';');
+
+  // Special case: if output is a leaf node itself, expr will be empty
+  // In that case, represent it as just the leaf ID
+  if (expr === '' && leafGradFlags.has(outputId)) {
+    const gradFlag = leafGradFlags.get(outputId);
+    expr = `${outputId}${gradFlag}`;
+  }
+
   const tStringEnd = performance.now();
   const t3 = performance.now();
 
