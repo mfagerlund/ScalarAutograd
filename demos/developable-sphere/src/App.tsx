@@ -410,19 +410,23 @@ export default function App() {
         const developableAfter = finalClassification.hingeVertices.length / finalMesh.vertices.length;
         const regionsAfter = CurvatureClassifier.countDevelopableRegions(finalMesh);
 
-        // Render final mesh
+        // Render final mesh and IMMEDIATELY capture screenshot (must be synchronous)
         renderer.updateMesh(finalMesh, finalClassification);
         renderer.render();
 
-        // Wait for render to complete and capture image
-        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
+        // Must call toDataURL() immediately after render(), in same tick
         const canvas = canvasRef.current;
+        let imageData = '';
+        if (canvas) {
+          imageData = canvas.toDataURL('image/png');
+          console.log(`Captured image for ${modelName}, size: ${imageData.length} bytes`);
+        }
+
+        // Now yield to UI
+        await new Promise(resolve => setTimeout(resolve, 0));
+
         if (canvas) {
           const imageName = `${modelName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
-          const imageData = canvas.toDataURL('image/png');
-
-          console.log(`Captured image for ${modelName}, size: ${imageData.length} bytes`);
 
           results.push({
             modelName,
@@ -830,7 +834,17 @@ Convergence: ${convergenceInfo.reason}`;
                 value={subdivisions}
                 onChange={(e) => setSubdivisions(parseInt(e.target.value))}
                 disabled={isOptimizing}
+                list="subdivisions-ticks"
               />
+              <datalist id="subdivisions-ticks">
+                <option value="0" label="0"></option>
+                <option value="1" label="1"></option>
+                <option value="2" label="2"></option>
+                <option value="3" label="3"></option>
+                <option value="4" label="4"></option>
+                <option value="5" label="5"></option>
+                <option value="6" label="6"></option>
+              </datalist>
               <span className="hint">
                 {subdivisions === 0 && '12 verts (icosahedron)'}
                 {subdivisions === 1 && '42 verts'}
@@ -852,7 +866,15 @@ Convergence: ${convergenceInfo.reason}`;
                 value={maxIterations}
                 onChange={(e) => setMaxIterations(parseInt(e.target.value))}
                 disabled={isOptimizing}
+                list="iterations-ticks"
               />
+              <datalist id="iterations-ticks">
+                <option value="20" label="20"></option>
+                <option value="50" label="50"></option>
+                <option value="100" label="100"></option>
+                <option value="150" label="150"></option>
+                <option value="200" label="200"></option>
+              </datalist>
             </label>
           </div>
 
@@ -1092,10 +1114,10 @@ Convergence: ${convergenceInfo.reason}`;
             background: 'white',
             padding: '30px',
             borderRadius: '8px',
-            maxWidth: '600px',
-            maxHeight: '80vh',
+            width: '90%',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
             overflow: 'auto',
-            minWidth: '500px',
           }}>
             <h2 style={{ margin: '0 0 20px', color: '#333' }}>Select Models for Batch Run</h2>
 
@@ -1133,41 +1155,74 @@ Convergence: ${convergenceInfo.reason}`;
             <div style={{
               border: '1px solid #ddd',
               borderRadius: '4px',
-              padding: '10px',
-              maxHeight: '400px',
               overflow: 'auto',
             }}>
-              {EnergyRegistry.getAll().map((energy) => (
-                <label
-                  key={energy.name}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    padding: '10px',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #eee',
-                    gap: '10px',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedModels.has(energy.name)}
-                    onChange={() => handleToggleModel(energy.name)}
-                    style={{ marginTop: '2px', cursor: 'pointer' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', color: '#333', fontFamily: 'monospace' }}>
-                      {energy.name}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                      {energy.description}
-                    </div>
-                    <div style={{ fontSize: '11px', color: energy.supportsCompilation ? '#4CAF50' : '#FF9800', marginTop: '4px' }}>
-                      {energy.supportsCompilation ? '✓ Supports compilation' : '⚠ No compilation support'}
-                    </div>
-                  </div>
-                </label>
-              ))}
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                    <th style={{ padding: '8px', textAlign: 'left', width: '40px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedModels.size === EnergyRegistry.getAll().length}
+                        onChange={(e) => e.target.checked ? handleSelectAll() : handleSelectNone()}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </th>
+                    <th style={{ padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#333' }}>Model</th>
+                    <th style={{ padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#333' }}>Description</th>
+                    <th style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#333', width: '120px' }}>Compilation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {EnergyRegistry.getAll().map((energy) => (
+                    <tr
+                      key={energy.name}
+                      onClick={() => handleToggleModel(energy.name)}
+                      style={{
+                        cursor: 'pointer',
+                        borderBottom: '1px solid #eee',
+                        background: selectedModels.has(energy.name) ? '#e3f2fd' : 'white',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!selectedModels.has(energy.name)) {
+                          e.currentTarget.style.background = '#f5f5f5';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = selectedModels.has(energy.name) ? '#e3f2fd' : 'white';
+                      }}
+                    >
+                      <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedModels.has(energy.name)}
+                          onChange={() => handleToggleModel(energy.name)}
+                          style={{ cursor: 'pointer' }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </td>
+                      <td style={{ padding: '6px 8px', fontWeight: 'bold', color: '#333', fontFamily: 'monospace', fontSize: '13px' }}>
+                        {energy.name}
+                      </td>
+                      <td style={{ padding: '6px 8px', fontSize: '12px', color: '#666' }}>
+                        {energy.description}
+                      </td>
+                      <td style={{ padding: '6px 8px', textAlign: 'center', fontSize: '11px' }}>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: energy.supportsCompilation ? '#e8f5e9' : '#fff3e0',
+                          color: energy.supportsCompilation ? '#2e7d32' : '#e65100',
+                          fontWeight: 'bold',
+                        }}>
+                          {energy.supportsCompilation ? '✓ Yes' : '⚠ No'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <div style={{
