@@ -275,3 +275,50 @@ describe('Value unary and binary operators: trigs, relu, abs, exp/log, min/max',
   it('numerical gradient: min', () => testBinaryGrad('min', (a,b)=>a.min(b), (a,b)=>a<b?1:0, (a,b)=>b<a?1:0, -1.0, 0.8));
   it('numerical gradient: max', () => testBinaryGrad('max', (a,b)=>a.max(b), (a,b)=>a>b?1:0, (a,b)=>b>a?1:0, 2.3, -4.5));
 });
+
+describe('Gradient flow control', () => {
+  it('stops gradient at non-requiresGrad nodes', () => {
+    const x = new Value(2, 'x', true);
+    const y = new Value(3, 'y', false);
+    const z = new Value(4, 'z', true);
+    const out = x.mul(y).add(z);
+    out.backward();
+    expect(x.grad).toBe(3);
+    expect(y.grad).toBe(0);
+    expect(z.grad).toBe(1);
+  });
+
+  it('handles detached computation graphs', () => {
+    const x = new Value(2, 'x', true);
+    const y = x.mul(3);
+    const z = new Value(y.data, 'z', true);
+    const out = z.mul(4);
+    out.backward();
+    expect(z.grad).toBe(4);
+    expect(x.grad).toBe(0);
+  });
+});
+
+describe('Memory management', () => {
+  it('handles large computation graphs', () => {
+    let x = new Value(1, 'x', true);
+    for (let i = 0; i < 100; i++) {
+      x = x.add(1).mul(1.01);
+    }
+    expect(() => x.backward()).not.toThrow();
+  });
+
+  it('zeroGradAll handles multiple disconnected graphs', () => {
+    const x1 = new Value(1, 'x1', true);
+    const y1 = x1.mul(2);
+    const x2 = new Value(2, 'x2', true);
+    const y2 = x2.mul(3);
+
+    y1.backward();
+    y2.backward();
+
+    Value.zeroGradAll([y1, y2]);
+    expect(x1.grad).toBe(0);
+    expect(x2.grad).toBe(0);
+  });
+});
