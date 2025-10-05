@@ -5,7 +5,7 @@ import { DevelopableEnergy } from '../demos/developable-sphere/src/energy/Develo
 import { testLog } from './testUtils';
 
 describe('Variance Developability Test', () => {
-  it('should increase developability percentage', async () => {
+  it.concurrent('should increase developability percentage', async () => {
     testLog('\n=== VARIANCE DEVELOPABILITY TEST ===');
 
     // Smaller sphere for faster testing

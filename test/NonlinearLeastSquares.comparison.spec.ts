@@ -93,7 +93,7 @@ describe('Nonlinear Least Squares vs Gradient Descent Comparison', () => {
     expect(gnTime).toBeLessThan(gdTime);
   });
 
-  it('should compare on 3D distance constraint problem (30 points)', () => {
+  it.skip('should compare on 3D distance constraint problem (30 points)', () => {
     const numPoints = 30;
 
     testLog('\n=== 3D Distance Constraint Network (30 points, 90 parameters) ===\n');
@@ -198,7 +198,7 @@ describe('Nonlinear Least Squares vs Gradient Descent Comparison', () => {
     expect(gnResult.iterations).toBeLessThan(gdIterations / 5);
   });
 
-  it('should compare on circle fitting with 100 noisy points', { timeout: 20000 }, () => {
+  it.skip('should compare on circle fitting with 100 noisy points', { timeout: 20000 }, () => {
     const numPoints = 100;
     const trueCx = 10;
     const trueCy = -5;

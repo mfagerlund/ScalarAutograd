@@ -188,11 +188,6 @@ export function nonlinearLeastSquares(
           console.log(`  ⚠ Underdetermined: ${n - m} degrees of freedom (nullspace dimension ≥ ${n - m})`);
         }
 
-        console.log(`  Jacobian:`);
-        J.forEach((row, i) => {
-          console.log(`    [${row.map(v => v.toFixed(4)).join(', ')}]`);
-        });
-        console.log(`  Residuals: [${residuals.map(r => r.toFixed(4)).join(', ')}]`);
       }
     }
 
@@ -249,7 +244,6 @@ export function nonlinearLeastSquares(
       let deltaNorm = Math.sqrt(delta.reduce((sum, d) => sum + d * d, 0));
 
       if (verbose && iter === 0 && innerIterations === 0) {
-        console.log(`  Initial delta: [${delta.map(d => d.toFixed(4)).join(', ')}]`);
         console.log(`  Delta norm: ${deltaNorm.toFixed(4)}`);
       }
 
@@ -274,10 +268,6 @@ export function nonlinearLeastSquares(
         params.forEach((p, idx) => {
           p.data = originalData[idx] + delta[idx];
         });
-
-        if (verbose && iter === 0 && innerIterations === 0) {
-          console.log(`  New params: [${params.map(p => p.data.toFixed(4)).join(', ')}]`);
-        }
 
         const newCost = residualFn instanceof CompiledFunctions
           ? residualFn.evaluate(params).cost

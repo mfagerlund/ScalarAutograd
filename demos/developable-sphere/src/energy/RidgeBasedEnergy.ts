@@ -29,6 +29,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class RidgeBasedEnergy {
   static readonly name = 'Bimodal Alignment (Ridge Detection)';
   static readonly description = 'Custom: split at max dihedral angle';
+  static readonly supportsCompilation = true;
 
   static compute(mesh: TriangleMesh): Value {
     const vertexEnergies: Value[] = [];

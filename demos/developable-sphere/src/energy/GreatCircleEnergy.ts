@@ -35,6 +35,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class GreatCircleEnergy {
   static readonly name = 'Great Circle (Minor Axis)';
   static readonly description = 'Custom: max-sep pair defines plane';
+  static readonly supportsCompilation = true;
 
   /**
    * Compute total great circle energy for the mesh.

@@ -7,7 +7,7 @@ import { IcoSphere } from '../src/mesh/IcoSphere';
 import { DifferentiablePlaneAlignment } from '../src/energy/DifferentiablePlaneAlignment';
 
 describe('Debug Kernel Backward', () => {
-  it('should trace through backward pass step by step', () => {
+  it.concurrent('should trace through backward pass step by step', () => {
     const mesh = IcoSphere.generate(0, 1.0); // 12 vertices
 
     console.log(`\n=== STEP-BY-STEP BACKWARD DEBUG ===\n`);

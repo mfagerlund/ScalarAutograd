@@ -5,7 +5,7 @@ import { canonicalizeGraphNoSort } from '../src/GraphCanonicalizerNoSort';
 import { testLog } from './testUtils';
 
 describe('Canonicalizer Performance Comparison', () => {
-  it('should compare performance on complex graphs', () => {
+  it.concurrent('should compare performance on complex graphs', () => {
     // Build a VERY complex graph with many nested additions (worst case for string sorting)
     function buildComplexGraph(params: any[]) {
       // Create many terms that will all be added together

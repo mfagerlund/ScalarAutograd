@@ -8,7 +8,7 @@ import { lbfgs } from "../src/LBFGS";
 import { testLog } from "./testUtils";
 
 describe('L-BFGS with CompiledFunctions', () => {
-  it.skip('should optimize Rosenbrock with compiled gradient', () => {
+  it.skip('should optimize Rosenbrock with compiled gradient', async () => {
     const x = V.W(-1.2, 'x');
     const y = V.W(1.0, 'y');
     const params = [x, y];
@@ -25,7 +25,7 @@ describe('L-BFGS with CompiledFunctions', () => {
     testLog(`Kernels: ${compiled.kernelCount}`);
     testLog(`Functions: ${compiled.numFunctions}`);
 
-    const result = lbfgs(params, compiled, {
+    const result = await lbfgs(params, compiled, {
       maxIterations: 200,
       gradientTolerance: 1e-5,
       verbose: false
@@ -40,7 +40,7 @@ describe('L-BFGS with CompiledFunctions', () => {
     expect(y.data).toBeCloseTo(1, 2);
   });
 
-  it('should handle many identical residuals with kernel reuse', () => {
+  it('should handle many identical residuals with kernel reuse', async () => {
     const N = 100;
     const params = Array.from({ length: N }, (_, i) =>
       V.W(Math.random() * 2 - 1, `p${i}`)
@@ -63,7 +63,7 @@ describe('L-BFGS with CompiledFunctions', () => {
 
     const initialCost = compiled.evaluateSumWithGradient(params).value;
 
-    const result = lbfgs(params, compiled, {
+    const result = await lbfgs(params, compiled, {
       maxIterations: 50,
       verbose: false
     });
@@ -80,7 +80,7 @@ describe('L-BFGS with CompiledFunctions', () => {
     });
   });
 
-  it('should optimize distance constraints with kernel reuse', () => {
+  it('should optimize distance constraints with kernel reuse', async () => {
     // 4 points forming a square
     const points = [
       V.W(0.1, 'x0'), V.W(0.1, 'y0'),
@@ -114,7 +114,7 @@ describe('L-BFGS with CompiledFunctions', () => {
 
     const initialCost = compiled.evaluateSumWithGradient(points).value;
 
-    const result = lbfgs(points, compiled, {
+    const result = await lbfgs(points, compiled, {
       maxIterations: 100,
       verbose: false
     });
@@ -128,7 +128,7 @@ describe('L-BFGS with CompiledFunctions', () => {
     expect(finalCost).toBeLessThan(1e-8);
   });
 
-  it('should match uncompiled L-BFGS results', () => {
+  it('should match uncompiled L-BFGS results', async () => {
     const x1 = V.W(0.5, 'x');
     const y1 = V.W(0.5, 'y');
 
@@ -136,7 +136,7 @@ describe('L-BFGS with CompiledFunctions', () => {
     const y2 = V.W(0.5, 'y');
 
     // Uncompiled version
-    const result1 = lbfgs([x1, y1], (params) => {
+    const result1 = await lbfgs([x1, y1], (params) => {
       const [px, py] = params;
       return V.add(
         V.square(V.sub(px, V.C(2))),
@@ -153,7 +153,7 @@ describe('L-BFGS with CompiledFunctions', () => {
       V.square(V.sub(p[1], V.C(3)))
     ]);
 
-    const result2 = lbfgs([x2, y2], compiled, {
+    const result2 = await lbfgs([x2, y2], compiled, {
       maxIterations: 50,
       verbose: false
     });

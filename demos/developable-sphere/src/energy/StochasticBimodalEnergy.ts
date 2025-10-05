@@ -18,6 +18,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class StochasticBimodalEnergy {
   static readonly name = 'Bimodal Alignment (Random Edge Split)';
   static readonly description = 'Custom: adaptive random split, alignment';
+  static readonly supportsCompilation = false; // Uses randomness and iteration counters
 
   private static currentSplits: Map<number, [number, number]> = new Map();
   private static iterationCount = 0;

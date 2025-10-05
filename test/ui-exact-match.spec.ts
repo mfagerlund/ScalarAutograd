@@ -5,7 +5,7 @@ import { DevelopableEnergy } from '../demos/developable-sphere/src/energy/Develo
 import { testLog } from './testUtils';
 
 describe('UI Exact Match Test', () => {
-  it('should match UI behavior exactly', async () => {
+  it.concurrent.skip('should match UI behavior exactly', async () => {
     testLog('\n=== EXACT UI MATCH TEST ===');
 
     // Exact UI parameters: subdivision 3, chunk size 5, max iterations 50

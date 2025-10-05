@@ -21,6 +21,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class EigenProxyEnergy {
   static readonly name = 'Eigenvalue Proxy (Trace - Frobenius)';
   static readonly description = 'Custom: Tr(C) - √||C||²_F approximation';
+  static readonly supportsCompilation = true;
   /**
    * Compute total eigenvalue proxy energy for the mesh.
    */

@@ -1,6 +1,5 @@
 import { Value, V, Vec3, lbfgs, nonlinearLeastSquares, CompiledResiduals } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
-import { SubdividedMesh } from '../mesh/SubdividedMesh';
 import { EnergyRegistry } from '../energy/EnergyRegistry';
 
 // Import all energies to ensure they register
@@ -46,22 +45,6 @@ export interface OptimizationResult {
   numFunctions?: number; // Total number of functions compiled
 }
 
-export interface MultiResolutionOptions {
-  startLevel: number; // Starting subdivision level (default: 1)
-  targetLevel: number; // Target subdivision level (default: 2)
-  iterationsPerLevel?: number; // Iterations at each level (default: 50)
-  gradientTolerance?: number;
-  verbose?: boolean;
-  coarseEnergyType?: 'bimodal' | 'contiguous' | 'alignment' | 'boundingbox' | 'eigenproxy' | 'combinatorial' | 'covariance' | 'stochastic'; // Energy for coarse levels (default: combinatorial)
-  fineEnergyType?: 'bimodal' | 'contiguous' | 'alignment' | 'boundingbox' | 'eigenproxy' | 'combinatorial' | 'covariance' | 'stochastic'; // Energy for fine levels (default: covariance)
-  useCompiled?: boolean;
-  onProgress?: (level: number, iteration: number, energy: number) => void;
-}
-
-export interface MultiResolutionResult extends OptimizationResult {
-  subdivisionLevels: number[];
-  energiesPerLevel: number[];
-}
 
 export class DevelopableOptimizer {
   private mesh: TriangleMesh;
@@ -77,7 +60,7 @@ export class DevelopableOptimizer {
     this.shouldStop = true;
   }
 
-  optimize(options: OptimizationOptions = {}): OptimizationResult {
+  async optimize(options: OptimizationOptions = {}): Promise<OptimizationResult> {
     const {
       maxIterations = 200,
       gradientTolerance = 1e-5,
@@ -125,7 +108,7 @@ export class DevelopableOptimizer {
         verbose,
       });
     } else {
-      result = lbfgs(params, compiled, {
+      result = await lbfgs(params, compiled, {
         maxIterations,
         gradientTolerance,
         verbose,
@@ -268,12 +251,12 @@ export class DevelopableOptimizer {
         ? nonlinearLeastSquares(this.params, objectiveFn, {
             maxIterations: chunkIterations,
             gradientTolerance,
-            verbose: false, // Disable verbose to avoid console spam
+            verbose,
           })
-        : lbfgs(this.params, objectiveFn, {
+        : await lbfgs(this.params, objectiveFn, {
             maxIterations: chunkIterations,
             gradientTolerance,
-            verbose: false, // Disable verbose to avoid console spam
+            verbose,
           });
 
       totalIterations += result.iterations;
@@ -287,7 +270,9 @@ export class DevelopableOptimizer {
         this.captureSnapshot();
       }
 
-      // Removed verbose logging during optimization loop to reduce console spam
+      if (verbose) {
+        console.log(`Chunk complete: ${totalIterations}/${maxIterations}, energy=${currentEnergy.toExponential(3)}, reason: ${result.convergenceReason}`);
+      }
 
       // Always update progress numbers
       if (onProgress) {
@@ -340,125 +325,4 @@ export class DevelopableOptimizer {
     };
   }
 
-  /**
-   * Multi-resolution optimization following the SIGGRAPH 2018 paper strategy.
-   *
-   * Starts with a coarse mesh and progressively subdivides, optimizing at each level.
-   * This prevents fragmentation by establishing large-scale structure first.
-   *
-   * Paper approach (Section 4.2):
-   * - "minimize the energy on an initial coarse mesh to get the basic shape"
-   * - "apply regular 4-1 subdivision to all triangles and continue minimizing"
-   * - Use E^P (combinatorial) for coarse phase, E^λ (covariance) for fine phase
-   *
-   * @param baseMesh - The base mesh (typically subdivision level 0 or 1)
-   * @param options - Multi-resolution optimization options
-   */
-  static async optimizeMultiResolution(
-    baseMesh: SubdividedMesh,
-    options: MultiResolutionOptions
-  ): Promise<MultiResolutionResult> {
-    const {
-      startLevel = baseMesh.subdivisionLevel,
-      targetLevel = startLevel + 1,
-      iterationsPerLevel = 50,
-      gradientTolerance = 1e-5,
-      verbose = true,
-      coarseEnergyType = 'combinatorial',
-      fineEnergyType = 'covariance',
-      useCompiled = false,
-      onProgress,
-    } = options;
-
-    if (targetLevel < startLevel) {
-      throw new Error('Target level must be >= start level');
-    }
-
-    const subdivisionLevels: number[] = [];
-    const energiesPerLevel: number[] = [];
-    let allHistory: TriangleMesh[] = [];
-    let totalIterations = 0;
-    let totalFunctionEvals = 0;
-
-    // Start with the base mesh at the start level
-    let currentMesh = baseMesh;
-
-    // If we need to start at a different level, subdivide to get there
-    while (currentMesh.subdivisionLevel < startLevel) {
-      currentMesh = currentMesh.subdivide();
-    }
-
-    if (verbose) {
-      console.log(`\n=== Multi-Resolution Optimization ===`);
-      console.log(`Starting at level ${currentMesh.subdivisionLevel} (${currentMesh.mesh.vertices.length} vertices)`);
-      console.log(`Target level: ${targetLevel}`);
-      console.log(`Coarse energy: ${coarseEnergyType}, Fine energy: ${fineEnergyType}\n`);
-    }
-
-    // Optimize at each subdivision level
-    for (let level = startLevel; level <= targetLevel; level++) {
-      const isCoarsePhase = level < targetLevel;
-      const energyType = isCoarsePhase ? coarseEnergyType : fineEnergyType;
-
-      if (verbose) {
-        console.log(`\n--- Level ${level} (${currentMesh.mesh.vertices.length} vertices, ${currentMesh.mesh.faces.length} faces) ---`);
-        console.log(`Energy: ${energyType} (${isCoarsePhase ? 'coarse' : 'fine'} phase)`);
-      }
-
-      // Create optimizer for this level
-      const optimizer = new DevelopableOptimizer(currentMesh.mesh);
-
-      // Optimize at this level
-      const result = await optimizer.optimizeAsync({
-        maxIterations: iterationsPerLevel,
-        gradientTolerance,
-        verbose,
-        energyType,
-        useCompiled,
-        chunkSize: 20,
-        onProgress: onProgress ? (iter, energy) => onProgress(level, iter, energy) : undefined,
-      });
-
-      subdivisionLevels.push(level);
-      energiesPerLevel.push(result.finalEnergy);
-      totalIterations += result.iterations;
-      totalFunctionEvals += result.functionEvaluations || 0;
-      allHistory.push(...result.history);
-
-      if (verbose) {
-        console.log(`Level ${level} complete: ${result.iterations} iterations, energy=${result.finalEnergy.toExponential(3)}`);
-        console.log(`Convergence: ${result.convergenceReason}`);
-      }
-
-      // Update the current mesh with optimized positions
-      currentMesh.mesh = optimizer.mesh;
-
-      // Subdivide for next level (if not at target)
-      if (level < targetLevel) {
-        if (verbose) {
-          console.log(`Subdividing ${level} → ${level + 1}...`);
-        }
-        currentMesh = currentMesh.subdivide();
-      }
-    }
-
-    if (verbose) {
-      console.log(`\n=== Multi-Resolution Complete ===`);
-      console.log(`Total iterations: ${totalIterations}`);
-      console.log(`Total function evaluations: ${totalFunctionEvals}`);
-      console.log(`Final level: ${currentMesh.subdivisionLevel}`);
-      console.log(`Final vertices: ${currentMesh.mesh.vertices.length}`);
-    }
-
-    return {
-      success: true,
-      iterations: totalIterations,
-      finalEnergy: energiesPerLevel[energiesPerLevel.length - 1],
-      history: allHistory,
-      convergenceReason: 'Multi-resolution optimization complete',
-      functionEvaluations: totalFunctionEvals,
-      subdivisionLevels,
-      energiesPerLevel,
-    };
-  }
 }

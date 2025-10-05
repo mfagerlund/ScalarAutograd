@@ -51,18 +51,19 @@ export default function App() {
     numFunctions?: number;
   } | null>(null);
 
+  // Batch runner state
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [selectedModels, setSelectedModels] = useState<Set<string>>(new Set());
+  const [isBatchRunning, setIsBatchRunning] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, currentModel: '' });
+  const batchStopRef = useRef(false);
+
   // Persisted settings (stored in localStorage)
   const [subdivisions, setSubdivisions] = useLocalStorage('subdivisions', 3);
   const [maxIterations, setMaxIterations] = useLocalStorage('maxIterations', 50);
   const [energyType, setEnergyType] = useLocalStorage<string>('energyType', EnergyRegistry.getNames()[0] || 'bimodal');
   const [useCompiled, setUseCompiled] = useLocalStorage('useCompiled', false);
   const [optimizer, setOptimizer] = useLocalStorage<'lbfgs' | 'leastsquares'>('optimizer', 'lbfgs');
-  const [chunkSize, setChunkSize] = useLocalStorage('chunkSize', 5);
-
-  // Multi-resolution settings
-  const [useMultiRes, setUseMultiRes] = useLocalStorage('useMultiRes', false);
-  const [multiResStartLevel, setMultiResStartLevel] = useLocalStorage('multiResStartLevel', 0);
-  const [multiResTargetLevel, setMultiResTargetLevel] = useLocalStorage('multiResTargetLevel', 2);
 
   // Non-persisted state
   const [iterationsPerSecond, setIterationsPerSecond] = useState<number>(0);
@@ -133,9 +134,14 @@ export default function App() {
   const handleOptimize = async () => {
     if (!renderer || !currentMesh || isOptimizing) return;
 
+    // Check if energy supports compilation
+    const energyFunction = EnergyRegistry.get(energyType);
+    const canCompile = energyFunction?.supportsCompilation ?? true;
+    const shouldCompile = useCompiled && canCompile;
+
     // Set state and give UI a chance to update
     setIsOptimizing(true);
-    setIsCompiling(useCompiled && !useMultiRes); // Multi-res handles compilation per level
+    setIsCompiling(shouldCompile);
     setHistory([]);
     setProgress({ iteration: 0, energy: 0 });
     setCompileProgress({ current: 0, total: 0, percent: 0 });
@@ -149,108 +155,60 @@ export default function App() {
     const optimizationStartTime = Date.now();
 
     try {
-      let result;
-      let sphere: TriangleMesh;
-      let developableBefore: number;
-      let regionsBefore: number;
+      // Create fresh sphere
+      const sphere = IcoSphere.generate(subdivisions, 1.0);
 
-      if (useMultiRes) {
-        // ========================================
-        // MULTI-RESOLUTION OPTIMIZATION
-        // ========================================
-        // Create base mesh at start level
-        const baseMesh = IcoSphere.generate(multiResStartLevel, 1.0);
-        const subdividedBase = SubdividedMesh.fromMesh(baseMesh);
+      // Capture initial developability
+      const initialClassification = CurvatureClassifier.classifyVertices(sphere);
+      const developableBefore = initialClassification.hingeVertices.length / sphere.vertices.length;
+      const regionsBefore = CurvatureClassifier.countDevelopableRegions(sphere);
 
-        // Capture initial developability
-        const initialClassification = CurvatureClassifier.classifyVertices(baseMesh);
-        developableBefore = initialClassification.hingeVertices.length / baseMesh.vertices.length;
-        regionsBefore = CurvatureClassifier.countDevelopableRegions(baseMesh);
+      // Immediately render the fresh sphere
+      renderer.updateMesh(sphere, initialClassification);
+      renderer.render();
+      updateMetrics(sphere);
+      setCurrentMesh(sphere);
 
-        console.log(`\n🚀 Starting Multi-Resolution Optimization`);
-        console.log(`   Levels: ${multiResStartLevel} → ${multiResTargetLevel}`);
-        console.log(`   Coarse energy: combinatorial, Fine energy: covariance`);
+      const opt = new DevelopableOptimizer(sphere);
+      optimizerRef.current = opt;
 
-        // Run multi-resolution optimization
-        result = await DevelopableOptimizer.optimizeMultiResolution(subdividedBase, {
-          startLevel: multiResStartLevel,
-          targetLevel: multiResTargetLevel,
-          iterationsPerLevel: maxIterations,
-          gradientTolerance: 1e-8,
-          verbose: true,
-          coarseEnergyType: 'combinatorial',
-          fineEnergyType: 'covariance',
-          useCompiled: useCompiled,
-          onProgress: (_level, iteration, energy) => {
-            setProgress({ iteration, energy });
-            const elapsed = (Date.now() - optimizationStartTime) / 1000;
-            if (elapsed > 0) {
-              setIterationsPerSecond(iteration / elapsed);
-            }
-          },
-        });
+      // Run async optimization (non-blocking)
+      const result = await opt.optimizeAsync({
+        maxIterations,
+        gradientTolerance: 1e-8,
+        verbose: true,
+        captureInterval: Math.max(1, Math.floor(maxIterations / 20)),
+        chunkSize: 5, // Fixed chunk size
+        energyType,
+        useCompiled: shouldCompile,
+        optimizer,
+        onCompileProgress: (current, total, percent) => {
+          setCompileProgress({ current, total, percent });
+        },
+        onCompileComplete: () => {
+          setIsCompiling(false);
+        },
+        onProgress: (iteration, energy, history) => {
+          // Always update progress numbers
+          setProgress({ iteration, energy });
 
-        sphere = result.history[result.history.length - 1];
+          // Calculate iterations per second
+          const elapsed = (Date.now() - optimizationStartTime) / 1000;
+          if (elapsed > 0) {
+            setIterationsPerSecond(iteration / elapsed);
+          }
 
-      } else {
-        // ========================================
-        // SINGLE-LEVEL OPTIMIZATION (original)
-        // ========================================
-        // Create fresh sphere
-        sphere = IcoSphere.generate(subdivisions, 1.0);
-
-        // Capture initial developability
-        const initialClassification = CurvatureClassifier.classifyVertices(sphere);
-        developableBefore = initialClassification.hingeVertices.length / sphere.vertices.length;
-        regionsBefore = CurvatureClassifier.countDevelopableRegions(sphere);
-
-        // Immediately render the fresh sphere
-        renderer.updateMesh(sphere, initialClassification);
-        renderer.render();
-        updateMetrics(sphere);
-        setCurrentMesh(sphere);
-
-        const opt = new DevelopableOptimizer(sphere);
-        optimizerRef.current = opt;
-
-        // Run async optimization (non-blocking)
-        result = await opt.optimizeAsync({
-          maxIterations,
-          gradientTolerance: 1e-8, // Relaxed from 1e-5 to allow more iterations
-          verbose: true,
-          captureInterval: Math.max(1, Math.floor(maxIterations / 20)),
-          chunkSize, // User-configurable chunk size for UI responsiveness
-          energyType, // Pass energy type to optimizer
-          useCompiled, // Use compiled gradients
-          optimizer, // Pass optimizer selection
-          onCompileProgress: (current, total, percent) => {
-            setCompileProgress({ current, total, percent });
-          },
-          onCompileComplete: () => {
-            setIsCompiling(false);
-          },
-          onProgress: (iteration, energy, history) => {
-            // Always update progress numbers
-            setProgress({ iteration, energy });
-
-            // Calculate iterations per second
-            const elapsed = (Date.now() - optimizationStartTime) / 1000;
-            if (elapsed > 0) {
-              setIterationsPerSecond(iteration / elapsed);
-            }
-
-            // Update visualization when new mesh is captured
-            if (history && history.length > 0) {
-              const latestMesh = history[history.length - 1];
-              const classification = CurvatureClassifier.classifyVertices(latestMesh);
-              renderer.updateMesh(latestMesh, classification);
-              renderer.render();
-              updateMetrics(latestMesh);
-              setCurrentMesh(latestMesh);
-            }
-          },
-        });
-      }
+          // Update visualization when new mesh is captured
+          if (history && history.length > 0) {
+            const latestMesh = history[history.length - 1];
+            const classification = CurvatureClassifier.classifyVertices(latestMesh);
+            renderer.updateMesh(latestMesh, classification);
+            renderer.render();
+            updateMetrics(latestMesh);
+            setCurrentMesh(latestMesh);
+          }
+        },
+      });
 
       // Update function evaluations and kernel metrics
       setMetrics((prev) => ({
@@ -296,13 +254,8 @@ export default function App() {
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('OPTIMIZATION COMPLETE');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      if (useMultiRes) {
-        console.log(`Mode: Multi-Resolution (${multiResStartLevel} → ${multiResTargetLevel})`);
-        console.log(`Energy: E^P (combinatorial) → E^λ (covariance)`);
-      } else {
-        console.log(`Energy Function: ${energyType}`);
-        console.log(`Mode: ${useCompiled ? 'Compiled' : 'Non-compiled'}`);
-      }
+      console.log(`Energy Function: ${energyType}`);
+      console.log(`Mode: ${shouldCompile ? 'Compiled' : 'Non-compiled'}${!canCompile && useCompiled ? ' (energy does not support compilation)' : ''}`);
       if (useCompiled && result.compilationTime !== undefined) {
         console.log('');
         console.log('COMPILATION:');
@@ -313,7 +266,7 @@ export default function App() {
       }
       console.log('');
       console.log('OPTIMIZATION:');
-      console.log(`  Iterations: ${result.iterations} ${useMultiRes ? '(total across all levels)' : `/ ${maxIterations}`}`);
+      console.log(`  Iterations: ${result.iterations} / ${maxIterations}`);
       console.log(`  Time Elapsed: ${timeElapsed.toFixed(2)}s`);
       console.log(`  Speed: ${(result.iterations / timeElapsed).toFixed(1)} it/s`);
       console.log(`  Function Evals: ${result.functionEvaluations}`);
@@ -375,6 +328,241 @@ export default function App() {
     renderer.render();
 
     updateMetrics(mesh);
+  };
+
+  const handleBatchRun = async () => {
+    if (!renderer || isBatchRunning || selectedModels.size === 0) return;
+
+    const models = Array.from(selectedModels);
+    const results: Array<{
+      modelName: string;
+      energyType: string;
+      optimizer: string;
+      subdivisions: number;
+      maxIterations: number;
+      useCompiled: boolean;
+      compilationTime?: number;
+      iterations: number;
+      timeElapsed: number;
+      developableBefore: number;
+      developableAfter: number;
+      regionsBefore: number;
+      regionsAfter: number;
+      convergenceReason: string;
+      functionEvals?: number;
+      imageName: string;
+      imageData: string;
+    }> = [];
+
+    setIsBatchRunning(true);
+    setShowBatchModal(false);
+    setBatchProgress({ current: 0, total: models.length, currentModel: '' });
+    batchStopRef.current = false;
+
+    try {
+      for (let i = 0; i < models.length; i++) {
+        if (batchStopRef.current) {
+          console.log('Batch run stopped by user');
+          break;
+        }
+
+        const modelName = models[i];
+        setBatchProgress({ current: i, total: models.length, currentModel: modelName });
+
+        const energyFunction = EnergyRegistry.get(modelName);
+        const canCompile = energyFunction?.supportsCompilation ?? true;
+        const shouldCompile = canCompile; // Use what works for each model
+
+        // Create fresh sphere
+        const sphere = IcoSphere.generate(subdivisions, 1.0);
+
+        // Capture initial developability
+        const initialClassification = CurvatureClassifier.classifyVertices(sphere);
+        const developableBefore = initialClassification.hingeVertices.length / sphere.vertices.length;
+        const regionsBefore = CurvatureClassifier.countDevelopableRegions(sphere);
+
+        // Update display
+        renderer.updateMesh(sphere, initialClassification);
+        renderer.render();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        const opt = new DevelopableOptimizer(sphere);
+        const startTime = Date.now();
+
+        // Run optimization
+        const result = await opt.optimizeAsync({
+          maxIterations,
+          gradientTolerance: 1e-8,
+          verbose: false,
+          captureInterval: Math.max(1, Math.floor(maxIterations / 20)),
+          chunkSize: 5,
+          energyType: modelName,
+          useCompiled: shouldCompile,
+          optimizer,
+          onProgress: () => {}, // Silent
+        });
+
+        const timeElapsed = (Date.now() - startTime) / 1000;
+
+        // Get final mesh
+        const finalMesh = result.history[result.history.length - 1];
+        const finalClassification = CurvatureClassifier.classifyVertices(finalMesh);
+        const developableAfter = finalClassification.hingeVertices.length / finalMesh.vertices.length;
+        const regionsAfter = CurvatureClassifier.countDevelopableRegions(finalMesh);
+
+        // Render final mesh
+        renderer.updateMesh(finalMesh, finalClassification);
+        renderer.render();
+
+        // Wait for render to complete and capture image
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const imageName = `${modelName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
+          const imageData = canvas.toDataURL('image/png');
+
+          console.log(`Captured image for ${modelName}, size: ${imageData.length} bytes`);
+
+          results.push({
+            modelName,
+            energyType: modelName,
+            optimizer,
+            subdivisions,
+            maxIterations,
+            useCompiled: shouldCompile,
+            compilationTime: result.compilationTime,
+            iterations: result.iterations,
+            timeElapsed,
+            developableBefore,
+            developableAfter,
+            regionsBefore,
+            regionsAfter,
+            convergenceReason: result.convergenceReason,
+            functionEvals: result.functionEvaluations,
+            imageName,
+            imageData,
+          });
+
+          // Download image
+          const link = document.createElement('a');
+          link.download = imageName;
+          link.href = imageData;
+          link.click();
+        }
+      }
+
+      // Export JSON results
+      const jsonData = {
+        timestamp: new Date().toISOString(),
+        settings: {
+          subdivisions,
+          maxIterations,
+          optimizer,
+        },
+        results,
+      };
+
+      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `batch_results_${Date.now()}.json`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      // Generate HTML viewer with embedded images
+      const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Batch Results - ${new Date().toISOString()}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    h1 { color: #333; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card h2 { margin-top: 0; color: #2196F3; }
+    .card img { width: 100%; border-radius: 4px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .metric { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; }
+    .metric:last-child { border-bottom: none; }
+    .label { font-weight: bold; color: #666; }
+    .value { color: #333; }
+    .positive { color: #4CAF50; }
+    .negative { color: #f44336; }
+  </style>
+</head>
+<body>
+  <h1>Batch Optimization Results</h1>
+  <p>Generated: ${new Date().toISOString()}</p>
+  <p>Settings: ${subdivisions} subdivisions, ${maxIterations} max iterations, ${optimizer} optimizer</p>
+  <div class="grid">
+    ${results.map(r => `
+      <div class="card">
+        <h2>${r.modelName}</h2>
+        ${r.imageData ? `<img src="${r.imageData}" alt="${r.modelName} result" />` : ''}
+        <div class="metric"><span class="label">Optimizer:</span><span class="value">${r.optimizer}</span></div>
+        <div class="metric"><span class="label">Compiled:</span><span class="value">${r.useCompiled ? 'Yes' : 'No'}</span></div>
+        ${r.compilationTime ? `<div class="metric"><span class="label">Compilation Time:</span><span class="value">${r.compilationTime.toFixed(2)}s</span></div>` : ''}
+        <div class="metric"><span class="label">Iterations:</span><span class="value">${r.iterations} / ${r.maxIterations}</span></div>
+        <div class="metric"><span class="label">Time Elapsed:</span><span class="value">${r.timeElapsed.toFixed(2)}s</span></div>
+        <div class="metric"><span class="label">Speed:</span><span class="value">${(r.iterations / r.timeElapsed).toFixed(1)} it/s</span></div>
+        <div class="metric"><span class="label">Function Evals:</span><span class="value">${r.functionEvals || 'N/A'}</span></div>
+        <div class="metric"><span class="label">Developability Before:</span><span class="value">${(r.developableBefore * 100).toFixed(2)}% (${r.regionsBefore} regions)</span></div>
+        <div class="metric"><span class="label">Developability After:</span><span class="value">${(r.developableAfter * 100).toFixed(2)}% (${r.regionsAfter} regions)</span></div>
+        <div class="metric"><span class="label">Change:</span><span class="value ${r.developableAfter > r.developableBefore ? 'positive' : 'negative'}">${((r.developableAfter - r.developableBefore) * 100).toFixed(2)}%</span></div>
+        <div class="metric"><span class="label">Convergence:</span><span class="value">${r.convergenceReason}</span></div>
+      </div>
+    `).join('')}
+  </div>
+  <script>
+    const results = ${JSON.stringify(jsonData, null, 2)};
+    console.log('Batch results:', results);
+  </script>
+</body>
+</html>`;
+
+      const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+      const htmlUrl = URL.createObjectURL(htmlBlob);
+      const htmlLink = document.createElement('a');
+      htmlLink.download = `batch_results_${Date.now()}.html`;
+      htmlLink.href = htmlUrl;
+      htmlLink.click();
+      URL.revokeObjectURL(htmlUrl);
+
+      console.log('Batch run complete!', results);
+      if (!batchStopRef.current) {
+        alert(`Batch run complete! ${results.length} models processed.\nResults saved as HTML and JSON files.`);
+      } else {
+        alert(`Batch run stopped! ${results.length} of ${models.length} models processed.\nPartial results saved.`);
+      }
+
+    } finally {
+      setIsBatchRunning(false);
+      setBatchProgress({ current: 0, total: 0, currentModel: '' });
+      batchStopRef.current = false;
+    }
+  };
+
+  const handleStopBatch = () => {
+    batchStopRef.current = true;
+  };
+
+  const handleToggleModel = (modelName: string) => {
+    const newSelected = new Set(selectedModels);
+    if (newSelected.has(modelName)) {
+      newSelected.delete(modelName);
+    } else {
+      newSelected.add(modelName);
+    }
+    setSelectedModels(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedModels(new Set(EnergyRegistry.getNames()));
+  };
+
+  const handleSelectNone = () => {
+    setSelectedModels(new Set());
   };
 
   // Animation playback
@@ -621,109 +809,41 @@ Convergence: ${convergenceInfo.reason}`;
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                checked={useCompiled}
+                checked={useCompiled && (EnergyRegistry.get(energyType)?.supportsCompilation ?? true)}
                 onChange={(e) => setUseCompiled(e.target.checked)}
-                disabled={isOptimizing}
+                disabled={isOptimizing || !(EnergyRegistry.get(energyType)?.supportsCompilation ?? true)}
               />
               Use Compiled Gradients (faster)
+              {!(EnergyRegistry.get(energyType)?.supportsCompilation ?? true) && (
+                <span style={{ fontSize: '11px', color: '#f44336', marginLeft: '8px' }}>
+                  (not supported for this energy)
+                </span>
+              )}
             </label>
 
-            <label style={{ marginBottom: '8px' }}>
-              Chunk Size (responsiveness)
+            <label>
+              Subdivisions: {subdivisions}
               <input
-                type="number"
-                value={chunkSize}
-                onChange={(e) => setChunkSize(Math.max(1, parseInt(e.target.value) || 5))}
+                type="range"
+                min="0"
+                max="6"
+                value={subdivisions}
+                onChange={(e) => setSubdivisions(parseInt(e.target.value))}
                 disabled={isOptimizing}
-                min="1"
-                max="50"
-                style={{ width: '60px', fontFamily: 'monospace' }}
               />
-              <span style={{ fontSize: '11px', color: '#666', marginLeft: '4px' }}>
-                iters/chunk
+              <span className="hint">
+                {subdivisions === 0 && '12 verts (icosahedron)'}
+                {subdivisions === 1 && '42 verts'}
+                {subdivisions === 2 && '162 verts'}
+                {subdivisions === 3 && '642 verts'}
+                {subdivisions === 4 && '2562 verts'}
+                {subdivisions === 5 && '10242 verts'}
+                {subdivisions === 6 && '40962 verts'}
               </span>
             </label>
 
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={useMultiRes}
-                onChange={(e) => setUseMultiRes(e.target.checked)}
-                disabled={isOptimizing}
-              />
-              Multi-Resolution (🎯 fixes fragmentation!)
-            </label>
-
-            {!useMultiRes ? (
-              <label>
-                Subdivisions: {subdivisions}
-                <input
-                  type="range"
-                  min="0"
-                  max="6"
-                  value={subdivisions}
-                  onChange={(e) => setSubdivisions(parseInt(e.target.value))}
-                  disabled={isOptimizing}
-                />
-                <span className="hint">
-                  {subdivisions === 0 && '12 verts (icosahedron)'}
-                  {subdivisions === 1 && '42 verts'}
-                  {subdivisions === 2 && '162 verts'}
-                  {subdivisions === 3 && '642 verts'}
-                  {subdivisions === 4 && '2562 verts'}
-                  {subdivisions === 5 && '10242 verts'}
-                  {subdivisions === 6 && '40962 verts'}
-                </span>
-              </label>
-            ) : (
-              <>
-                <label>
-                  Start Level: {multiResStartLevel}
-                  <input
-                    type="range"
-                    min="0"
-                    max="2"
-                    value={multiResStartLevel}
-                    onChange={(e) => setMultiResStartLevel(parseInt(e.target.value))}
-                    disabled={isOptimizing}
-                  />
-                  <span className="hint">
-                    {multiResStartLevel === 0 && '12 verts (coarsest)'}
-                    {multiResStartLevel === 1 && '42 verts (coarse)'}
-                    {multiResStartLevel === 2 && '162 verts (medium)'}
-                  </span>
-                </label>
-
-                <label>
-                  Target Level: {multiResTargetLevel}
-                  <input
-                    type="range"
-                    min={multiResStartLevel}
-                    max="4"
-                    value={multiResTargetLevel}
-                    onChange={(e) => setMultiResTargetLevel(parseInt(e.target.value))}
-                    disabled={isOptimizing}
-                  />
-                  <span className="hint">
-                    {multiResTargetLevel === 0 && '12 verts'}
-                    {multiResTargetLevel === 1 && '42 verts'}
-                    {multiResTargetLevel === 2 && '162 verts'}
-                    {multiResTargetLevel === 3 && '642 verts'}
-                    {multiResTargetLevel === 4 && '2562 verts'}
-                  </span>
-                </label>
-
-                <div style={{ fontSize: '11px', opacity: 0.7, padding: '8px', background: 'rgba(76, 175, 80, 0.1)', borderRadius: '4px', marginTop: '4px' }}>
-                  💡 Multi-res optimizes at each level from {multiResStartLevel} → {multiResTargetLevel}, preventing fragmentation by establishing topology on coarse mesh first.
-                </div>
-                <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px', fontStyle: 'italic' }}>
-                  Paper recommends: E^P (combinatorial) for coarse → E^λ (covariance) for fine
-                </div>
-              </>
-            )}
-
             <label>
-              {useMultiRes ? 'Iterations Per Level' : 'Max Iterations'}: {maxIterations}
+              Max Iterations: {maxIterations}
               <input
                 type="range"
                 min="20"
@@ -733,11 +853,6 @@ Convergence: ${convergenceInfo.reason}`;
                 onChange={(e) => setMaxIterations(parseInt(e.target.value))}
                 disabled={isOptimizing}
               />
-              {useMultiRes && (
-                <span className="hint" style={{ fontSize: '11px', opacity: 0.7 }}>
-                  Each level gets {maxIterations} iterations
-                </span>
-              )}
             </label>
           </div>
 
@@ -746,7 +861,7 @@ Convergence: ${convergenceInfo.reason}`;
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 onClick={handleOptimize}
-                disabled={isOptimizing}
+                disabled={isOptimizing || isBatchRunning}
                 style={{
                   padding: '6px 12px',
                   fontSize: '13px',
@@ -757,7 +872,7 @@ Convergence: ${convergenceInfo.reason}`;
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: isOptimizing ? 'not-allowed' : 'pointer'
+                  cursor: isOptimizing || isBatchRunning ? 'not-allowed' : 'pointer'
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -789,18 +904,18 @@ Convergence: ${convergenceInfo.reason}`;
               )}
               <button
                 onClick={handleReset}
-                disabled={isOptimizing}
+                disabled={isOptimizing || isBatchRunning}
                 style={{
                   padding: '6px 12px',
                   fontSize: '13px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: isOptimizing ? '#ccc' : '#2196F3',
+                  background: isOptimizing || isBatchRunning ? '#ccc' : '#2196F3',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: isOptimizing ? 'not-allowed' : 'pointer'
+                  cursor: isOptimizing || isBatchRunning ? 'not-allowed' : 'pointer'
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -808,6 +923,30 @@ Convergence: ${convergenceInfo.reason}`;
                   <path d="M3 3v5h5"></path>
                 </svg>
                 Reset
+              </button>
+              <button
+                onClick={() => setShowBatchModal(true)}
+                disabled={isOptimizing || isBatchRunning}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: isBatchRunning ? '#666' : '#FF9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isOptimizing || isBatchRunning ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                {isBatchRunning ? `Batch (${batchProgress.current}/${batchProgress.total})` : 'Batch Run'}
               </button>
             </div>
           </div>
@@ -860,6 +999,227 @@ Convergence: ${convergenceInfo.reason}`;
           )}
         </div>
       </div>
+
+      {/* Batch Progress Overlay */}
+      {isBatchRunning && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            minWidth: '400px',
+            textAlign: 'center',
+          }}>
+            <div className="spinner" style={{
+              width: '40px',
+              height: '40px',
+              border: '4px solid rgba(0,0,0,0.1)',
+              borderTop: '4px solid #FF9800',
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+              margin: '0 auto 20px',
+            }} />
+            <h2 style={{ margin: '0 0 10px', color: '#333' }}>Running Batch Optimization</h2>
+            <p style={{ margin: '0 0 20px', color: '#666' }}>
+              Processing {batchProgress.current + 1} of {batchProgress.total}
+            </p>
+            <p style={{ margin: '0 0 20px', color: '#FF9800', fontWeight: 'bold' }}>
+              {batchProgress.currentModel}
+            </p>
+            <div style={{
+              background: '#f0f0f0',
+              borderRadius: '4px',
+              height: '8px',
+              overflow: 'hidden',
+              marginBottom: '10px',
+            }}>
+              <div style={{
+                width: `${((batchProgress.current) / batchProgress.total) * 100}%`,
+                height: '100%',
+                background: '#FF9800',
+                transition: 'width 0.3s',
+              }} />
+            </div>
+            <p style={{ margin: 0, fontSize: '12px', color: '#999' }}>
+              {Math.round(((batchProgress.current) / batchProgress.total) * 100)}% complete
+            </p>
+            <button
+              onClick={handleStopBatch}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                background: '#f44336',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold',
+              }}
+            >
+              Stop Batch
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Model Selection Modal */}
+      {showBatchModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            minWidth: '500px',
+          }}>
+            <h2 style={{ margin: '0 0 20px', color: '#333' }}>Select Models for Batch Run</h2>
+
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={handleSelectAll}
+                style={{
+                  padding: '8px 16px',
+                  background: '#2196F3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                Select All
+              </button>
+              <button
+                onClick={handleSelectNone}
+                style={{
+                  padding: '8px 16px',
+                  background: '#757575',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                Clear All
+              </button>
+            </div>
+
+            <div style={{
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              padding: '10px',
+              maxHeight: '400px',
+              overflow: 'auto',
+            }}>
+              {EnergyRegistry.getAll().map((energy) => (
+                <label
+                  key={energy.name}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    padding: '10px',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #eee',
+                    gap: '10px',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedModels.has(energy.name)}
+                    onChange={() => handleToggleModel(energy.name)}
+                    style={{ marginTop: '2px', cursor: 'pointer' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 'bold', color: '#333', fontFamily: 'monospace' }}>
+                      {energy.name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      {energy.description}
+                    </div>
+                    <div style={{ fontSize: '11px', color: energy.supportsCompilation ? '#4CAF50' : '#FF9800', marginTop: '4px' }}>
+                      {energy.supportsCompilation ? '✓ Supports compilation' : '⚠ No compilation support'}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              background: '#f5f5f5',
+              borderRadius: '4px',
+            }}>
+              <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: '#333' }}>Batch Settings</h4>
+              <div style={{ fontSize: '13px', color: '#666' }}>
+                <div>Subdivisions: <strong>{subdivisions}</strong></div>
+                <div>Max Iterations: <strong>{maxIterations}</strong></div>
+                <div>Optimizer: <strong>{optimizer}</strong></div>
+                <div>Selected Models: <strong>{selectedModels.size}</strong></div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowBatchModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  background: '#757575',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBatchRun}
+                disabled={selectedModels.size === 0}
+                style={{
+                  padding: '10px 20px',
+                  background: selectedModels.size === 0 ? '#ccc' : '#FF9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: selectedModels.size === 0 ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                }}
+              >
+                Run {selectedModels.size} Model{selectedModels.size !== 1 ? 's' : ''}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

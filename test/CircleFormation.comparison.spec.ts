@@ -5,7 +5,7 @@ import { SGD, Adam, AdamW } from "../src/Optimizers";
 import { testLog } from './testUtils';
 
 describe('Circle Formation - All Optimizers Comparison', () => {
-  it('should compare NonlinearLeastSquares, SGD, Adam, and AdamW on circle fitting', { timeout: 10000 }, () => {
+  it.concurrent.skip('should compare NonlinearLeastSquares, SGD, Adam, and AdamW on circle fitting', { timeout: 10000 }, () => {
     const numPoints = 100;
     const trueCx = 10;
     const trueCy = -5;

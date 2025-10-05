@@ -10,6 +10,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class BoundingBoxEnergy {
   static readonly name = 'Bounding Box Spread';
   static readonly description = 'Custom: axis-aligned bbox of normals';
+  static readonly supportsCompilation = true;
   /**
    * Compute total bounding box energy for the mesh.
    * Uses n-ary sum to avoid deep expression chains.

@@ -193,7 +193,9 @@ export function canonicalizeGraphHash(
   // Topological sort to process nodes bottom-up
   const topoOrder: Value[] = [];
   const topoVisited = new Set<Value>();
+  const topoPushed = new Set<Value>();
   const topoStack: Value[] = [output];
+  topoPushed.add(output);
 
   while (topoStack.length > 0) {
     const node = topoStack[topoStack.length - 1];
@@ -218,7 +220,10 @@ export function canonicalizeGraphHash(
     for (let i = prev.length - 1; i >= 0; i--) {
       if (!topoVisited.has(prev[i])) {
         allChildrenProcessed = false;
-        topoStack.push(prev[i]);
+        if (!topoPushed.has(prev[i])) {
+          topoStack.push(prev[i]);
+          topoPushed.add(prev[i]);
+        }
       }
     }
 
@@ -274,32 +279,22 @@ export function canonicalizeGraphHash(
       op = '+';
     }
 
-    // All operations: position matters for each child (no flattening)
-    const childHashes: Hash64[] = [];
-    const childDebugStrs: string[] = debugExprs ? [] : [];
+    // All operations: combine children in ONE pass (no intermediate arrays)
+    const opHash = getOpHash(op);
+    let combinedHash = opHash;
 
     for (let i = 0; i < prev.length; i++) {
       const childHash = memoized.get(prev[i])!;
-      // Mix position into THIS level's child
-      const positionedHash = combineHashes(childHash, { h1: i, h2: i }, i);
-      childHashes.push(positionedHash);
+      combinedHash = combineHashes(combinedHash, childHash, i);
+    }
 
-      if (debugExprs && childDebugStrs) {
-        childDebugStrs.push(debugExprs.get(prev[i])!);
+    memoized.set(node, combinedHash);
+
+    if (debugExprs) {
+      const childDebugStrs: string[] = [];
+      for (let j = 0; j < prev.length; j++) {
+        childDebugStrs.push(debugExprs.get(prev[j])!);
       }
-    }
-
-    // Combine all positioned child hashes
-    const opHash = getOpHash(op);
-    let combinedHash = opHash;
-    for (const h of childHashes) {
-      combinedHash = combineHashes(combinedHash, h, 0);
-    }
-
-    const result = combineHashes(combinedHash, { h1: 0, h2: 0 }, 0);
-    memoized.set(node, result);
-
-    if (debugExprs && childDebugStrs) {
       debugExprs.set(node, `(${op},${childDebugStrs.join(',')})`);
     }
   }

@@ -18,6 +18,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class CombinatorialEnergy {
   static readonly name = 'Combinatorial (E^P)';
   static readonly description = 'Paper: E^P = min partition variance';
+  static readonly supportsCompilation = true;
   /**
    * Compute total combinatorial energy for the mesh.
    */

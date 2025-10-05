@@ -515,7 +515,7 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
 
   testLog(`  Starting L-BFGS optimization...`);
   // Run optimization
-  const result = lbfgs(params, compiled, {
+  const result = await lbfgs(params, compiled, {
     maxIterations,
     gradientTolerance,
     verbose: false,
@@ -585,7 +585,7 @@ describe('Developable Sphere Optimization', () => {
         const result = await runOptimization(config);
         results.push(result);
       } catch (error: any) {
-        console.error(`  ✗ Failed: ${error.message}`);
+        testLog(`  ✗ Failed: ${error.message}`);
       }
     }
 

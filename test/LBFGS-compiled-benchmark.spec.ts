@@ -7,7 +7,7 @@ import { lbfgs } from "../src/LBFGS";
 import { testLog } from './testUtils';
 
 describe('L-BFGS Compiled Performance', () => {
-  it('should benchmark Rosenbrock: compiled vs uncompiled', () => {
+  it('should benchmark Rosenbrock: compiled vs uncompiled', async () => {
     const objectiveFn = (p: V.Value[]) => {
       const [x, y] = p;
       const a = V.sub(V.C(1), x);
@@ -21,7 +21,7 @@ describe('L-BFGS Compiled Performance', () => {
     const params1 = [x1, y1];
 
     const startUncompiled = performance.now();
-    const result1 = lbfgs(params1, objectiveFn, { maxIterations: 100, verbose: false });
+    const result1 = await lbfgs(params1, objectiveFn, { maxIterations: 100, verbose: false });
     const timeUncompiled = performance.now() - startUncompiled;
 
     // Compiled
@@ -31,7 +31,7 @@ describe('L-BFGS Compiled Performance', () => {
     const compiled = V.compileObjective(params2, objectiveFn);
 
     const startCompiled = performance.now();
-    const result2 = lbfgs(params2, compiled, { maxIterations: 100, verbose: false });
+    const result2 = await lbfgs(params2, compiled, { maxIterations: 100, verbose: false });
     const timeCompiled = performance.now() - startCompiled;
 
     testLog('\n=== Rosenbrock Benchmark ===');
@@ -45,7 +45,7 @@ describe('L-BFGS Compiled Performance', () => {
     expect(y2.data).toBeCloseTo(y1.data, 3);
   });
 
-  it('should benchmark high-dimensional quadratic', () => {
+  it('should benchmark high-dimensional quadratic', async () => {
     const n = 50;
 
     const objectiveFn = (p: V.Value[]) => {
@@ -60,14 +60,14 @@ describe('L-BFGS Compiled Performance', () => {
     // Uncompiled
     const params1 = Array.from({ length: n }, () => V.W(0));
     const startUncompiled = performance.now();
-    const result1 = lbfgs(params1, objectiveFn, { maxIterations: 50, verbose: false });
+    const result1 = await lbfgs(params1, objectiveFn, { maxIterations: 50, verbose: false });
     const timeUncompiled = performance.now() - startUncompiled;
 
     // Compiled
     const params2 = Array.from({ length: n }, () => V.W(0));
     const compiled = V.compileObjective(params2, objectiveFn);
     const startCompiled = performance.now();
-    const result2 = lbfgs(params2, compiled, { maxIterations: 50, verbose: false });
+    const result2 = await lbfgs(params2, compiled, { maxIterations: 50, verbose: false });
     const timeCompiled = performance.now() - startCompiled;
 
     testLog('\n=== 50D Quadratic Benchmark ===');
@@ -110,7 +110,7 @@ describe('L-BFGS Compiled Performance', () => {
     expect(compileTime).toBeLessThan(50); // Compilation should be fast
   });
 
-  it('should show speedup increases with problem size', () => {
+  it('should show speedup increases with problem size', async () => {
     const sizes = [5, 10, 20, 50];
     const speedups: number[] = [];
 
@@ -128,14 +128,14 @@ describe('L-BFGS Compiled Performance', () => {
       // Uncompiled
       const params1 = Array.from({ length: n }, () => V.W(Math.random()));
       const start1 = performance.now();
-      lbfgs(params1, objectiveFn, { maxIterations: 20, verbose: false });
+      await lbfgs(params1, objectiveFn, { maxIterations: 20, verbose: false });
       const time1 = performance.now() - start1;
 
       // Compiled
       const params2 = Array.from({ length: n }, () => V.W(Math.random()));
       const compiled = V.compileObjective(params2, objectiveFn);
       const start2 = performance.now();
-      lbfgs(params2, compiled, { maxIterations: 20, verbose: false });
+      await lbfgs(params2, compiled, { maxIterations: 20, verbose: false });
       const time2 = performance.now() - start2;
 
       const speedup = time1 / time2;

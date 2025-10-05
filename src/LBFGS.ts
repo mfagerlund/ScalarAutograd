@@ -81,7 +81,7 @@ function computeObjectiveAndGradient(
  * 1. Sufficient decrease (Armijo): f(x + α*d) ≤ f(x) + c1*α*∇f(x)ᵀd
  * 2. Curvature condition: |∇f(x + α*d)ᵀd| ≤ c2*|∇f(x)ᵀd|
  */
-function wolfeLineSearch(
+async function wolfeLineSearch(
   params: Value[],
   direction: number[],
   objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
@@ -93,7 +93,7 @@ function wolfeLineSearch(
     maxSteps: number;
     initialStepSize: number;
   }
-): { stepSize: number; newCost: number; newGradient: number[]; evaluations: number } {
+): Promise<{ stepSize: number; newCost: number; newGradient: number[]; evaluations: number }> {
   const { c1, c2, maxSteps, initialStepSize } = options;
   const originalData = params.map((p) => p.data);
 
@@ -121,7 +121,7 @@ function wolfeLineSearch(
     });
 
     // Evaluate objective and gradient at new point
-    const { cost: newCost, gradient: newGradient } = computeObjectiveAndGradient(params, objectiveFn);
+    const { cost: newCost, gradient: newGradient } = await computeObjectiveAndGradient(params, objectiveFn);
     evaluations++;
 
     // Check for numerical issues
@@ -282,11 +282,11 @@ function twoLoopRecursion(
  *
  * @public
  */
-export function lbfgs(
+export async function lbfgs(
   params: Value[],
   objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
   options: LBFGSOptions = {}
-): LBFGSResult {
+): Promise<LBFGSResult> {
   const {
     maxIterations = 100,
     costTolerance = 1e-6,
@@ -316,7 +316,7 @@ export function lbfgs(
   const rho_history: number[] = [];  // 1 / (y^T * s)
 
   // Initial evaluation
-  let { cost, gradient } = computeObjectiveAndGradient(params, objectiveFn);
+  let { cost, gradient } = await computeObjectiveAndGradient(params, objectiveFn);
   totalFunctionEvaluations++;
   let gradientNorm = Math.sqrt(gradient.reduce((sum, g) => sum + g * g, 0));
 
@@ -346,7 +346,7 @@ export function lbfgs(
     const direction = twoLoopRecursion(gradient, s_history, y_history, rho_history);
 
     // Perform line search with Wolfe conditions
-    const lineSearchResult = wolfeLineSearch(params, direction, objectiveFn, cost, gradient, {
+    const lineSearchResult = await wolfeLineSearch(params, direction, objectiveFn, cost, gradient, {
       c1,
       c2,
       maxSteps: maxLineSearchSteps,

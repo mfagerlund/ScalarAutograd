@@ -8,7 +8,7 @@ import { IcoSphere } from '../src/mesh/IcoSphere';
 import { DifferentiablePlaneAlignment } from '../src/energy/DifferentiablePlaneAlignment';
 
 describe('Compilation State Test', () => {
-  it('mesh state during compilation vs uncompiled', () => {
+  it.concurrent('mesh state during compilation vs uncompiled', () => {
     const mesh = IcoSphere.generate(0, 1.0); // 12 vertices
 
     console.log(`\n=== COMPILATION STATE TEST ===\n`);

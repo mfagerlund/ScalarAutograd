@@ -13,7 +13,7 @@ import { testLog } from './testUtils';
 
 describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
   describe("Basic L-BFGS tests", () => {
-    it("should minimize Rosenbrock function", () => {
+    it("should minimize Rosenbrock function", async () => {
       // Rosenbrock function: f(x,y) = (1-x)² + 100(y-x²)²
       // Global minimum at (1, 1) with f(1,1) = 0
       const x = V.W(-1.2);  // Start far from optimum
@@ -27,7 +27,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
         return V.add(V.pow(a, 2), V.mul(V.C(100), V.pow(b, 2)));
       };
 
-      const result = lbfgs(params, rosenbrock, {
+      const result = await lbfgs(params, rosenbrock, {
         maxIterations: 200,  // Rosenbrock is notoriously difficult
         initialStepSize: 0.01,  // Start with smaller steps
         verbose: false,
@@ -47,7 +47,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
       testLog(`  Note: Rosenbrock is notoriously difficult - LM would perform better for this!`);
     });
 
-    it("should minimize Beale function", () => {
+    it("should minimize Beale function", async () => {
       // Beale function: f(x,y) = (1.5 - x + xy)² + (2.25 - x + xy²)² + (2.625 - x + xy³)²
       // Global minimum at (3, 0.5) with f(3, 0.5) = 0
       const x = V.W(1.0);
@@ -62,7 +62,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
         return V.add(V.add(V.pow(t1, 2), V.pow(t2, 2)), V.pow(t3, 2));
       };
 
-      const result = lbfgs(params, beale, {
+      const result = await lbfgs(params, beale, {
         maxIterations: 100,
         verbose: false,
       });
@@ -82,7 +82,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
   });
 
   describe("Comparison: Least Squares problems", () => {
-    it("should compare L-BFGS vs LM on curve fitting", () => {
+    it("should compare L-BFGS vs LM on curve fitting", async () => {
       // Exponential curve fitting: y = a * exp(b * x)
       // Data points from y = 2 * exp(0.5 * x) + noise
       const xData = [0, 1, 2, 3, 4];
@@ -106,7 +106,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
         };
 
         const startTime = performance.now();
-        const result = lbfgs(params, objective, {
+        const result = await lbfgs(params, objective, {
           maxIterations: 100,
           initialStepSize: 0.1,  // Use smaller steps for exponential curve
           verbose: false
@@ -165,7 +165,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
   });
 
   describe("Comparison: General optimization", () => {
-    it("should compare L-BFGS vs LM on Rosenbrock (not naturally least-squares)", () => {
+    it("should compare L-BFGS vs LM on Rosenbrock (not naturally least-squares)", async () => {
       // Rosenbrock is NOT naturally a sum of squared residuals
       // L-BFGS should perform better here
 
@@ -183,7 +183,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
         };
 
         const startTime = performance.now();
-        const result = lbfgs(params, rosenbrock, { maxIterations: 100, verbose: false });
+        const result = await lbfgs(params, rosenbrock, { maxIterations: 100, verbose: false });
         const lbfgsTime = performance.now() - startTime;
 
         testLog(`\nRosenbrock - L-BFGS:`);
@@ -224,7 +224,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
   });
 
   describe("When L-BFGS excels", () => {
-    it("should handle high-dimensional optimization efficiently", () => {
+    it("should handle high-dimensional optimization efficiently", async () => {
       // Minimize sum of squared distances from origin in 20D
       // This tests memory efficiency of L-BFGS
       const dim = 20;
@@ -238,7 +238,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
         return sum;
       };
 
-      const result = lbfgs(params, objective, {
+      const result = await lbfgs(params, objective, {
         maxIterations: 100,
         historySize: 10,  // Only stores 10 vector pairs, not full 20x20 Hessian
         verbose: false,
@@ -258,7 +258,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
       });
     });
 
-    it("should handle non-quadratic objectives well", () => {
+    it("should handle non-quadratic objectives well", async () => {
       // L-BFGS excels on smooth non-quadratic functions
       // Example: f(x,y) = sin(x) * cos(y) + x²/10 + y²/10
       // This has many local minima but L-BFGS finds a good one
@@ -276,7 +276,7 @@ describe("L-BFGS vs Levenberg-Marquardt Benchmarks", () => {
         return V.add(sincos, regularization);
       };
 
-      const result = lbfgs(params, nonQuadratic, {
+      const result = await lbfgs(params, nonQuadratic, {
         maxIterations: 100,
         verbose: false,
       });

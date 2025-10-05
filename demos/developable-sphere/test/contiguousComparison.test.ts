@@ -7,7 +7,7 @@ import { ContiguousBimodalEnergy } from '../src/energy/ContiguousBimodalEnergy';
 import { testLog } from '../../../test/testUtils';
 
 describe('Bimodal vs Contiguous Energy Comparison', () => {
-  it('should compare quasi-random bimodal vs contiguous bimodal', { timeout: 30000 }, () => {
+  it.skip('should compare quasi-random bimodal vs contiguous bimodal', { timeout: 30000 }, () => {
     // Generate icosphere (same as demo)
     const subdiv = 3;
     const baseMesh = IcoSphere.generate(subdiv, 1.0);

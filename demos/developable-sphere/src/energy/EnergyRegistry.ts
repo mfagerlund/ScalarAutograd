@@ -7,6 +7,7 @@ import { Value } from 'scalar-autograd';
 export interface DevelopableEnergyFunction {
   name: string;
   description: string;
+  supportsCompilation: boolean; // Whether this energy can be compiled (deterministic, no randomness)
   compute(mesh: TriangleMesh): Value;
   computeResiduals(mesh: TriangleMesh): Value[];
   classifyVertices(

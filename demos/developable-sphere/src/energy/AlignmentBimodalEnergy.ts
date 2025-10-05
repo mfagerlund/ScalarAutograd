@@ -25,6 +25,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class AlignmentBimodalEnergy {
   static readonly name = 'Bimodal Alignment (Spatial Midpoint)';
   static readonly description = 'Custom: midpoint split, alignment metric';
+  static readonly supportsCompilation = true;
 
   /**
    * Compute total energy for the mesh.

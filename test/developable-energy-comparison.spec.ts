@@ -105,7 +105,7 @@ class VarianceEnergy {
 }
 
 describe('Developable Energy Comparison', () => {
-  it('should produce identical results for variance energy with compiled vs non-compiled', () => {
+  it.concurrent('should produce identical results for variance energy with compiled vs non-compiled', async () => {
     // Create a simple icosphere (12 vertices, 20 faces)
     const t = (1.0 + Math.sqrt(5.0)) / 2.0;
     const vertices = [
@@ -131,7 +131,7 @@ describe('Developable Energy Comparison', () => {
       params1.push(V.W(v.x.data), V.W(v.y.data), V.W(v.z.data));
     }
 
-    const result1 = lbfgs(params1, (p) => {
+    const result1 = await lbfgs(params1, (p) => {
       for (let i = 0; i < mesh1.vertices.length; i++) {
         mesh1.setVertexPosition(i, new Vec3(p[3*i], p[3*i+1], p[3*i+2]));
       }
@@ -152,7 +152,7 @@ describe('Developable Energy Comparison', () => {
       return VarianceEnergy.computeResiduals(mesh2);
     });
 
-    const result2 = lbfgs(params2, compiled, { maxIterations: 20, verbose: false });
+    const result2 = await lbfgs(params2, compiled, { maxIterations: 20, verbose: false });
 
     testLog('Non-compiled:');
     testLog('  Energy:', result1.finalCost);

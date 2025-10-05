@@ -5,6 +5,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class DevelopableEnergy {
   static readonly name = 'Bimodal Variance (Spatial Midpoint)';
   static readonly description = 'Custom: fixed midpoint split, variance';
+  static readonly supportsCompilation = true;
   /**
    * Compute total developability energy for the mesh.
    * This is the sum of vertex energies over all vertices.

@@ -26,6 +26,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class StochasticCovarianceEnergy {
   static readonly name = 'Fast Covariance (SGD)';
   static readonly description = 'Custom: E^λ approx via gradient descent';
+  static readonly supportsCompilation = false; // Uses iterative SGD with non-deterministic convergence
 
   /**
    * Compute total fast covariance energy for the mesh.

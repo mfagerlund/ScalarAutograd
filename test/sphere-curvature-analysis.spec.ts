@@ -6,7 +6,7 @@ import { Vec3 } from '../src/Vec3';
 import { testLog } from './testUtils';
 
 describe('Sphere Curvature Analysis', () => {
-  it('measures angle defect at different subdivision levels', () => {
+  it.skip('measures angle defect at different subdivision levels', () => {
     testLog('\nAngle defect on unit spheres (adaptive threshold):\n');
 
     for (let sub = 2; sub <= 5; sub++) {

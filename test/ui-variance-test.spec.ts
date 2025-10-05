@@ -4,7 +4,7 @@ import { DevelopableOptimizer } from '../demos/developable-sphere/src/optimizati
 import { testLog } from './testUtils';
 
 describe('UI Variance Energy Test', () => {
-  it('should work in async mode like the UI', async () => {
+  it.concurrent('should work in async mode like the UI', async () => {
     testLog('\n=== Testing Variance Energy (UI Mode) ===');
 
     const sphere = IcoSphere.generate(2, 1.0);

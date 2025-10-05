@@ -7,7 +7,7 @@ import { lbfgs } from "../src/LBFGS";
 import { testLog } from './testUtils';
 
 describe('L-BFGS with Compiled Objectives', () => {
-  it('should solve quadratic with compiled objective', () => {
+  it('should solve quadratic with compiled objective', async () => {
     // Minimize f(x) = (x - 3)²
     const x = V.W(0);
     const params = [x];
@@ -19,14 +19,14 @@ describe('L-BFGS with Compiled Objectives', () => {
     };
 
     const compiled = V.compileObjective(params, objectiveFn);
-    const result = lbfgs(params, compiled);
+    const result = await lbfgs(params, compiled);
 
     expect(result.success).toBe(true);
     expect(x.data).toBeCloseTo(3.0, 5);
     expect(result.finalCost).toBeCloseTo(0, 8);
   });
 
-  it('should match uncompiled results on Rosenbrock function', () => {
+  it('should match uncompiled results on Rosenbrock function', async () => {
     // Rosenbrock: f(x, y) = (1-x)² + 100(y-x²)²
     const objectiveFn = (p: V.Value[]) => {
       const [x, y] = p;
@@ -39,14 +39,14 @@ describe('L-BFGS with Compiled Objectives', () => {
     const x1 = V.W(0.5);
     const y1 = V.W(0.5);
     const params1 = [x1, y1];
-    const result1 = lbfgs(params1, objectiveFn, { maxIterations: 100 });
+    const result1 = await lbfgs(params1, objectiveFn, { maxIterations: 100 });
 
     // Test with compiled
     const x2 = V.W(0.5);
     const y2 = V.W(0.5);
     const params2 = [x2, y2];
     const compiled = V.compileObjective(params2, objectiveFn);
-    const result2 = lbfgs(params2, compiled, { maxIterations: 100 });
+    const result2 = await lbfgs(params2, compiled, { maxIterations: 100 });
 
     testLog('\n=== Rosenbrock: Compiled vs Uncompiled ===');
     testLog(`Uncompiled: x=${x1.data.toFixed(6)}, y=${y1.data.toFixed(6)}, cost=${result1.finalCost.toExponential(4)}, iter=${result1.iterations}`);
@@ -60,7 +60,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     expect(result2.finalCost).toBeCloseTo(result1.finalCost, 3);
   });
 
-  it('should handle multi-dimensional quadratic', () => {
+  it('should handle multi-dimensional quadratic', async () => {
     // Minimize f(x) = Σ(xᵢ - i)²
     const n = 10;
     const params = Array.from({ length: n }, (_, i) => V.W(0, `x${i}`));
@@ -75,7 +75,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     };
 
     const compiled = V.compileObjective(params, objectiveFn);
-    const result = lbfgs(params, compiled);
+    const result = await lbfgs(params, compiled);
 
     testLog(`\n=== 10D Quadratic ===`);
     testLog(`Success: ${result.success}, Iterations: ${result.iterations}, Final cost: ${result.finalCost.toExponential(4)}`);
@@ -86,7 +86,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     }
   });
 
-  it('should work with Beale function', () => {
+  it('should work with Beale function', async () => {
     // Beale: f(x,y) = (1.5 - x + xy)² + (2.25 - x + xy²)² + (2.625 - x + xy³)²
     // Global minimum at (3, 0.5) with f = 0
     const objectiveFn = (p: V.Value[]) => {
@@ -102,7 +102,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     const params = [x, y];
 
     const compiled = V.compileObjective(params, objectiveFn);
-    const result = lbfgs(params, compiled, { maxIterations: 200 });
+    const result = await lbfgs(params, compiled, { maxIterations: 200 });
 
     testLog(`\n=== Beale Function ===`);
     testLog(`x=${x.data.toFixed(6)}, y=${y.data.toFixed(6)}, cost=${result.finalCost.toExponential(4)}, iter=${result.iterations}`);
@@ -112,7 +112,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     expect(y.data).toBeCloseTo(0.5, 1);
   });
 
-  it('should handle unused parameters gracefully', () => {
+  it('should handle unused parameters gracefully', async () => {
     // f(x, y) = x² (y is unused)
     const x = V.W(5);
     const y = V.W(10);
@@ -124,7 +124,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     };
 
     const compiled = V.compileObjective(params, objectiveFn);
-    const result = lbfgs(params, compiled);
+    const result = await lbfgs(params, compiled);
 
     expect(result.success).toBe(true);
     expect(x.data).toBeCloseTo(0, 5);
@@ -132,7 +132,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     expect(y.data).toBeCloseTo(10, 5);
   });
 
-  it('should work with exponential functions', () => {
+  it('should work with exponential functions', async () => {
     // Minimize f(x) = e^x + e^(-x) - 2
     // Minimum at x=0 with f=0
     const x = V.W(2.0);
@@ -144,7 +144,7 @@ describe('L-BFGS with Compiled Objectives', () => {
     };
 
     const compiled = V.compileObjective(params, objectiveFn);
-    const result = lbfgs(params, compiled);
+    const result = await lbfgs(params, compiled);
 
     testLog(`\n=== Exponential Function ===`);
     testLog(`x=${x.data.toFixed(6)}, cost=${result.finalCost.toExponential(4)}, iter=${result.iterations}`);

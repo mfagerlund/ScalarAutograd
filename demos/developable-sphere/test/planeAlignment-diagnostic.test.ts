@@ -5,7 +5,7 @@ import { DifferentiablePlaneAlignment } from '../src/energy/DifferentiablePlaneA
 import { Value, V, Vec3, CompiledResiduals } from 'scalar-autograd';
 
 describe('DifferentiablePlaneAlignment - Gradient Diagnostic', () => {
-  it('should show detailed gradient comparison', () => {
+  it.concurrent('should show detailed gradient comparison', () => {
     // Use an even smaller mesh for clarity
     const mesh = IcoSphere.generate(0, 1.0); // subdivision level 0 = 12 vertices
 
@@ -184,7 +184,7 @@ describe('DifferentiablePlaneAlignment - Gradient Diagnostic', () => {
     console.log(`\nMax Jacobian[0] difference: ${maxJacDiff.toExponential(6)}`);
   });
 
-  it('bypass kernel cache test', () => {
+  it.concurrent('bypass kernel cache test', () => {
     const mesh = IcoSphere.generate(0, 1.0); // 12 vertices
 
     console.log(`\n=== BYPASS KERNEL CACHE TEST ===`);

@@ -15,6 +15,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 export class ContiguousBimodalEnergy {
   static readonly name = 'Contiguous Bimodal Variance';
   static readonly description = 'Custom: contiguous partition, variance';
+  static readonly supportsCompilation = true;
   /**
    * Compute total energy for the mesh.
    */

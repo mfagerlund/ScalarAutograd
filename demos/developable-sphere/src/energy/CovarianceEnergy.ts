@@ -18,8 +18,9 @@ import { EnergyRegistry } from './EnergyRegistry';
  * - Intrinsic variant avoids "spike" artifacts
  */
 export class CovarianceEnergy {
-  static readonly name = 'Covariance (Smallest Eigenvalue)';
+  static readonly name = 'Covariance (E^λ)';
   static readonly description = 'Paper: E^λ = Σλ_min(A_i), angle-weighted';
+  static readonly supportsCompilation = true;
 
   /**
    * Compute total covariance energy for the mesh.
