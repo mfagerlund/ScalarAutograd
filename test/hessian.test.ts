@@ -1,4 +1,5 @@
-import { Value } from './Value';
+import { Value } from '../src/Value';
+import { testLog } from '../test/testUtils';
 
 // Extended Value that tracks second derivatives
 class HessianValue extends Value {
@@ -112,8 +113,8 @@ describe('Hessian Computation', () => {
 
     // Expected Hessian:
     // ∂²f/∂x² = 2,  ∂²f/∂y² = 2,  ∂²f/∂x∂y = 0
-    console.log('Hessian of x² + y² at (2, 3):');
-    console.log(H);
+    testLog('Hessian of x² + y² at (2, 3):');
+    testLog(H);
 
     expect(Math.abs(H[0][0] - 2)).toBeLessThan(0.01);  // ∂²f/∂x² = 2
     expect(Math.abs(H[1][1] - 2)).toBeLessThan(0.01);  // ∂²f/∂y² = 2
@@ -135,8 +136,8 @@ describe('Hessian Computation', () => {
 
     // Expected Hessian:
     // ∂²f/∂x² = 0,  ∂²f/∂y² = 0,  ∂²f/∂x∂y = 1
-    console.log('\nHessian of x*y at (2, 3):');
-    console.log(H);
+    testLog('\nHessian of x*y at (2, 3):');
+    testLog(H);
 
     expect(Math.abs(H[0][0] - 0)).toBeLessThan(0.01);  // ∂²f/∂x² = 0
     expect(Math.abs(H[1][1] - 0)).toBeLessThan(0.01);  // ∂²f/∂y² = 0
@@ -160,8 +161,8 @@ describe('Hessian Computation', () => {
     // ∂²f/∂a² = 0
     // ∂²f/∂b² = 2a = 4
     // ∂²f/∂a∂b = 2b = 6
-    console.log('\nHessian of a*b² at (2, 3):');
-    console.log(H);
+    testLog('\nHessian of a*b² at (2, 3):');
+    testLog(H);
 
     expect(Math.abs(H[0][0] - 0)).toBeLessThan(0.01);  // ∂²f/∂a² = 0
     expect(Math.abs(H[1][1] - 4)).toBeLessThan(0.1);   // ∂²f/∂b² = 2a = 4
@@ -186,8 +187,8 @@ describe('Hessian Computation', () => {
 
     const H = computeHessian(buildGraph, [x, y, z]);
 
-    console.log('\nHessian of x² + xy + yz + z² at (1, 2, 3):');
-    console.log(H);
+    testLog('\nHessian of x² + xy + yz + z² at (1, 2, 3):');
+    testLog(H);
 
     // Expected Hessian:
     // ∂²f/∂x² = 2
@@ -206,38 +207,38 @@ describe('Hessian Computation', () => {
   });
 
   it('shows analytical second derivative rules', () => {
-    console.log('\n=== Second Derivative Rules ===\n');
+    testLog('\n=== Second Derivative Rules ===\n');
 
-    console.log('Addition: f = a + b');
-    console.log('  ∂f/∂a = 1, ∂f/∂b = 1');
-    console.log('  ∂²f/∂a² = 0, ∂²f/∂b² = 0, ∂²f/∂a∂b = 0\n');
+    testLog('Addition: f = a + b');
+    testLog('  ∂f/∂a = 1, ∂f/∂b = 1');
+    testLog('  ∂²f/∂a² = 0, ∂²f/∂b² = 0, ∂²f/∂a∂b = 0\n');
 
-    console.log('Multiplication: f = a * b');
-    console.log('  ∂f/∂a = b, ∂f/∂b = a');
-    console.log('  ∂²f/∂a² = 0, ∂²f/∂b² = 0, ∂²f/∂a∂b = 1\n');
+    testLog('Multiplication: f = a * b');
+    testLog('  ∂f/∂a = b, ∂f/∂b = a');
+    testLog('  ∂²f/∂a² = 0, ∂²f/∂b² = 0, ∂²f/∂a∂b = 1\n');
 
-    console.log('Square: f = a²');
-    console.log('  ∂f/∂a = 2a');
-    console.log('  ∂²f/∂a² = 2\n');
+    testLog('Square: f = a²');
+    testLog('  ∂f/∂a = 2a');
+    testLog('  ∂²f/∂a² = 2\n');
 
-    console.log('Power: f = aⁿ');
-    console.log('  ∂f/∂a = n·aⁿ⁻¹');
-    console.log('  ∂²f/∂a² = n(n-1)·aⁿ⁻²\n');
+    testLog('Power: f = aⁿ');
+    testLog('  ∂f/∂a = n·aⁿ⁻¹');
+    testLog('  ∂²f/∂a² = n(n-1)·aⁿ⁻²\n');
 
-    console.log('Product with square: f = a·b²');
-    console.log('  ∂f/∂a = b², ∂f/∂b = 2ab');
-    console.log('  ∂²f/∂a² = 0, ∂²f/∂b² = 2a, ∂²f/∂a∂b = 2b\n');
+    testLog('Product with square: f = a·b²');
+    testLog('  ∂f/∂a = b², ∂f/∂b = 2ab');
+    testLog('  ∂²f/∂a² = 0, ∂²f/∂b² = 2a, ∂²f/∂a∂b = 2b\n');
 
-    console.log('Sin: f = sin(a)');
-    console.log('  ∂f/∂a = cos(a)');
-    console.log('  ∂²f/∂a² = -sin(a)\n');
+    testLog('Sin: f = sin(a)');
+    testLog('  ∂f/∂a = cos(a)');
+    testLog('  ∂²f/∂a² = -sin(a)\n');
 
-    console.log('Exp: f = exp(a)');
-    console.log('  ∂f/∂a = exp(a)');
-    console.log('  ∂²f/∂a² = exp(a)\n');
+    testLog('Exp: f = exp(a)');
+    testLog('  ∂f/∂a = exp(a)');
+    testLog('  ∂²f/∂a² = exp(a)\n');
 
-    console.log('Division: f = a/b');
-    console.log('  ∂f/∂a = 1/b, ∂f/∂b = -a/b²');
-    console.log('  ∂²f/∂a² = 0, ∂²f/∂b² = 2a/b³, ∂²f/∂a∂b = -1/b²\n');
+    testLog('Division: f = a/b');
+    testLog('  ∂f/∂a = 1/b, ∂f/∂b = -a/b²');
+    testLog('  ∂²f/∂a² = 0, ∂²f/∂b² = 2a/b³, ∂²f/∂a∂b = -1/b²\n');
   });
 });

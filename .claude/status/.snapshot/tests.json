@@ -1,0 +1,11 @@
+{
+  "category": "Tests",
+  "state": "failing",
+  "metrics": {
+    "passing": 0,
+    "failing": 0,
+    "total": 0
+  },
+  "message": "FAIL  test/combinatorial-covariance-energy.spec.ts > Combinatorial Energy (E^P) > should reduce ener",
+  "lastUpdated": "2025-10-04T21:07:11.669Z"
+}

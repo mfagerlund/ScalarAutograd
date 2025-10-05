@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Test</title>
+</head>
+<body>
+    <h1>Testing scalar-autograd imports</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+
+        try {
+            output.innerHTML += '<p>Importing from scalar-autograd...</p>';
+
+            const { Vec3, Geometry, V } = await import('../../dist/index.js');
+
+            output.innerHTML += '<p>✅ Vec3: ' + typeof Vec3 + '</p>';
+            output.innerHTML += '<p>✅ Geometry: ' + typeof Geometry + '</p>';
+            output.innerHTML += '<p>✅ V: ' + typeof V + '</p>';
+
+            // Test Vec3
+            const v = Vec3.C(1, 2, 3);
+            output.innerHTML += '<p>✅ Created Vec3: ' + v.toString() + '</p>';
+
+            // Test Geometry
+            const a = Vec3.C(0, 0, 0);
+            const b = Vec3.C(1, 0, 0);
+            const c = Vec3.C(0, 1, 0);
+            const normal = Geometry.triangleNormal(a, b, c);
+            output.innerHTML += '<p>✅ Triangle normal: ' + normal.toString() + '</p>';
+
+            output.innerHTML += '<h2 style="color: green;">All tests passed!</h2>';
+
+        } catch (e) {
+            output.innerHTML += '<h2 style="color: red;">ERROR: ' + e.message + '</h2>';
+            output.innerHTML += '<pre>' + e.stack + '</pre>';
+        }
+    </script>
+</body>
+</html>

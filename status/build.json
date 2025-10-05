@@ -1,0 +1,6 @@
+{
+  "category": "Build",
+  "state": "fail",
+  "message": "npm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Dev\\",
+  "lastUpdated": "2025-10-04T20:37:01.408Z"
+}

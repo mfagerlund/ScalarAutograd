@@ -1,0 +1,85 @@
+
+> scalar-autograd@0.1.8 test
+> vitest run --globals covariance-optimization.spec.ts
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Dev/ScalarAutograd[39m
+
+[90mstdout[2m | test/covariance-optimization.spec.ts[2m > [22m[2mCovariance Energy Optimization Test[2m > [22m[2mshould produce good regions with improved covariance energy
+[22m[39m
+=== Covariance Energy Optimization Test ===
+Mesh: 162 vertices, 320 faces
+
+Initial State:
+  Covariance Energy: 2.594e+0
+  Developability: 0.0%
+  Regions: 0
+
+Optimizing with Covariance Energy (non-compiled)...
+Using covariance energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=2.593790, ||∇||=6.99e+0
+Iteration 1: cost=2.547918, ||∇||=2.22e+0, α=0.0020, history=1
+Iteration 2: cost=2.542617, ||∇||=8.56e-1, α=1.0000, history=2
+Iteration 3: cost=2.541213, ||∇||=7.63e-1, α=1.0000, history=3
+Iteration 4: cost=2.535617, ||∇||=1.17e-1, α=1.0000, history=4
+Iteration 5: cost=2.535550, ||∇||=9.20e-2, α=1.0000, history=5
+Iteration 6: cost=2.535380, ||∇||=6.57e-2, α=1.0000, history=6
+Iteration 7: cost=2.535328, ||∇||=7.91e-2, α=1.0000, history=7
+Iteration 8: cost=2.534933, ||∇||=1.48e-1, α=1.0000, history=8
+Iteration 9: cost=2.534584, ||∇||=1.44e-1, α=1.0000, history=9
+Iteration 10: cost=2.534334, ||∇||=4.69e-2, α=1.0000, history=10
+Iteration 11: cost=2.534324, ||∇||=3.87e-2, α=1.0000, history=10
+Iteration 12: cost=2.534312, ||∇||=3.41e-2, α=1.0000, history=10
+Iteration 13: cost=2.534288, ||∇||=1.71e-2, α=1.0000, history=10
+Iteration 14: cost=2.534283, ||∇||=1.58e-3, α=1.0000, history=10
+Chunk complete: 14/50, energy=2.534e+0, reason: Line search failed to find acceptable step
+
+[90mstdout[2m | test/covariance-optimization.spec.ts[2m > [22m[2mCovariance Energy Optimization Test[2m > [22m[2mshould produce good regions with improved covariance energy
+[22m[39m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESULTS:
+  Iterations: 14
+  Convergence: Line search failed to find acceptable step
+
+Energy:
+  Before: 2.594e+0
+  After:  2.534e+0
+  Reduction: 2.3%
+
+Developability:
+  Before: 0.0%
+  After:  0.0%
+  Improvement: +0.0%
+
+Regions:
+  Before: 0
+  After:  0
+  Quality: 0.0% / 0 = NaN% per region
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ [31m❯[39m test/covariance-optimization.spec.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 29711[2mms[22m[39m
+[31m   [31m×[31m Covariance Energy Optimization Test[2m > [22mshould produce good regions with improved covariance energy[39m[33m 29704[2mms[22m[39m
+[31m     → expected 0 to be greater than 0[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/covariance-optimization.spec.ts[2m > [22mCovariance Energy Optimization Test[2m > [22mshould produce good regions with improved covariance energy
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m test/covariance-optimization.spec.ts:[2m66:22[22m[39m
+    [90m 64| [39m    [90m// Expectations[39m
+    [90m 65| [39m    [34mexpect[39m(finalEnergy)[33m.[39m[34mtoBeLessThan[39m(initialEnergy)[33m;[39m
+    [90m 66| [39m    [34mexpect[39m(finalDev)[33m.[39m[34mtoBeGreaterThan[39m(initialDev)[33m;[39m
+    [90m   | [39m                     [31m^[39m
+    [90m 67| [39m
+    [90m 68| [39m    // Check for fragmentation - should have reasonable number of regi…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 19:43:03
+[2m   Duration [22m 33.00s[2m (transform 888ms, setup 0ms, collect 1.36s, tests 29.71s, environment 1ms, prepare 646ms)[22m
+

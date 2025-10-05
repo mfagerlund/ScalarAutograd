@@ -13,8 +13,6 @@ export { Vec3 } from './Vec3';
 
 const EPS = 1e-12;
 
-
-import { ValueTrig } from './ValueTrig';
 import { ValueActivation } from './ValueActivation';
 import { ValueArithmetic } from './ValueArithmetic';
 import { ValueComparison } from './ValueComparison';
@@ -50,7 +48,7 @@ export class Value {
   requiresGrad: boolean;
 
   private backwardFn: BackwardFn = () => {};
-  private prev: Value[] = [];
+  /** @internal */ prev: Value[] = [];
 
   /**
    * Optional label for debugging and visualization.
@@ -70,6 +68,18 @@ export class Value {
    */
   public paramName?: string;
 
+  /**
+   * Registry ID for kernel reuse system.
+   * @internal
+   */
+  public _registryId?: number;
+
+  /**
+   * Operation constants (e.g., min/max for clamp, exponent for pow).
+   * @internal
+   */
+  public _opConstants?: number[];
+
   constructor(data: number, label = "", requiresGrad = false) {
     if (typeof data !== 'number' || Number.isNaN(data) || !Number.isFinite(data)) {
       throw new Error(`Invalid number passed to Value: ${data}`);
@@ -83,53 +93,6 @@ export class Value {
     return typeof x === 'number' ? new Value(x) : x;
   }
 
-  /**
-   * Returns sin(this).
-   * @returns New Value with sin.
-   */
-  sin(): Value {
-    return ValueTrig.sin(this);
-  }
-
-  /**
-   * Returns cos(this).
-   * @returns New Value with cos.
-   */
-  cos(): Value {
-    return ValueTrig.cos(this);
-  }
-
-  /**
-   * Returns tan(this).
-   * @returns New Value with tan.
-   */
-  tan(): Value {
-    return ValueTrig.tan(this);
-  }
-
-  /**
-   * Returns asin(this).
-   * @returns New Value with asin.
-   */
-  asin(): Value {
-    return ValueTrig.asin(this);
-  }
-
-  /**
-   * Returns acos(this).
-   * @returns New Value with acos.
-   */
-  acos(): Value {
-    return ValueTrig.acos(this);
-  }
-
-  /**
-   * Returns atan(this).
-   * @returns New Value with atan.
-   */
-  atan(): Value {
-    return ValueTrig.atan(this);
-  }
 
   /**
    * Returns relu(this).
@@ -498,6 +461,26 @@ export class Value {
   }
 
   /**
+   * N-ary operation helper for operations with multiple inputs
+   */
+  static makeNary(
+    data: number,
+    inputs: Value[],
+    backwardFnBuilder: (out: Value) => BackwardFn,
+    label: string,
+    op?: string
+  ): Value {
+    const requiresGrad = !Value.no_grad_mode && inputs.some(v => v.requiresGrad);
+    const out = new Value(data, label, requiresGrad);
+    out.prev = Value.no_grad_mode ? [] : inputs;
+    out._op = op;
+    if (requiresGrad) {
+      out.backwardFn = backwardFnBuilder(out);
+    }
+    return out;
+  }
+
+  /**
    * Returns string representation for debugging.
    * @returns String summary of Value
    */
@@ -527,6 +510,7 @@ export class Value {
       switch (this._op) {
         case 'exp': return `Math.exp(${child})`;
         case 'log': return `Math.log(${child})`;
+        case 'sqrt': return `Math.sqrt(${child})`;
         case 'tanh': return `Math.tanh(${child})`;
         case 'sigmoid': return `(1 / (1 + Math.exp(-${child})))`;
         case 'relu': return `Math.max(0, ${child})`;
@@ -546,6 +530,10 @@ export class Value {
         case 'floor': return `Math.floor(${child})`;
         case 'ceil': return `Math.ceil(${child})`;
         case 'round': return `Math.round(${child})`;
+        case 'clamp': {
+          const [min, max] = this._opConstants || [0, 1];
+          return `Math.max(${min}, Math.min(${child}, ${max}))`;
+        }
         default: return String(this.data);
       }
     }
@@ -574,6 +562,8 @@ export class Value {
           return `${childGrad} += ${gradVar} * Math.exp(${child});`;
         case 'log':
           return `${childGrad} += ${gradVar} / ${child};`;
+        case 'sqrt':
+          return `${childGrad} += ${gradVar} * 0.5 / Math.sqrt(${child});`;
         case 'tanh': {
           const tanhChild = `Math.tanh(${child})`;
           return `${childGrad} += ${gradVar} * (1 - ${tanhChild} * ${tanhChild});`;
@@ -618,6 +608,10 @@ export class Value {
         case 'ceil':
         case 'round':
           return `${childGrad} += 0;`;
+        case 'clamp': {
+          const [min, max] = this._opConstants || [0, 1];
+          return `${childGrad} += ${gradVar} * (${child} > ${min} && ${child} < ${max} ? 1 : 0);`;
+        }
         default:
           return '';
       }

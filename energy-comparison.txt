@@ -1,0 +1,118 @@
+
+> scalar-autograd@0.1.8 test
+> vitest run --globals developable-sphere-sweep
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Dev/ScalarAutograd[39m
+
+[90mstderr[2m | test/developable-sphere-sweep.spec.ts
+[22m[39mUsing an object as a third argument is deprecated. Vitest 4 will throw an error if the third argument is not a timeout number. Please use the second argument for options. See more at https://vitest.dev/guide/migration
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+============================================================
+PARAMETER SWEEP - DEVELOPABLE SPHERE
+Testing 3 configurations
+============================================================
+
+Testing: Variance, subdiv=3, maxIter=100, gradTol=0.000001
+  Using graph backward (Variance energy has deep expression chains)
+  Starting L-BFGS optimization...
+  L-BFGS finished: Cost tolerance reached
+  ✓ Developable: 75.39%
+    Energy: 5.289e-1
+    Iterations: 76
+    Convergence: Cost tolerance reached
+    Time: 89817ms
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+Testing: BoundingBox, subdiv=3, maxIter=100, gradTol=0.000001
+  Using graph backward (BoundingBox energy has deep expression chains)
+  Starting L-BFGS optimization...
+  L-BFGS finished: Maximum iterations reached
+  ✓ Developable: 93.46%
+    Energy: 7.688e+1
+    Iterations: 100
+    Convergence: Maximum iterations reached
+    Time: 62104ms
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+Testing: AngleDefect, subdiv=3, maxIter=100, gradTol=0.000001
+  Compiled: 1 kernels, 1.0x reuse
+  Starting L-BFGS optimization...
+
+[90mstderr[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m  ✗ Failed: Maximum call stack size exceeded
+
+[90mstdout[2m | test/developable-sphere-sweep.spec.ts[2m > [22m[2mDevelopable Sphere Optimization[2m > [22m[2mParameter sweep for optimal settings
+[22m[39m
+============================================================
+RESULTS SUMMARY
+============================================================
+
+Top 5 configurations:
+
+1. 93.46% developable
+   Energy: BoundingBox, subdiv=3, maxIter=100, gradTol=0.000001
+   Final Energy: 7.688e+1, Time: 62104ms
+   Convergence: Maximum iterations reached
+
+2. 75.39% developable
+   Energy: Variance, subdiv=3, maxIter=100, gradTol=0.000001
+   Final Energy: 5.289e-1, Time: 82584ms
+   Convergence: Cost tolerance reached
+
+
+Best per subdivision level:
+
+Subdivision 3 (642 vertices):
+  93.46% developable
+  maxIter=100, gradTol=0.000001
+  Time: 62104ms
+
+============================================================
+
+ [32m✓[39m test/developable-sphere-sweep.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 149856[2mms[22m[39m
+   [33m[2m✓[22m[39m Developable Sphere Optimization[2m > [22mParameter sweep for optimal settings [33m 149852[2mms[22m[39m
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-worker]: Timeout calling "onTaskUpdate"[39m
+[90m [2m❯[22m Object.onTimeoutError node_modules/vitest/dist/chunks/rpc.-pEldfrD.js:[2m53:10[22m[39m
+[90m [2m❯[22m Timeout._onTimeout node_modules/vitest/dist/chunks/index.B521nVV-.js:[2m59:62[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m588:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m     Errors [22m [1m[31m1 error[39m[22m
+[2m   Start at [22m 00:43:39
+[2m   Duration [22m 151.41s[2m (transform 505ms, setup 0ms, collect 640ms, tests 149.86s, environment 1ms, prepare 334ms)[22m
+
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: Worker exited unexpectedly
+    at ChildProcess.onUnexpectedExit (file:///C:/Dev/ScalarAutograd/node_modules/tinypool/dist/index.js:118:30)
+    at ChildProcess.emit (node:events:531:35)
+    at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+Emitted 'error' event on Tinypool instance at:
+    at EventEmitterReferencingAsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at Tinypool.emit (node:events:171:18)
+    at file:///C:/Dev/ScalarAutograd/node_modules/tinypool/dist/index.js:594:30
+    at ChildProcess.<anonymous> (file:///C:/Dev/ScalarAutograd/node_modules/tinypool/dist/index.js:162:34)
+    at ChildProcess.emit (node:events:519:28)
+    at ChildProcess.onUnexpectedExit (file:///C:/Dev/ScalarAutograd/node_modules/tinypool/dist/index.js:118:16)
+    at ChildProcess.emit (node:events:531:35)
+    at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+
+Node.js v22.20.0

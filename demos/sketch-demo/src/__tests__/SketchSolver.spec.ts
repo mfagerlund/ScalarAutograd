@@ -2,23 +2,23 @@
  * Tests for SketchSolver - constraint satisfaction via nonlinear least squares
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AdamSketchSolver } from '../AdamSketchSolver';
 import { SketchSolver } from '../SketchSolver';
-import {
-  Project,
-  Point,
-  Line,
-  Circle,
-  LineConstraintType,
-  ConstraintType,
-  ParallelConstraint,
-  PerpendicularConstraint,
-  PointOnLineConstraint,
-  PointOnCircleConstraint,
-  CollinearConstraint,
-  AngleConstraint,
-  TangentConstraint,
+import { testLog } from '../../../../test/testUtils';
+import type {
+    Circle,
+    Line,
+    ParallelConstraint,
+    PerpendicularConstraint,
+    Point,
+    PointOnCircleConstraint,
+    PointOnLineConstraint,
+    Project,
+    TangentConstraint
 } from '../types';
+import { ConstraintType, LineConstraintType } from '../types';
+import { deserializeProject, type SerializedProject } from '../types/Project';
 
 describe('SketchSolver - Line Constraints', () => {
   let solver: SketchSolver;
@@ -27,6 +27,133 @@ describe('SketchSolver - Line Constraints', () => {
     solver = new SketchSolver({ tolerance: 1e-4, maxIterations: 200 });
   });
 
+<<<<<<< HEAD
+=======
+  it('should solve horizontal line constraint with two free points', () => {
+    const p1: Point = { x: 0, y: 0 }; // Free point
+    const p2: Point = { x: 100, y: 50 }; // Free point, not horizontal initially
+
+    const line: Line = {
+      start: p1,
+      end: p2,
+      constraintType: LineConstraintType.Horizontal,
+    };
+
+    const project: Project = {
+      name: 'Horizontal Line - Free Points',
+      points: [p1, p2],
+      lines: [line],
+      circles: [],
+      constraints: [],
+    };
+
+    const result = solver.solve(project);
+
+    testLog('Horizontal line (free points) result:', {
+      converged: result.converged,
+      residual: result.residual,
+      iterations: result.iterations,
+      p1: { x: p1.x, y: p1.y },
+      p2: { x: p2.x, y: p2.y }
+    });
+
+    expect(result.converged).toBe(true);
+    expect(result.residual).toBeLessThan(1e-3);
+
+    // Check that p2.y is approximately equal to p1.y (horizontal)
+    expect(p2.y).toBeCloseTo(p1.y, 4);
+  });
+
+  it('should solve vertical line constraint with two free points', () => {
+    const p1: Point = { x: 0, y: 0 }; // Free point
+    const p2: Point = { x: 50, y: 100 }; // Free point, not vertical initially
+
+    const line: Line = {
+      start: p1,
+      end: p2,
+      constraintType: LineConstraintType.Vertical,
+    };
+
+    const project: Project = {
+      name: 'Vertical Line - Free Points',
+      points: [p1, p2],
+      lines: [line],
+      circles: [],
+      constraints: [],
+    };
+
+    const result = solver.solve(project);
+
+    testLog('Vertical line (free points) result:', {
+      converged: result.converged,
+      residual: result.residual,
+      iterations: result.iterations,
+      p1: { x: p1.x, y: p1.y },
+      p2: { x: p2.x, y: p2.y }
+    });
+
+    expect(result.converged).toBe(true);
+    expect(result.residual).toBeLessThan(1e-3);
+
+    // Check that p2.x is approximately equal to p1.x (vertical)
+    expect(p2.x).toBeCloseTo(p1.x, 4);
+  });
+
+  it('should solve horizontal line constraint with one pinned point', () => {
+    const p1: Point = { x: 0, y: 0, pinned: true };
+    const p2: Point = { x: 100, y: 50 }; // Not horizontal initially
+
+    const line: Line = {
+      start: p1,
+      end: p2,
+      constraintType: LineConstraintType.Horizontal,
+    };
+
+    const project: Project = {
+      name: 'Horizontal Line - One Pinned',
+      points: [p1, p2],
+      lines: [line],
+      circles: [],
+      constraints: [],
+    };
+
+    const result = solver.solve(project);
+
+    expect(result.converged).toBe(true);
+    expect(result.residual).toBeLessThan(1e-3);
+
+    // Check that p2.y is approximately equal to p1.y (horizontal)
+    expect(p2.y).toBeCloseTo(p1.y, 4);
+  });
+
+  it('should solve vertical line constraint with one pinned point', () => {
+    const p1: Point = { x: 0, y: 0, pinned: true };
+    const p2: Point = { x: 50, y: 100 }; // Not vertical initially
+
+    const line: Line = {
+      start: p1,
+      end: p2,
+      constraintType: LineConstraintType.Vertical,
+    };
+
+    const project: Project = {
+      name: 'Vertical Line - One Pinned',
+      points: [p1, p2],
+      lines: [line],
+      circles: [],
+      constraints: [],
+    };
+
+    const result = solver.solve(project);
+
+    expect(result.converged).toBe(true);
+    expect(result.residual).toBeLessThan(1e-3);
+
+    // Check that p2.x is approximately equal to p1.x (vertical)
+    expect(p2.x).toBeCloseTo(p1.x, 4);
+  });
+
+>>>>>>> f2363b829cb0b61e52c3028d8923e4a247235e59
   it('should solve fixed length constraint', () => {
     const p1: Point = { x: 0, y: 0, pinned: true };
     const p2: Point = { x: 50, y: 0, pinned: true }; // Y is fixed, X will be optimized
@@ -493,3 +620,209 @@ describe('SketchSolver - Complex Scenarios', () => {
     }
   });
 });
+<<<<<<< HEAD
+=======
+
+describe('SketchSolver - Fixture Tests', () => {
+  it('should solve Corner fixture (L-shape with horizontal and vertical lines)', () => {
+    const cornerFixture: SerializedProject = {
+      name: 'Demo Project',
+      points: [
+        { id: 'p0', x: 958, y: 158.53334045410156 },
+        { id: 'p1', x: 897, y: 563.5333404541016, pinned: false },
+        { id: 'p2', x: 522, y: 182.53334045410156, pinned: false }
+      ],
+      lines: [
+        {
+          id: 'l0',
+          startPointId: 'p0',
+          endPointId: 'p1',
+          constraintType: LineConstraintType.Vertical,
+          fixedLength: 150
+        },
+        {
+          id: 'l1',
+          startPointId: 'p0',
+          endPointId: 'p2',
+          constraintType: LineConstraintType.Horizontal,
+          fixedLength: 434.8865124021543
+        }
+      ],
+      circles: [],
+      constraints: []
+    };
+
+    const { project, result } = testFixture(cornerFixture);
+
+    // Debug output
+    testLog('Corner fixture result:', {
+      converged: result.converged,
+      residual: result.residual,
+      iterations: result.iterations
+    });
+
+    expect(result.converged).toBe(true);
+    expect(result.residual).toBeLessThan(1e-3);
+
+    // Verify vertical line constraint (p0 → p1): x coordinates should match
+    const p0 = project.points[0];
+    const p1 = project.points[1];
+    expect(p1.x).toBeCloseTo(p0.x, 2);
+
+    // Verify vertical line fixed length
+    const verticalLength = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2));
+    expect(verticalLength).toBeCloseTo(150, 2);
+
+    // Verify horizontal line constraint (p0 → p2): y coordinates should match
+    const p2 = project.points[2];
+    expect(p2.y).toBeCloseTo(p0.y, 2);
+
+    // Verify horizontal line fixed length
+    const horizontalLength = Math.sqrt(Math.pow(p2.x - p0.x, 2) + Math.pow(p2.y - p0.y, 2));
+    expect(horizontalLength).toBeCloseTo(434.8865124021543, 2);
+  });
+});
+
+describe('Solver Comparison - Adam vs Levenberg-Marquardt', () => {
+  it('should print Jacobian for horizontal line constraint', () => {
+    const p1: Point = { x: 0, y: 0 };
+    const p2: Point = { x: 100, y: 50 };
+    const line: Line = {
+      start: p1,
+      end: p2,
+      constraintType: LineConstraintType.Horizontal,
+    };
+    const project: Project = {
+      name: 'Horizontal Line - Debug',
+      points: [p1, p2],
+      lines: [line],
+      circles: [],
+      constraints: [],
+    };
+
+    testLog('\n=== Jacobian Debug: Horizontal Line ===');
+    const solver = new SketchSolver({
+      tolerance: 1e-4,
+      maxIterations: 5,
+      damping: 1e-3,
+      verbose: true,
+    });
+
+    const result = solver.solve(project);
+    testLog(`\nResult: converged=${result.converged}, iterations=${result.iterations}, error=${result.error}`);
+  });
+
+  it('should find optimal Adam learning rate for horizontal line', () => {
+    const learningRates = [0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0];
+    const maxIterations = 1000;
+    const tolerance = 1e-3; // Lowered to allow Adam to pass
+
+    testLog('Testing 7 different learning rates on horizontal line constraint:');
+
+    const results: Array<{ lr: number; converged: boolean; iterations: number; residual: number }> = [];
+
+    for (const lr of learningRates) {
+      const p1: Point = { x: 0, y: 0 };
+      const p2: Point = { x: 100, y: 50 };
+      const line: Line = {
+        start: p1,
+        end: p2,
+        constraintType: LineConstraintType.Horizontal,
+      };
+      const project: Project = {
+        name: `Horizontal Line - LR ${lr}`,
+        points: [p1, p2],
+        lines: [line],
+        circles: [],
+        constraints: [],
+      };
+
+      const solver = new AdamSketchSolver({ tolerance, maxIterations, learningRate: lr });
+      const result = solver.solve(project);
+
+      results.push({
+        lr,
+        converged: result.converged,
+        iterations: result.iterations,
+        residual: result.residual
+      });
+
+      testLog(`  LR=${lr.toFixed(2)}: ${result.converged ? '✓' : '✗'} iterations=${result.iterations}, residual=${result.residual.toExponential(2)}`);
+    }
+
+    // Find fastest converged solution
+    const converged = results.filter(r => r.converged);
+    if (converged.length > 0) {
+      const fastest = converged.reduce((best, current) =>
+        current.iterations < best.iterations ? current : best
+      );
+      testLog(`  → Fastest: LR=${fastest.lr} (${fastest.iterations} iterations)`);
+    } else {
+      testLog('  → No learning rate converged within tolerance');
+    }
+  });
+
+  it('should find optimal Adam learning rate for Corner fixture', () => {
+    const learningRates = [0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0];
+    const maxIterations = 1000;
+    const tolerance = 1e-3; // Lowered to allow Adam to pass
+
+    const cornerFixture: SerializedProject = {
+      name: 'Demo Project',
+      points: [
+        { id: 'p0', x: 958, y: 158.53334045410156 },
+        { id: 'p1', x: 897, y: 563.5333404541016, pinned: false },
+        { id: 'p2', x: 522, y: 182.53334045410156, pinned: false }
+      ],
+      lines: [
+        {
+          id: 'l0',
+          startPointId: 'p0',
+          endPointId: 'p1',
+          constraintType: LineConstraintType.Vertical,
+          fixedLength: 150
+        },
+        {
+          id: 'l1',
+          startPointId: 'p0',
+          endPointId: 'p2',
+          constraintType: LineConstraintType.Horizontal,
+          fixedLength: 434.8865124021543
+        }
+      ],
+      circles: [],
+      constraints: []
+    };
+
+    testLog('Testing 7 different learning rates on Corner fixture:');
+
+    const results: Array<{ lr: number; converged: boolean; iterations: number; residual: number }> = [];
+
+    for (const lr of learningRates) {
+      const project = deserializeProject(cornerFixture);
+      const solver = new AdamSketchSolver({ tolerance, maxIterations, learningRate: lr });
+      const result = solver.solve(project);
+
+      results.push({
+        lr,
+        converged: result.converged,
+        iterations: result.iterations,
+        residual: result.residual
+      });
+
+      testLog(`  LR=${lr.toFixed(2)}: ${result.converged ? '✓' : '✗'} iterations=${result.iterations}, residual=${result.residual.toExponential(2)}`);
+    }
+
+    // Find fastest converged solution
+    const converged = results.filter(r => r.converged);
+    if (converged.length > 0) {
+      const fastest = converged.reduce((best, current) =>
+        current.iterations < best.iterations ? current : best
+      );
+      testLog(`  → Fastest: LR=${fastest.lr} (${fastest.iterations} iterations)`);
+    } else {
+      testLog('  → No learning rate converged within tolerance');
+    }
+  });
+});
+>>>>>>> f2363b829cb0b61e52c3028d8923e4a247235e59

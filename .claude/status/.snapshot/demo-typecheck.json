@@ -1,0 +1,11 @@
+{
+  "category": "Demo TS",
+  "state": "fail",
+  "message": "src/App.tsx(160,24): error TS6133: 'level' is declared but its value is never re",
+  "metrics": {
+    "totalErrors": 1,
+    "failedDemos": 1,
+    "demosChecked": 3
+  },
+  "lastUpdated": "2025-10-04T21:07:09.490Z"
+}

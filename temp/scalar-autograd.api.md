@@ -78,6 +78,8 @@ export interface NonlinearLeastSquaresResult {
     // (undocumented)
     finalCost: number;
     // (undocumented)
+    functionEvaluations?: number;
+    // (undocumented)
     iterations: number;
     // (undocumented)
     success: boolean;
@@ -118,6 +120,8 @@ export class V {
     static C(value: number, label?: string): Value;
     static ceil(a: Value | number): Value;
     static clamp(a: Value | number, min: number, max: number): Value;
+    // Warning: (ae-forgotten-export) The symbol "CompiledFunctions" needs to be exported by the entry point Value.d.ts
+    static compileObjective(params: Value[], objectiveFn: (params: Value[]) => Value): CompiledFunctions;
     static cos(x: Value | number): Value;
     static cube(a: Value | number): Value;
     static div(a: Value | number, b: Value | number, eps?: number): Value;
@@ -187,6 +191,7 @@ export class Value {
     lt(other: Value): Value;
     lte(other: Value): Value;
     static make(data: number, left: Value, right: Value | null, backwardFnBuilder: (out: Value) => BackwardFn, label: string, op?: string): Value;
+    static makeNary(data: number, inputs: Value[], backwardFnBuilder: (out: Value) => BackwardFn, label: string, op?: string): Value;
     max(other: Value): Value;
     static mean(vals: Value[]): Value;
     min(other: Value): Value;
@@ -198,10 +203,16 @@ export class Value {
     // @internal
     _op?: string;
     // @internal
+    _opConstants?: number[];
+    // @internal
     paramName?: string;
     pow(exp: number): Value;
     powValue(other: Value | number): Value;
+    // @internal (undocumented)
+    prev: Value[];
     reciprocal(): Value;
+    // @internal
+    _registryId?: number;
     relu(): Value;
     requiresGrad: boolean;
     round(): Value;
@@ -266,26 +277,37 @@ export class Vec3 {
     constructor(x: Value | number, y: Value | number, z: Value | number);
     // (undocumented)
     add(other: Vec3): Vec3;
+    static angleBetween(a: Vec3, b: Vec3): Value;
     // (undocumented)
     static C(x: number, y: number, z: number): Vec3;
+    clone(): Vec3;
     // (undocumented)
     static cross(a: Vec3, b: Vec3): Vec3;
+    static distance(a: Vec3, b: Vec3): Value;
     // (undocumented)
     div(scalar: Value | number): Vec3;
     // (undocumented)
     static dot(a: Vec3, b: Vec3): Value;
+    static fromData(x: number, y: number, z: number): Vec3;
+    static lerp(a: Vec3, b: Vec3, t: Value | number): Vec3;
     // (undocumented)
     get magnitude(): Value;
+    static max(a: Vec3, b: Vec3): Vec3;
+    static min(a: Vec3, b: Vec3): Vec3;
     // (undocumented)
     mul(scalar: Value | number): Vec3;
     // (undocumented)
     get normalized(): Vec3;
     // (undocumented)
     static one(): Vec3;
+    static project(a: Vec3, b: Vec3): Vec3;
+    static reject(a: Vec3, b: Vec3): Vec3;
+    static sqrDistance(a: Vec3, b: Vec3): Value;
     // (undocumented)
     get sqrMagnitude(): Value;
     // (undocumented)
     sub(other: Vec3): Vec3;
+    toArray(): number[];
     // (undocumented)
     toString(): string;
     // (undocumented)

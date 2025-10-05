@@ -1,0 +1,11 @@
+{
+  "category": "Tests",
+  "state": "failing",
+  "metrics": {
+    "passing": 0,
+    "failing": 0,
+    "total": 0
+  },
+  "message": "npm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Dev\\",
+  "lastUpdated": "2025-10-04T20:36:59.653Z"
+}

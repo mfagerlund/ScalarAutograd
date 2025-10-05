@@ -1,0 +1,509 @@
+
+> scalar-autograd@0.1.8 test
+> vitest run --globals multi-resolution-optimization.spec.ts
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Dev/ScalarAutograd[39m
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39m
+=== Multi-Resolution Optimization Test ===
+
+--- Baseline: Single-Level Optimization (Level 2) ---
+Mesh: 162 vertices, 320 faces
+Using combinatorial energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=15.267119, ||∇||=4.14e+1
+Iteration 1: cost=12.071519, ||∇||=6.32e+1, α=0.0078, history=1
+Iteration 2: cost=8.111283, ||∇||=1.53e+1, α=1.0000, history=2
+Iteration 3: cost=7.615530, ||∇||=1.07e+1, α=1.0000, history=3
+Iteration 4: cost=7.059091, ||∇||=8.02e+0, α=1.0000, history=4
+Iteration 5: cost=6.904317, ||∇||=1.19e+1, α=1.0000, history=5
+Iteration 6: cost=6.713330, ||∇||=5.33e+0, α=1.0000, history=6
+Iteration 7: cost=6.632000, ||∇||=4.93e+0, α=1.0000, history=7
+Iteration 8: cost=6.552289, ||∇||=7.03e+0, α=1.0000, history=8
+Iteration 9: cost=6.459920, ||∇||=6.57e+0, α=1.0000, history=9
+Iteration 10: cost=6.344778, ||∇||=5.70e+0, α=1.0000, history=10
+Iteration 11: cost=6.260759, ||∇||=4.33e+0, α=1.0000, history=10
+Iteration 12: cost=6.185666, ||∇||=4.39e+0, α=1.0000, history=10
+Iteration 13: cost=6.067012, ||∇||=5.77e+0, α=1.0000, history=10
+Iteration 14: cost=5.949542, ||∇||=7.89e+0, α=1.0000, history=10
+Iteration 15: cost=5.833708, ||∇||=5.36e+0, α=1.0000, history=10
+Iteration 16: cost=5.751374, ||∇||=4.74e+0, α=1.0000, history=10
+Iteration 17: cost=5.676815, ||∇||=6.69e+0, α=1.0000, history=10
+Iteration 18: cost=5.603593, ||∇||=5.74e+0, α=1.0000, history=10
+Iteration 19: cost=5.526148, ||∇||=5.51e+0, α=1.0000, history=10
+Iteration 20: cost=5.457287, ||∇||=9.98e+0, α=1.0000, history=10
+Iteration 21: cost=5.391055, ||∇||=6.64e+0, α=1.0000, history=10
+Iteration 22: cost=5.353075, ||∇||=5.59e+0, α=1.0000, history=10
+Iteration 23: cost=5.307415, ||∇||=7.30e+0, α=1.0000, history=10
+Iteration 24: cost=5.252666, ||∇||=5.14e+0, α=1.0000, history=10
+Iteration 25: cost=5.207891, ||∇||=5.06e+0, α=1.0000, history=10
+Iteration 26: cost=5.178962, ||∇||=1.01e+1, α=1.0000, history=10
+Iteration 27: cost=5.157011, ||∇||=8.74e+0, α=1.0000, history=10
+Iteration 28: cost=5.142693, ||∇||=4.68e+0, α=1.0000, history=10
+Iteration 29: cost=5.129030, ||∇||=4.63e+0, α=1.0000, history=10
+Iteration 30: cost=5.110974, ||∇||=5.07e+0, α=1.0000, history=10
+Iteration 31: cost=5.088948, ||∇||=4.90e+0, α=1.0000, history=10
+Iteration 32: cost=5.067255, ||∇||=4.67e+0, α=1.0000, history=10
+Iteration 33: cost=5.051873, ||∇||=4.08e+0, α=1.0000, history=10
+Iteration 34: cost=5.032999, ||∇||=7.24e+0, α=1.0000, history=10
+Iteration 35: cost=5.024789, ||∇||=1.25e+1, α=0.5000, history=10
+Iteration 36: cost=5.017356, ||∇||=8.12e+0, α=1.0000, history=10
+Iteration 37: cost=5.010791, ||∇||=4.41e+0, α=1.0000, history=10
+Iteration 38: cost=5.003173, ||∇||=4.15e+0, α=1.0000, history=10
+Iteration 39: cost=4.985062, ||∇||=8.66e+0, α=1.0000, history=10
+Iteration 40: cost=4.977248, ||∇||=9.08e+0, α=1.0000, history=10
+Iteration 41: cost=4.969793, ||∇||=4.65e+0, α=1.0000, history=10
+Iteration 42: cost=4.964800, ||∇||=5.52e+0, α=1.0000, history=10
+Iteration 43: cost=4.957764, ||∇||=8.05e+0, α=1.0000, history=10
+Iteration 44: cost=4.952793, ||∇||=1.48e+1, α=1.0000, history=10
+Iteration 45: cost=4.948867, ||∇||=7.46e+0, α=1.0000, history=10
+Iteration 46: cost=4.946897, ||∇||=7.31e+0, α=1.0000, history=10
+Iteration 47: cost=4.936000, ||∇||=6.39e+0, α=1.0000, history=10
+Iteration 48: cost=4.927334, ||∇||=5.28e+0, α=1.0000, history=10
+Iteration 49: cost=4.920097, ||∇||=1.80e+1, α=1.0000, history=10
+Iteration 50: cost=4.918389, ||∇||=1.11e+1, α=0.5000, history=10
+Chunk complete: 50/50, energy=4.918e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39m
+Single-Level Results:
+  Developability: 38.3%
+  Regions: 13
+  Quality: 2.9% per region
+
+--- Multi-Resolution: Level 0 → 1 → 2 ---
+Base mesh: 12 vertices, 20 faces
+
+=== Multi-Resolution Optimization ===
+Starting at level 0 (12 vertices)
+Target level: 2
+Coarse energy: combinatorial, Fine energy: covariance
+
+
+--- Level 0 (12 vertices, 20 faces) ---
+Energy: combinatorial (coarse phase)
+Using combinatorial energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=12.463366, ||∇||=8.49e+0
+Iteration 1: cost=7.951043, ||∇||=5.47e+0, α=0.1250, history=1
+Iteration 2: cost=6.361335, ||∇||=5.07e+0, α=1.0000, history=2
+Iteration 3: cost=5.773905, ||∇||=7.37e+0, α=0.2500, history=3
+Iteration 4: cost=5.151903, ||∇||=3.71e+0, α=1.0000, history=4
+Iteration 5: cost=4.636684, ||∇||=6.22e+0, α=1.0000, history=5
+Iteration 6: cost=4.289184, ||∇||=2.67e+0, α=1.0000, history=6
+Iteration 7: cost=3.872105, ||∇||=4.94e+0, α=1.0000, history=7
+Iteration 8: cost=3.576452, ||∇||=5.29e+0, α=0.5000, history=8
+Iteration 9: cost=3.451260, ||∇||=1.62e+1, α=0.5000, history=9
+Iteration 10: cost=3.344464, ||∇||=1.31e+1, α=1.0000, history=10
+Iteration 11: cost=2.939025, ||∇||=2.76e+0, α=1.0000, history=10
+Iteration 12: cost=2.772457, ||∇||=2.81e+0, α=1.0000, history=10
+Iteration 13: cost=2.724589, ||∇||=1.09e+0, α=1.0000, history=10
+Iteration 14: cost=2.692338, ||∇||=1.07e+0, α=1.0000, history=10
+Iteration 15: cost=2.670020, ||∇||=7.72e-1, α=1.0000, history=10
+Iteration 16: cost=2.663679, ||∇||=4.40e-1, α=1.0000, history=10
+Iteration 17: cost=2.653534, ||∇||=6.97e-1, α=1.0000, history=10
+Iteration 18: cost=2.647047, ||∇||=8.60e-1, α=1.0000, history=10
+Iteration 19: cost=2.635596, ||∇||=1.02e+0, α=1.0000, history=10
+Iteration 20: cost=2.624111, ||∇||=9.75e-1, α=0.5120, history=10
+Chunk complete: 20/50, energy=2.624e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mL-BFGS Optimization
+Initial: cost=2.624111, ||∇||=9.75e-1
+Iteration 1: cost=2.620759, ||∇||=6.90e-1, α=0.0078, history=1
+Iteration 2: cost=2.618903, ||∇||=5.42e-1, α=1.0000, history=2
+Iteration 3: cost=2.610319, ||∇||=5.35e-1, α=1.0000, history=3
+Iteration 4: cost=2.604263, ||∇||=7.34e-1, α=1.0000, history=4
+Iteration 5: cost=2.591254, ||∇||=9.78e-1, α=1.0000, history=5
+Iteration 6: cost=2.569568, ||∇||=1.53e+0, α=0.5000, history=6
+Iteration 7: cost=2.504991, ||∇||=4.00e+0, α=1.0000, history=7
+Iteration 8: cost=2.495814, ||∇||=5.16e+0, α=0.0313, history=8
+Iteration 9: cost=2.473072, ||∇||=4.54e+0, α=0.5000, history=9
+Iteration 10: cost=2.425980, ||∇||=3.17e+0, α=1.0000, history=10
+Iteration 11: cost=2.372399, ||∇||=2.19e+0, α=0.5000, history=10
+Iteration 12: cost=2.322960, ||∇||=2.63e+0, α=1.0000, history=10
+Iteration 13: cost=2.273497, ||∇||=3.61e+0, α=1.0000, history=10
+Iteration 14: cost=2.225590, ||∇||=3.35e+0, α=1.0000, history=10
+Iteration 15: cost=2.219595, ||∇||=2.03e+0, α=0.5000, history=10
+Iteration 16: cost=2.185446, ||∇||=1.69e+0, α=1.0000, history=10
+Iteration 17: cost=2.176768, ||∇||=2.54e+0, α=1.0000, history=10
+Iteration 18: cost=2.158421, ||∇||=1.41e+0, α=1.0000, history=10
+Iteration 19: cost=2.148268, ||∇||=6.41e-1, α=1.0000, history=10
+Iteration 20: cost=2.145429, ||∇||=5.13e-1, α=1.0000, history=10
+Chunk complete: 40/50, energy=2.145e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mL-BFGS Optimization
+Initial: cost=2.145429, ||∇||=5.13e-1
+Iteration 1: cost=2.138068, ||∇||=1.00e+0, α=0.0625, history=1
+Iteration 2: cost=2.132023, ||∇||=1.92e+0, α=1.0000, history=2
+Iteration 3: cost=2.125919, ||∇||=6.68e-1, α=1.0000, history=3
+Iteration 4: cost=2.124510, ||∇||=6.51e-1, α=1.0000, history=4
+Iteration 5: cost=2.120876, ||∇||=9.34e-1, α=1.0000, history=5
+Iteration 6: cost=2.110481, ||∇||=3.77e+0, α=0.2500, history=6
+Iteration 7: cost=2.103105, ||∇||=3.14e+0, α=0.5000, history=7
+Iteration 8: cost=2.099557, ||∇||=2.34e+0, α=0.5000, history=8
+Iteration 9: cost=2.098766, ||∇||=1.00e+0, α=0.5000, history=9
+Iteration 10: cost=2.097892, ||∇||=1.10e+0, α=1.0000, history=10
+Chunk complete: 50/50, energy=2.098e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mLevel 0 complete: 50 iterations, energy=2.098e+0
+Convergence: Maximum iterations reached
+Subdividing 0 → 1...
+
+--- Level 1 (42 vertices, 80 faces) ---
+Energy: combinatorial (coarse phase)
+Using combinatorial energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=2.097892, ||∇||=9.60e+1
+Iteration 1: cost=1.858541, ||∇||=7.50e+1, α=0.0001, history=1
+Iteration 2: cost=1.770117, ||∇||=4.39e+1, α=1.0000, history=2
+Iteration 3: cost=1.718483, ||∇||=3.22e+1, α=1.0000, history=3
+Iteration 4: cost=1.667109, ||∇||=1.31e+1, α=1.0000, history=4
+Iteration 5: cost=1.652018, ||∇||=2.28e+1, α=1.0000, history=5
+Iteration 6: cost=1.640842, ||∇||=1.20e+1, α=0.1250, history=6
+Iteration 7: cost=1.634668, ||∇||=1.25e+1, α=1.0000, history=7
+Iteration 8: cost=1.618694, ||∇||=1.52e+1, α=1.0000, history=8
+Iteration 9: cost=1.601518, ||∇||=1.46e+1, α=1.0000, history=9
+Iteration 10: cost=1.583813, ||∇||=2.14e+1, α=1.0000, history=10
+Iteration 11: cost=1.572225, ||∇||=1.05e+1, α=1.0000, history=10
+Iteration 12: cost=1.563078, ||∇||=1.07e+1, α=1.0000, history=10
+Iteration 13: cost=1.553039, ||∇||=1.31e+1, α=1.0000, history=10
+Iteration 14: cost=1.548755, ||∇||=1.60e+1, α=0.5000, history=10
+Iteration 15: cost=1.544375, ||∇||=1.12e+1, α=1.0000, history=10
+Iteration 16: cost=1.540504, ||∇||=9.96e+0, α=1.0000, history=10
+Iteration 17: cost=1.537132, ||∇||=6.55e+0, α=1.0000, history=10
+Iteration 18: cost=1.534249, ||∇||=5.75e+0, α=1.0000, history=10
+Iteration 19: cost=1.531294, ||∇||=9.87e+0, α=1.0000, history=10
+Iteration 20: cost=1.528607, ||∇||=6.56e+0, α=1.0000, history=10
+Chunk complete: 20/50, energy=1.529e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mL-BFGS Optimization
+Initial: cost=1.528607, ||∇||=6.56e+0
+Iteration 1: cost=1.527973, ||∇||=1.06e+1, α=0.0001, history=1
+Iteration 2: cost=1.526978, ||∇||=5.24e+0, α=1.0000, history=2
+Iteration 3: cost=1.525932, ||∇||=4.62e+0, α=1.0000, history=3
+Iteration 4: cost=1.524683, ||∇||=7.10e+0, α=1.0000, history=4
+Iteration 5: cost=1.522161, ||∇||=8.89e+0, α=1.0000, history=5
+Iteration 6: cost=1.519088, ||∇||=8.29e+0, α=1.0000, history=6
+Iteration 7: cost=1.517834, ||∇||=1.09e+1, α=1.0000, history=7
+Iteration 8: cost=1.514630, ||∇||=4.39e+0, α=1.0000, history=8
+Iteration 9: cost=1.512679, ||∇||=4.21e+0, α=1.0000, history=9
+Iteration 10: cost=1.509893, ||∇||=5.84e+0, α=1.0000, history=10
+Iteration 11: cost=1.505754, ||∇||=5.57e+0, α=1.0000, history=10
+Iteration 12: cost=1.501169, ||∇||=9.81e+0, α=1.0000, history=10
+Iteration 13: cost=1.496558, ||∇||=9.17e+0, α=1.0000, history=10
+Iteration 14: cost=1.494874, ||∇||=1.03e+1, α=1.0000, history=10
+Iteration 15: cost=1.492347, ||∇||=3.40e+0, α=1.0000, history=10
+Iteration 16: cost=1.490820, ||∇||=4.07e+0, α=1.0000, history=10
+Iteration 17: cost=1.488841, ||∇||=5.37e+0, α=1.0000, history=10
+Iteration 18: cost=1.486676, ||∇||=8.31e+0, α=1.0000, history=10
+Iteration 19: cost=1.483546, ||∇||=4.79e+0, α=1.0000, history=10
+Iteration 20: cost=1.481896, ||∇||=3.31e+0, α=1.0000, history=10
+Chunk complete: 40/50, energy=1.482e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mL-BFGS Optimization
+Initial: cost=1.481896, ||∇||=3.31e+0
+Iteration 1: cost=1.480892, ||∇||=6.25e+0, α=0.0002, history=1
+Iteration 2: cost=1.479855, ||∇||=3.83e+0, α=1.0000, history=2
+Iteration 3: cost=1.479216, ||∇||=2.92e+0, α=1.0000, history=3
+Iteration 4: cost=1.478606, ||∇||=3.10e+0, α=1.0000, history=4
+Iteration 5: cost=1.477546, ||∇||=4.73e+0, α=1.0000, history=5
+Iteration 6: cost=1.476813, ||∇||=2.25e+0, α=1.0000, history=6
+Iteration 7: cost=1.476421, ||∇||=2.15e+0, α=1.0000, history=7
+Iteration 8: cost=1.475484, ||∇||=2.86e+0, α=1.0000, history=8
+Iteration 9: cost=1.474694, ||∇||=2.65e+0, α=1.0000, history=9
+Iteration 10: cost=1.473822, ||∇||=2.32e+0, α=1.0000, history=10
+Chunk complete: 50/50, energy=1.474e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mLevel 1 complete: 50 iterations, energy=1.474e+0
+Convergence: Maximum iterations reached
+Subdividing 1 → 2...
+
+--- Level 2 (162 vertices, 320 faces) ---
+Energy: covariance (fine phase)
+Using covariance energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=34.319724, ||∇||=1.05e+3
+Iteration 1: cost=33.140282, ||∇||=1.20e+3, α=0.0001, history=1
+Iteration 2: cost=22.123704, ||∇||=6.68e+2, α=1.0000, history=2
+Iteration 3: cost=17.157941, ||∇||=4.47e+2, α=1.0000, history=3
+Iteration 4: cost=14.434169, ||∇||=4.02e+2, α=1.0000, history=4
+Iteration 5: cost=12.474983, ||∇||=2.93e+2, α=1.0000, history=5
+Iteration 6: cost=11.690404, ||∇||=3.90e+2, α=1.0000, history=6
+Iteration 7: cost=11.008284, ||∇||=2.67e+2, α=1.0000, history=7
+Iteration 8: cost=10.571072, ||∇||=1.76e+2, α=1.0000, history=8
+Iteration 9: cost=10.062639, ||∇||=2.34e+2, α=1.0000, history=9
+Iteration 10: cost=9.673427, ||∇||=2.05e+2, α=1.0000, history=10
+Iteration 11: cost=8.789483, ||∇||=3.65e+2, α=0.5000, history=10
+Iteration 12: cost=8.655802, ||∇||=9.73e+2, α=1.0000, history=10
+Iteration 13: cost=8.537072, ||∇||=7.78e+2, α=0.0625, history=10
+Iteration 14: cost=8.030858, ||∇||=5.88e+2, α=0.5000, history=10
+Iteration 15: cost=7.733446, ||∇||=5.52e+2, α=1.0000, history=10
+Iteration 16: cost=7.585334, ||∇||=3.11e+2, α=1.0000, history=10
+Iteration 17: cost=7.392125, ||∇||=2.21e+2, α=1.0000, history=10
+Iteration 18: cost=7.227789, ||∇||=1.95e+2, α=1.0000, history=10
+Iteration 19: cost=6.827419, ||∇||=3.63e+2, α=1.0000, history=10
+Iteration 20: cost=6.465969, ||∇||=3.19e+2, α=1.0000, history=10
+Chunk complete: 20/50, energy=6.466e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mL-BFGS Optimization
+Initial: cost=6.465969, ||∇||=3.19e+2
+Iteration 1: cost=6.407223, ||∇||=3.12e+2, α=0.0000, history=1
+Iteration 2: cost=6.361286, ||∇||=1.73e+2, α=1.0000, history=2
+Iteration 3: cost=6.307235, ||∇||=1.76e+2, α=1.0000, history=3
+Iteration 4: cost=6.225230, ||∇||=2.69e+2, α=1.0000, history=4
+Iteration 5: cost=6.156181, ||∇||=2.86e+2, α=0.5000, history=5
+Iteration 6: cost=6.082169, ||∇||=2.24e+2, α=0.5000, history=6
+Iteration 7: cost=6.033228, ||∇||=4.77e+2, α=0.5000, history=7
+Iteration 8: cost=6.009129, ||∇||=2.15e+2, α=0.1250, history=8
+Iteration 9: cost=5.975241, ||∇||=5.59e+2, α=1.0000, history=9
+Iteration 10: cost=5.918481, ||∇||=4.86e+2, α=1.0000, history=10
+Iteration 11: cost=5.856299, ||∇||=5.94e+2, α=0.2500, history=10
+Iteration 12: cost=5.721791, ||∇||=3.64e+2, α=1.0000, history=10
+Iteration 13: cost=5.583200, ||∇||=2.92e+2, α=1.0000, history=10
+Iteration 14: cost=5.429404, ||∇||=2.15e+2, α=1.0000, history=10
+Iteration 15: cost=5.319435, ||∇||=1.97e+2, α=0.5000, history=10
+Iteration 16: cost=5.248863, ||∇||=2.56e+2, α=0.5000, history=10
+Iteration 17: cost=5.164736, ||∇||=3.34e+2, α=0.5000, history=10
+Iteration 18: cost=5.100748, ||∇||=2.45e+2, α=0.5000, history=10
+Iteration 19: cost=5.049159, ||∇||=7.93e+2, α=1.0000, history=10
+Iteration 20: cost=5.024497, ||∇||=4.89e+2, α=0.2500, history=10
+Chunk complete: 40/50, energy=5.024e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mL-BFGS Optimization
+Initial: cost=5.024497, ||∇||=4.89e+2
+Chunk complete: 40/50, energy=5.024e+0, reason: Line search failed to find acceptable step
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39mLevel 2 complete: 40 iterations, energy=5.024e+0
+Convergence: Line search failed to find acceptable step
+
+=== Multi-Resolution Complete ===
+Total iterations: 140
+Total function evaluations: 301
+Final level: 2
+Final vertices: 162
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould reduce fragmentation compared to single-level optimization
+[22m[39m
+Multi-Resolution Results:
+  Developability: 79.6%
+  Regions: 1
+  Quality: 79.6% per region
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMPARISON:
+
+Single-Level (Baseline):
+  Developability: 38.3%
+  Regions: 13
+  Quality/region: 2.9%
+
+Multi-Resolution (Paper Method):
+  Developability: 79.6%
+  Regions: 1
+  Quality/region: 79.6%
+
+Improvement:
+  Regions: 13 → 1 (92.3% reduction)
+  Developability: 38.3% → 79.6% (+41.4%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected: Multi-resolution should produce < 20 regions (ideally 8-12)
+Actual: 1 regions
+✓ Multi-resolution reduced fragmentation: 13 → 1
+✓ Good region count: 1 regions
+Quality per region: 79.6%
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould work with subdivision from level 1 to 2
+[22m[39m
+=== Multi-Resolution: Level 1 → 2 ===
+
+Base mesh (level 1): 42 vertices
+
+=== Multi-Resolution Optimization ===
+Starting at level 1 (162 vertices)
+Target level: 2
+Coarse energy: combinatorial, Fine energy: covariance
+
+
+--- Level 1 (162 vertices, 320 faces) ---
+Energy: combinatorial (coarse phase)
+Using combinatorial energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=13.387706, ||∇||=6.92e+1
+Iteration 1: cost=9.065342, ||∇||=2.12e+1, α=0.0020, history=1
+Iteration 2: cost=8.551348, ||∇||=1.39e+1, α=1.0000, history=2
+Iteration 3: cost=7.693771, ||∇||=1.33e+1, α=1.0000, history=3
+Iteration 4: cost=6.903638, ||∇||=1.03e+1, α=1.0000, history=4
+Iteration 5: cost=6.691402, ||∇||=1.28e+1, α=1.0000, history=5
+Iteration 6: cost=6.486685, ||∇||=7.07e+0, α=1.0000, history=6
+Iteration 7: cost=6.371056, ||∇||=5.98e+0, α=1.0000, history=7
+Iteration 8: cost=6.218858, ||∇||=5.51e+0, α=1.0000, history=8
+Iteration 9: cost=6.069719, ||∇||=8.46e+0, α=1.0000, history=9
+Iteration 10: cost=5.970509, ||∇||=7.36e+0, α=1.0000, history=10
+Iteration 11: cost=5.896845, ||∇||=4.64e+0, α=1.0000, history=10
+Iteration 12: cost=5.787859, ||∇||=4.48e+0, α=1.0000, history=10
+Iteration 13: cost=5.667946, ||∇||=6.21e+0, α=1.0000, history=10
+Iteration 14: cost=5.593450, ||∇||=1.06e+1, α=1.0000, history=10
+Iteration 15: cost=5.455543, ||∇||=6.08e+0, α=1.0000, history=10
+Iteration 16: cost=5.387497, ||∇||=4.72e+0, α=1.0000, history=10
+Iteration 17: cost=5.274646, ||∇||=7.09e+0, α=1.0000, history=10
+Iteration 18: cost=5.209483, ||∇||=1.37e+1, α=1.0000, history=10
+Iteration 19: cost=5.052273, ||∇||=1.04e+1, α=1.0000, history=10
+Iteration 20: cost=4.980839, ||∇||=7.14e+0, α=0.5000, history=10
+Chunk complete: 20/40, energy=4.981e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould work with subdivision from level 1 to 2
+[22m[39mL-BFGS Optimization
+Initial: cost=4.980839, ||∇||=7.14e+0
+Iteration 1: cost=4.940890, ||∇||=6.81e+0, α=0.0020, history=1
+Iteration 2: cost=4.913448, ||∇||=4.15e+0, α=1.0000, history=2
+Iteration 3: cost=4.874112, ||∇||=4.30e+0, α=1.0000, history=3
+Iteration 4: cost=4.837989, ||∇||=4.99e+0, α=1.0000, history=4
+Iteration 5: cost=4.796349, ||∇||=5.30e+0, α=1.0000, history=5
+Iteration 6: cost=4.762017, ||∇||=5.35e+0, α=1.0000, history=6
+Iteration 7: cost=4.734012, ||∇||=3.69e+0, α=1.0000, history=7
+Iteration 8: cost=4.713677, ||∇||=3.54e+0, α=1.0000, history=8
+Iteration 9: cost=4.690969, ||∇||=3.85e+0, α=1.0000, history=9
+Iteration 10: cost=4.666497, ||∇||=4.11e+0, α=1.0000, history=10
+Iteration 11: cost=4.638224, ||∇||=3.30e+0, α=1.0000, history=10
+Iteration 12: cost=4.606685, ||∇||=3.68e+0, α=1.0000, history=10
+Iteration 13: cost=4.565320, ||∇||=4.78e+0, α=1.0000, history=10
+Iteration 14: cost=4.520996, ||∇||=4.20e+0, α=1.0000, history=10
+Iteration 15: cost=4.481017, ||∇||=4.60e+0, α=1.0000, history=10
+Iteration 16: cost=4.448054, ||∇||=4.59e+0, α=1.0000, history=10
+Iteration 17: cost=4.415063, ||∇||=4.35e+0, α=1.0000, history=10
+Iteration 18: cost=4.369400, ||∇||=6.74e+0, α=1.0000, history=10
+Iteration 19: cost=4.346532, ||∇||=1.37e+1, α=1.0000, history=10
+Iteration 20: cost=4.319870, ||∇||=7.31e+0, α=1.0000, history=10
+Chunk complete: 40/40, energy=4.320e+0, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould work with subdivision from level 1 to 2
+[22m[39mLevel 1 complete: 40 iterations, energy=4.320e+0
+Convergence: Maximum iterations reached
+Subdividing 1 → 2...
+
+--- Level 2 (642 vertices, 1280 faces) ---
+Energy: covariance (fine phase)
+Using covariance energy (non-compiled)...
+L-BFGS Optimization
+Initial: cost=168.478511, ||∇||=4.68e+2
+Iteration 1: cost=160.288852, ||∇||=6.39e+2, α=0.0010, history=1
+Iteration 2: cost=94.359526, ||∇||=3.03e+2, α=1.0000, history=2
+Iteration 3: cost=83.630511, ||∇||=3.21e+2, α=1.0000, history=3
+Iteration 4: cost=72.856570, ||∇||=1.97e+2, α=1.0000, history=4
+Iteration 5: cost=67.160081, ||∇||=1.31e+2, α=1.0000, history=5
+Iteration 6: cost=62.428026, ||∇||=1.37e+2, α=1.0000, history=6
+Iteration 7: cost=58.093367, ||∇||=1.57e+2, α=1.0000, history=7
+Iteration 8: cost=54.066285, ||∇||=1.19e+2, α=1.0000, history=8
+Iteration 9: cost=51.202422, ||∇||=1.01e+2, α=1.0000, history=9
+Iteration 10: cost=48.400692, ||∇||=9.94e+1, α=1.0000, history=10
+Iteration 11: cost=45.345691, ||∇||=1.31e+2, α=1.0000, history=10
+Iteration 12: cost=42.653463, ||∇||=1.38e+2, α=1.0000, history=10
+Iteration 13: cost=40.287082, ||∇||=9.62e+1, α=1.0000, history=10
+Iteration 14: cost=38.260601, ||∇||=8.65e+1, α=1.0000, history=10
+Iteration 15: cost=36.565512, ||∇||=8.94e+1, α=1.0000, history=10
+Iteration 16: cost=35.028584, ||∇||=9.44e+1, α=1.0000, history=10
+Iteration 17: cost=33.687542, ||∇||=7.39e+1, α=1.0000, history=10
+Iteration 18: cost=32.783774, ||∇||=5.90e+1, α=1.0000, history=10
+Iteration 19: cost=32.060326, ||∇||=6.01e+1, α=1.0000, history=10
+Iteration 20: cost=31.399504, ||∇||=5.70e+1, α=1.0000, history=10
+Chunk complete: 20/40, energy=3.140e+1, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts[2m > [22m[2mMulti-Resolution Optimization[2m > [22m[2mshould work with subdivision from level 1 to 2
+[22m[39mL-BFGS Optimization
+Initial: cost=31.399504, ||∇||=5.70e+1
+Iteration 1: cost=31.171939, ||∇||=8.43e+1, α=0.0005, history=1
+Iteration 2: cost=30.678781, ||∇||=4.00e+1, α=1.0000, history=2
+Iteration 3: cost=30.486664, ||∇||=3.70e+1, α=1.0000, history=3
+Iteration 4: cost=30.246453, ||∇||=4.39e+1, α=1.0000, history=4
+Iteration 5: cost=29.792304, ||∇||=5.71e+1, α=1.0000, history=5
+Iteration 6: cost=29.301588, ||∇||=6.13e+1, α=1.0000, history=6
+Iteration 7: cost=28.761339, ||∇||=4.98e+1, α=1.0000, history=7
+Iteration 8: cost=28.260780, ||∇||=4.50e+1, α=1.0000, history=8
+Iteration 9: cost=27.867343, ||∇||=4.65e+1, α=1.0000, history=9
+Iteration 10: cost=27.437427, ||∇||=4.67e+1, α=1.0000, history=10
+Iteration 11: cost=26.959836, ||∇||=5.16e+1, α=1.0000, history=10
+Iteration 12: cost=26.490376, ||∇||=5.33e+1, α=1.0000, history=10
+Iteration 13: cost=26.025771, ||∇||=5.41e+1, α=1.0000, history=10
+Iteration 14: cost=25.635715, ||∇||=5.85e+1, α=1.0000, history=10
+Iteration 15: cost=25.267044, ||∇||=4.85e+1, α=1.0000, history=10
+Iteration 16: cost=24.888111, ||∇||=5.14e+1, α=1.0000, history=10
+Iteration 17: cost=24.531245, ||∇||=5.46e+1, α=1.0000, history=10
+Iteration 18: cost=24.147772, ||∇||=4.58e+1, α=1.0000, history=10
+Iteration 19: cost=23.843464, ||∇||=4.74e+1, α=1.0000, history=10
+Iteration 20: cost=23.600431, ||∇||=3.61e+1, α=1.0000, history=10
+Chunk complete: 40/40, energy=2.360e+1, reason: Maximum iterations reached
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts
+[22m[39mLevel 2 complete: 40 iterations, energy=2.360e+1
+Convergence: Maximum iterations reached
+
+=== Multi-Resolution Complete ===
+Total iterations: 80
+Total function evaluations: 124
+Final level: 2
+Final vertices: 642
+
+[90mstdout[2m | test/multi-resolution-optimization.spec.ts
+[22m[39m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESULTS:
+  Developability: 2.0%
+  Regions: 1
+  Quality: 2.0% per region
+  Optimization levels: 1 → 2
+  Energies: 4.32e+0 → 2.36e+1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ [31m❯[39m test/multi-resolution-optimization.spec.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 177290[2mms[22m[39m
+   [33m[2m✓[22m[39m Multi-Resolution Optimization[2m > [22mshould reduce fragmentation compared to single-level optimization [33m 53354[2mms[22m[39m
+[31m   [31m×[31m Multi-Resolution Optimization[2m > [22mshould work with subdivision from level 1 to 2[39m[33m 123929[2mms[22m[39m
+[31m     → Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/multi-resolution-optimization.spec.ts[2m > [22mMulti-Resolution Optimization[2m > [22mshould work with subdivision from level 1 to 2
+[31m[1mError[22m: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m test/multi-resolution-optimization.spec.ts:[2m119:3[22m[39m
+    [90m117| [39m  })[33m;[39m
+    [90m118| [39m
+    [90m119| [39m  it('should work with subdivision from level 1 to 2', { timeout: 1200…
+    [90m   | [39m  [31m^[39m
+    [90m120| [39m    console[33m.[39m[34mlog[39m([32m'\n=== Multi-Resolution: Level 1 → 2 ===\n'[39m)[33m;[39m
+    [90m121| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 20:42:34
+[2m   Duration [22m 179.71s[2m (transform 577ms, setup 0ms, collect 867ms, tests 177.29s, environment 0ms, prepare 338ms)[22m
+
+node:events:979
+      emitter.removeListener(name, resolver);
+              ^
+
+TypeError: emitter.removeListener is not a function
+    at ChildProcess.errorListener (node:events:979:15)
+    at Object.onceWrapper (node:events:634:26)
+    at ChildProcess.emit (node:events:531:35)
+    at ChildProcess.onUnexpectedExit (file:///C:/Dev/ScalarAutograd/node_modules/tinypool/dist/index.js:118:16)
+    at ChildProcess.emit (node:events:531:35)
+    at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+
+Node.js v22.20.0

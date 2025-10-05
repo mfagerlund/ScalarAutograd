@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { Value, V } from '../../../../src';
 import { nonlinearLeastSquares } from '../../../../src/NonlinearLeastSquares';
+import { testLog } from '../../../../test/testUtils';
 
 describe('Simple Solver Test', () => {
   it('should solve x^2 = 4', () => {
@@ -22,8 +23,8 @@ describe('Simple Solver Test', () => {
       maxIterations: 100,
     });
 
-    console.log('Simple test result:', result);
-    console.log('x =', x.data, 'should be ±2');
+    testLog('Simple test result:', result);
+    testLog('x =', x.data, 'should be ±2');
 
     expect(result.success).toBe(true);
     expect(Math.abs(x.data)).toBeCloseTo(2, 4);

@@ -1,11 +1,12 @@
 import { describe, it } from 'vitest';
 import { SketchSolver } from '../SketchSolver';
-import {
-  Project,
-  Point,
-  Line,
-  LineConstraintType,
+import { testLog } from '../../../../test/testUtils';
+import type {
+    Line,
+    Point,
+    Project,
 } from '../types';
+import { LineConstraintType } from '../types';
 
 describe('Debug Solver', () => {
   it('debug fixed length', () => {
@@ -31,8 +32,8 @@ describe('Debug Solver', () => {
 
     const result = solver.solve(project);
 
-    console.log('Fixed length result:', result);
-    console.log('p2 after solve:', p2);
-    console.log('Line length:', Math.hypot(p2.x - p1.x, p2.y - p1.y));
+    testLog('Fixed length result:', result);
+    testLog('p2 after solve:', p2);
+    testLog('Line length:', Math.hypot(p2.x - p1.x, p2.y - p1.y));
   });
 });

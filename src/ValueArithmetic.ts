@@ -245,7 +245,7 @@ export class ValueArithmetic {
 
   static clamp(a: Value, min: number, max: number): Value {
     let val = Math.max(min, Math.min(a.data, max));
-    return Value.make(
+    const out = Value.make(
       val,
       a, null,
       (out) => () => {
@@ -254,11 +254,27 @@ export class ValueArithmetic {
       `clamp(${a.label},${min},${max})`,
       'clamp'
     );
+    out._opConstants = [min, max];
+    return out;
   }
 
   static sum(vals: Value[]): Value {
     if (!vals.length) return new Value(0);
-    return vals.reduce((a, b) => a.add(b));
+    if (vals.length === 1) return vals[0];
+
+    // N-ary sum to avoid deep chains
+    const sum = vals.reduce((acc, v) => acc + v.data, 0);
+    return Value.makeNary(
+      sum,
+      vals,
+      (out) => () => {
+        for (const v of vals) {
+          if (v.requiresGrad) v.grad += out.grad;
+        }
+      },
+      `sum(${vals.length})`,
+      'sum'
+    );
   }
 
   static mean(vals: Value[]): Value {
