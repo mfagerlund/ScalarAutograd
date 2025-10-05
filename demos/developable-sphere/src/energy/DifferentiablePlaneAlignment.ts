@@ -61,32 +61,41 @@ export class DifferentiablePlaneAlignment {
     }
 
     // Differentiable plane selection: average all pairwise cross products
-    // weighted by their separation (how "important" each pair is)
+    // weighted by angles and separation for tessellation invariance
+    // Normalize cross products for numerical stability
     let planeNormal = Vec3.zero();
+    const epsilon = V.C(1e-12);
     for (let i = 0; i < normals.length; i++) {
       for (let j = i + 1; j < normals.length; j++) {
         const cross = Vec3.cross(normals[i], normals[j]);
+        const crossMag = cross.magnitude;
+        const safeCrossMag = V.max(crossMag, epsilon);
+        const crossNorm = cross.div(safeCrossMag);
+
         const dotProduct = Vec3.dot(normals[i], normals[j]);
         const separation = V.sub(V.C(1), dotProduct); // 1 - cos(angle)
-        planeNormal = planeNormal.add(cross.mul(separation));
+        const weight = V.mul(V.mul(angles[i], angles[j]), separation); // θ_i θ_j (1−dot)
+        planeNormal = planeNormal.add(crossNorm.mul(weight));
       }
     }
 
     const planeNormalMag = planeNormal.magnitude;
-    const epsilon = V.C(1e-12);
     const safeMag = V.max(planeNormalMag, epsilon);
     const planeNormalNormalized = planeNormal.div(safeMag);
 
     // Angle-weighted energy
     let energy = V.C(0);
+    let totalAngle = V.C(0);
     for (let i = 0; i < normals.length; i++) {
-      const dist = V.abs(Vec3.dot(normals[i], planeNormalNormalized));
-      const weightedDist = V.mul(angles[i], V.mul(dist, dist));
+      const dot = Vec3.dot(normals[i], planeNormalNormalized);
+      const dotSquared = V.mul(dot, dot);
+      const weightedDist = V.mul(angles[i], dotSquared);
       energy = V.add(energy, weightedDist);
+      totalAngle = V.add(totalAngle, angles[i]);
     }
 
-    // Normalize by vertex count
-    return V.div(energy, star.length);
+    // Normalize by total angle (tessellation invariance)
+    return V.div(energy, totalAngle);
   }
 
   static classifyVertices(

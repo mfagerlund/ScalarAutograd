@@ -17,6 +17,17 @@ let lastRunTime = 0;
 let debounceTimer = null;
 let isRunning = false;
 
+const colors = {
+  reset: '\x1b[0m',
+  dim: '\x1b[90m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+};
+
+function prefix() {
+  return `${colors.dim}[build-watcher]${colors.reset}`;
+}
+
 function updateStatus(state, message = null) {
   const status = {
     category: 'Build',
@@ -56,14 +67,14 @@ function parseFirstError(output) {
 
 function runBuild() {
   if (isRunning) {
-    console.log('[build-watcher] Build already running, skipping...');
+    console.log(`${prefix()} ${colors.dim}Build already running, skipping...${colors.reset}`);
     return;
   }
 
   isRunning = true;
   lastRunTime = Date.now();
 
-  console.log('[build-watcher] Running build...');
+  console.log(`${prefix()} ${colors.dim}Running build...${colors.reset}`);
 
   const child = spawn('npm', ['run', 'build'], {
     shell: true,
@@ -87,28 +98,28 @@ function runBuild() {
 
     if (code === 0) {
       updateStatus('success');
-      console.log('[build-watcher] ✓ Build succeeded');
+      console.log(`${prefix()} ${colors.green}✓ Build succeeded${colors.reset}`);
     } else {
       const firstError = parseFirstError(output);
       updateStatus('fail', firstError || 'Build failed');
-      console.log('[build-watcher] ✗ Build failed');
+      console.log(`${prefix()} ${colors.red}✗ Build failed${colors.reset}`);
     }
   });
 
   child.on('error', (err) => {
     isRunning = false;
     updateStatus('error', err.message);
-    console.error('[build-watcher] Error running build:', err.message);
+    console.error(`${prefix()} ${colors.red}Error running build: ${err.message}${colors.reset}`);
   });
 }
 
 function watchFiles() {
-  const srcDir = path.join(__dirname, '..', '..', 'src');
+  const srcDir = path.join(__dirname, '..', 'src');
 
   const watcher = (eventType, filename) => {
     if (!filename || !filename.endsWith('.ts')) return;
 
-    console.log(`[build-watcher] File changed: ${filename}`);
+    console.log(`${prefix()} ${colors.dim}File changed: ${filename}${colors.reset}`);
 
     // Debounce: wait for changes to settle
     if (debounceTimer) {
@@ -122,12 +133,12 @@ function watchFiles() {
 
   if (fs.existsSync(srcDir)) {
     fs.watch(srcDir, { recursive: true }, watcher);
-    console.log('[build-watcher] Watching src/');
+    console.log(`${prefix()} ${colors.dim}Watching src/${colors.reset}`);
   }
 }
 
 function main() {
-  console.log('[build-watcher] Starting build watcher...');
+  console.log(`${prefix()} ${colors.dim}Starting build watcher...${colors.reset}`);
 
   // Run build immediately on startup
   runBuild();

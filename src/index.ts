@@ -1,4 +1,5 @@
-export { CompiledFunctions, CompiledResiduals } from './CompiledFunctions';
+export { CompiledFunctions } from './CompiledFunctions';
+export { CompiledResiduals } from './CompiledResiduals';
 export { Geometry } from './Geometry';
 export { lbfgs, type LBFGSOptions, type LBFGSResult } from './LBFGS';
 export { Losses } from './Losses';

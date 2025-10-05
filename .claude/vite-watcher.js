@@ -15,12 +15,23 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-const STATUS_FILE = path.join(__dirname, '..', 'status', 'vite.json');
+const STATUS_FILE = path.join(__dirname, 'status', 'vite.json');
 const CHECK_INTERVAL = 20000; // Check every 20 seconds
 const VITE_PORT = 5173; // Default Vite port
 
 let lastHealthCheck = Date.now();
 let consecutiveFailures = 0;
+
+const colors = {
+  reset: '\x1b[0m',
+  dim: '\x1b[90m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+};
+
+function prefix() {
+  return `${colors.dim}[vite-watcher]${colors.reset}`;
+}
 
 function updateStatus(state, message = null) {
   const status = {
@@ -73,7 +84,7 @@ async function performHealthCheck() {
   if (result.healthy) {
     consecutiveFailures = 0;
     updateStatus('success');
-    console.log('[vite-watcher] ✓ Vite server healthy');
+    console.log(`${prefix()} ${colors.green}✓ Vite server healthy${colors.reset}`);
   } else {
     consecutiveFailures++;
 
@@ -81,13 +92,13 @@ async function performHealthCheck() {
       // Only report after 2 consecutive failures to avoid false positives
       if (result.error.includes('ECONNREFUSED')) {
         updateStatus('fail', 'Server not running');
-        console.log('[vite-watcher] ✗ Vite server not running');
+        console.log(`${prefix()} ${colors.red}✗ Vite server not running${colors.reset}`);
       } else if (result.error === 'Timeout') {
         updateStatus('fail', 'Server not responding');
-        console.log('[vite-watcher] ✗ Vite server not responding');
+        console.log(`${prefix()} ${colors.red}✗ Vite server not responding${colors.reset}`);
       } else {
         updateStatus('fail', result.error);
-        console.log('[vite-watcher] ✗ Vite server unhealthy:', result.error);
+        console.log(`${prefix()} ${colors.red}✗ Vite server unhealthy: ${result.error}${colors.reset}`);
       }
     }
   }
@@ -96,9 +107,9 @@ async function performHealthCheck() {
 function watchViteLog() {
   // Try to detect if Vite is running by looking for common demo directories
   const demoDirs = [
-    path.join(__dirname, '..', '..', 'demos', 'developable-sphere'),
-    path.join(__dirname, '..', '..', 'demos', 'autograd-playground'),
-    path.join(__dirname, '..', '..', 'demos', 'sketch-demo')
+    path.join(__dirname, '..', 'demos', 'developable-sphere'),
+    path.join(__dirname, '..', 'demos', 'autograd-playground'),
+    path.join(__dirname, '..', 'demos', 'sketch-demo')
   ];
 
   // Watch for changes in demo src directories to detect if HMR should be working
@@ -109,7 +120,7 @@ function watchViteLog() {
         if (!filename || !filename.endsWith('.tsx') && !filename.endsWith('.ts') && !filename.endsWith('.css')) {
           return;
         }
-        console.log(`[vite-watcher] File changed in demo: ${filename}, checking Vite health...`);
+        console.log(`${prefix()} ${colors.dim}File changed in demo: ${filename}, checking Vite health...${colors.reset}`);
         // Check health shortly after file changes to detect HMR issues
         setTimeout(() => performHealthCheck(), 2000);
       });
@@ -118,8 +129,8 @@ function watchViteLog() {
 }
 
 function main() {
-  console.log('[vite-watcher] Starting Vite health monitor...');
-  console.log('[vite-watcher] Monitoring port:', VITE_PORT);
+  console.log(`${prefix()} ${colors.dim}Starting Vite health monitor...${colors.reset}`);
+  console.log(`${prefix()} ${colors.dim}Monitoring port: ${VITE_PORT}${colors.reset}`);
 
   // Initial health check
   performHealthCheck();

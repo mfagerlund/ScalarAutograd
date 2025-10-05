@@ -44,8 +44,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest run --globals",
-    "test:verbose": "cross-env VERBOSE=true vitest run --globals",
+    "test": "vitest run",
+    "test:verbose": "cross-env VERBOSE=true vitest run",
+    "test:bench": "vitest run --config vitest.config.bench.ts",
     "prepare": "husky",
     "watch:test": "node .claude/test-watcher.js",
     "watch:build": "node .claude/build-watcher.js",

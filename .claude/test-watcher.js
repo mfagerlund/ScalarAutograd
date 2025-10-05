@@ -17,6 +17,17 @@ let lastRunTime = 0;
 let debounceTimer = null;
 let isRunning = false;
 
+const colors = {
+  reset: '\x1b[0m',
+  dim: '\x1b[90m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+};
+
+function prefix() {
+  return `${colors.dim}[test-watcher]${colors.reset}`;
+}
+
 function updateStatus(state, metrics, message = null) {
   const status = {
     category: 'Tests',
@@ -94,14 +105,14 @@ function parseTestOutput(output) {
 
 function runTests() {
   if (isRunning) {
-    console.log('[test-watcher] Tests already running, skipping...');
+    console.log(`${prefix()} ${colors.dim}Tests already running, skipping...${colors.reset}`);
     return;
   }
 
   isRunning = true;
   lastRunTime = Date.now();
 
-  console.log('[test-watcher] Running tests...');
+  console.log(`${prefix()} ${colors.dim}Running tests...${colors.reset}`);
 
   const child = spawn('npm', ['test', '--', '--run', '--reporter=default'], {
     shell: true,
@@ -131,32 +142,32 @@ function runTests() {
         failing: 0,
         total: parsed.total
       });
-      console.log(`[test-watcher] ✓ All tests passing (${parsed.total})`);
+      console.log(`${prefix()} ${colors.green}✓ All tests passing (${parsed.total})${colors.reset}`);
     } else {
       updateStatus('failing', {
         passing: parsed.passing,
         failing: parsed.failing,
         total: parsed.total
       }, parsed.firstError);
-      console.log(`[test-watcher] ✗ Tests failing: ${parsed.failing}/${parsed.total}`);
+      console.log(`${prefix()} ${colors.red}✗ Tests failing: ${parsed.failing}/${parsed.total}${colors.reset}`);
     }
   });
 
   child.on('error', (err) => {
     isRunning = false;
     updateStatus('error', { passing: 0, failing: 0, total: 0 }, err.message);
-    console.error('[test-watcher] Error running tests:', err.message);
+    console.error(`${prefix()} ${colors.red}Error running tests: ${err.message}${colors.reset}`);
   });
 }
 
 function watchFiles() {
-  const srcDir = path.join(__dirname, '..', '..', 'src');
-  const testDir = path.join(__dirname, '..', '..', 'test');
+  const srcDir = path.join(__dirname, '..', 'src');
+  const testDir = path.join(__dirname, '..', 'test');
 
   const watcher = (eventType, filename) => {
     if (!filename || !filename.endsWith('.ts')) return;
 
-    console.log(`[test-watcher] File changed: ${filename}`);
+    console.log(`${prefix()} ${colors.dim}File changed: ${filename}${colors.reset}`);
 
     // Debounce: wait for changes to settle
     if (debounceTimer) {
@@ -170,17 +181,17 @@ function watchFiles() {
 
   if (fs.existsSync(srcDir)) {
     fs.watch(srcDir, { recursive: true }, watcher);
-    console.log('[test-watcher] Watching src/');
+    console.log(`${prefix()} ${colors.dim}Watching src/${colors.reset}`);
   }
 
   if (fs.existsSync(testDir)) {
     fs.watch(testDir, { recursive: true }, watcher);
-    console.log('[test-watcher] Watching test/');
+    console.log(`${prefix()} ${colors.dim}Watching test/${colors.reset}`);
   }
 }
 
 function main() {
-  console.log('[test-watcher] Starting test watcher...');
+  console.log(`${prefix()} ${colors.dim}Starting test watcher...${colors.reset}`);
 
   // Run tests immediately on startup
   runTests();

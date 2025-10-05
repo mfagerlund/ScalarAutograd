@@ -49,16 +49,37 @@ export class MeshRenderer {
     this.rotationQuaternion = new THREE.Quaternion();
 
     // Create axis indicator
-    this.axisIndicator = this.createAxisIndicator();
+    const { group } = this.createAxisIndicator();
+    this.axisIndicator = group;
     this.scene.add(this.axisIndicator);
 
     this.setupMouseControls(canvas);
   }
 
-  private createAxisIndicator(): THREE.Group {
+  private createTextSprite(text: string, color: number): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    const size = 64;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+    ctx.font = 'bold 48px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, size / 2, size / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(0.05, 0.05, 1);
+
+    return sprite;
+  }
+
+  private createAxisIndicator(): { group: THREE.Group; labels: { x: THREE.Sprite; y: THREE.Sprite; z: THREE.Sprite } } {
     const group = new THREE.Group();
     const axisLength = 0.15;
-    const circleRadius = 0.025;
 
     // X axis (red)
     const xGeometry = new THREE.CylinderGeometry(0.003, 0.003, axisLength, 8);
@@ -68,13 +89,10 @@ export class MeshRenderer {
     xAxis.position.x = axisLength / 2;
     group.add(xAxis);
 
-    // X label circle
-    const xCircle = new THREE.Mesh(
-      new THREE.CircleGeometry(circleRadius, 32),
-      new THREE.MeshBasicMaterial({ color: 0xff0000 })
-    );
-    xCircle.position.x = axisLength;
-    group.add(xCircle);
+    // X label sprite
+    const xLabel = this.createTextSprite('x', 0xff0000);
+    xLabel.position.x = axisLength;
+    group.add(xLabel);
 
     // Y axis (green)
     const yGeometry = new THREE.CylinderGeometry(0.003, 0.003, axisLength, 8);
@@ -83,13 +101,10 @@ export class MeshRenderer {
     yAxis.position.y = axisLength / 2;
     group.add(yAxis);
 
-    // Y label circle
-    const yCircle = new THREE.Mesh(
-      new THREE.CircleGeometry(circleRadius, 32),
-      new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-    );
-    yCircle.position.y = axisLength;
-    group.add(yCircle);
+    // Y label sprite
+    const yLabel = this.createTextSprite('y', 0x00ff00);
+    yLabel.position.y = axisLength;
+    group.add(yLabel);
 
     // Z axis (blue)
     const zGeometry = new THREE.CylinderGeometry(0.003, 0.003, axisLength, 8);
@@ -99,19 +114,16 @@ export class MeshRenderer {
     zAxis.position.z = axisLength / 2;
     group.add(zAxis);
 
-    // Z label circle
-    const zCircle = new THREE.Mesh(
-      new THREE.CircleGeometry(circleRadius, 32),
-      new THREE.MeshBasicMaterial({ color: 0x0000ff })
-    );
-    zCircle.position.z = axisLength;
-    group.add(zCircle);
+    // Z label sprite
+    const zLabel = this.createTextSprite('z', 0x0000ff);
+    zLabel.position.z = axisLength;
+    group.add(zLabel);
 
     // Position in top-right corner
     group.position.set(0.85, 0.65, -2);
     group.scale.set(3, 3, 3);
 
-    return group;
+    return { group, labels: { x: xLabel, y: yLabel, z: zLabel } };
   }
 
   private setupMouseControls(canvas: HTMLCanvasElement): void {

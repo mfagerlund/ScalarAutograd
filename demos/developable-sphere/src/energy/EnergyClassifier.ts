@@ -1,8 +1,6 @@
 import { TriangleMesh } from '../mesh/TriangleMesh';
 import { DevelopableEnergy } from './DevelopableEnergy';
-import { ContiguousBimodalEnergy } from './ContiguousBimodalEnergy';
 import { AlignmentBimodalEnergy } from './AlignmentBimodalEnergy';
-import { BoundingBoxEnergy } from './BoundingBoxEnergy';
 import { EigenProxyEnergy } from './EigenProxyEnergy';
 
 /**
@@ -29,14 +27,12 @@ export class EnergyClassifier {
    */
   static classifyVertices(
     mesh: TriangleMesh,
-    energyType: 'bimodal' | 'contiguous' | 'alignment' | 'boundingbox' | 'eigenproxy',
+    energyType: 'bimodal' | 'alignment' | 'eigenproxy',
     developablePercentile: number = 30
   ): { hingeVertices: number[]; seamVertices: number[] } {
     // Choose energy function
     const EnergyClass =
-      energyType === 'boundingbox' ? BoundingBoxEnergy :
       energyType === 'eigenproxy' ? EigenProxyEnergy :
-      energyType === 'contiguous' ? ContiguousBimodalEnergy :
       energyType === 'alignment' ? AlignmentBimodalEnergy :
       DevelopableEnergy;
 
@@ -73,7 +69,7 @@ export class EnergyClassifier {
    */
   static computeDevelopabilityPercentage(
     _mesh: TriangleMesh,
-    _energyType: 'bimodal' | 'contiguous' | 'alignment' | 'boundingbox' | 'eigenproxy',
+    _energyType: 'bimodal' | 'alignment' | 'eigenproxy',
     percentile: number = 30
   ): number {
     // This is trivial with percentile-based classification
@@ -85,7 +81,7 @@ export class EnergyClassifier {
    */
   static getEnergyStats(
     mesh: TriangleMesh,
-    energyType: 'bimodal' | 'contiguous' | 'alignment' | 'boundingbox' | 'eigenproxy'
+    energyType: 'bimodal' | 'alignment' | 'eigenproxy'
   ): {
     min: number;
     max: number;
@@ -98,9 +94,7 @@ export class EnergyClassifier {
     p90: number;
   } {
     const EnergyClass =
-      energyType === 'boundingbox' ? BoundingBoxEnergy :
       energyType === 'eigenproxy' ? EigenProxyEnergy :
-      energyType === 'contiguous' ? ContiguousBimodalEnergy :
       energyType === 'alignment' ? AlignmentBimodalEnergy :
       DevelopableEnergy;
 

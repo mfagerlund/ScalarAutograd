@@ -15,21 +15,30 @@ import { EnergyRegistry } from './EnergyRegistry';
  *
  * Algorithm:
  * 1. Compute dihedral angles at all edges in the vertex star
- * 2. Find the edge with the maximum dihedral angle (the "ridge")
- * 3. Split the star at this edge
+ * 2. Find the TWO edges with the maximum dihedral angles (entry and exit ridges)
+ * 3. Split the star between these two ridges
  * 4. Measure alignment within each side
+ * 5. Penalize tiny segments (n < 2) to avoid degenerate single-face clusters
  *
  * This is geometrically motivated: hinges form at ridges/valleys where
  * the surface bends sharply.
  *
+ * **Properties**:
+ * - Finds TWO ridges: detects entry and exit of the hinge (not arbitrary halfway split)
+ * - Deterministic and cheap: O(k log k) for sorting dihedral angles
+ * - Regularized: penalizes 1-face segments with zero intra-cluster error
+ * - Smooth alignment metric: average (1 - dot(normal, mean))
+ *
  * **Limitations**:
- * - Discrete ridge selection (non-differentiable)
+ * - Discrete ridge selection (non-differentiable, uses .data comparison)
+ * - Unsigned dihedral (ignores convex/concave sign - would need edge vectors)
  * - Not the paper's recommended energy function
  */
 export class RidgeBasedEnergy {
   static readonly name = 'Bimodal Alignment (Ridge Detection)';
+  static readonly className = 'RidgeBasedEnergy';
   static readonly description = 'Custom: split at max dihedral angle';
-  static readonly supportsCompilation = true;
+  static readonly supportsCompilation = false;
 
   static compute(mesh: TriangleMesh): Value {
     const vertexEnergies: Value[] = [];
@@ -65,61 +74,53 @@ export class RidgeBasedEnergy {
       normals.push(mesh.getFaceNormal(faceIdx).normalized);
     }
 
-    // Find the edge with maximum dihedral angle (the ridge)
-    const ridgeEdgeIdx = this.findRidgeEdge(star, normals);
+    // Find the two ridge edges (entry and exit of the hinge)
+    const [ridge1, ridge2] = this.findTwoRidges(normals);
 
-    // Split at the ridge edge
-    const partition = this.createSplitAtEdge(ridgeEdgeIdx, star.length);
+    // Split between the two ridges
+    const partition: [number, number] = [ridge1, ridge2];
 
     // Compute alignment energy for this split
     return this.computePartitionAlignment(partition, normals);
   }
 
   /**
-   * Find the edge with the maximum dihedral angle.
-   * Returns the index in the star where the ridge occurs.
+   * Find the two edges with maximum dihedral angles (the two ridges).
+   * Returns [ridge1, ridge2] indices defining the split between the two ridges.
+   *
+   * For a developable surface with a hinge, there are typically TWO ridge
+   * lines (entry and exit of the bend). This finds both and splits between them.
+   *
+   * The split creates:
+   * - Segment 1: [ridge1, ridge2) - one side of the hinge
+   * - Segment 2: [ridge2, ridge1) - the other side of the hinge
    */
-  private static findRidgeEdge(_star: number[], normals: Vec3[]): number {
+  private static findTwoRidges(normals: Vec3[]): [number, number] {
     const n = normals.length;
-    if (n < 2) return 0;
+    if (n < 2) return [0, 1];
 
-    let maxAngle = -1;
-    let ridgeIdx = 0;
-
-    // Check dihedral angle between each pair of adjacent faces
+    // Compute all dihedral angles
+    const angles: { idx: number; angle: number }[] = [];
     for (let i = 0; i < n; i++) {
       const next = (i + 1) % n;
-
-      // Dihedral angle = angle between normals
-      // cos(angle) = n1 · n2
       const dotProd = Vec3.dot(normals[i], normals[next]).data;
       const angle = Math.acos(Math.max(-1, Math.min(1, dotProd)));
-
-      if (angle > maxAngle) {
-        maxAngle = angle;
-        ridgeIdx = next; // Split AFTER the edge with max angle
-      }
+      angles.push({ idx: next, angle });
     }
 
-    return ridgeIdx;
-  }
+    // Sort by angle descending
+    angles.sort((a, b) => b.angle - a.angle);
 
-  /**
-   * Create a bipartition split at the given edge index.
-   * Returns [start, end] where:
-   * - Segment 1: [start, end)
-   * - Segment 2: [end, start)
-   */
-  private static createSplitAtEdge(edgeIdx: number, starSize: number): [number, number] {
-    if (starSize < 2) return [0, 1];
+    // Take the top two ridges (highest dihedral angles)
+    const ridge1 = angles[0].idx;
+    const ridge2 = angles.length > 1 ? angles[1].idx : (ridge1 + Math.floor(n / 2)) % n;
 
-    // Split at the ridge edge
-    // Segment 1 starts at the ridge and goes halfway around
-    const start = edgeIdx;
-    const length = Math.floor(starSize / 2);
-    const end = (start + length) % starSize;
-
-    return [start, end];
+    // Ensure ridge1 < ridge2 for consistent ordering
+    if (ridge1 < ridge2) {
+      return [ridge1, ridge2];
+    } else {
+      return [ridge2, ridge1];
+    }
   }
 
   /**
@@ -154,6 +155,9 @@ export class RidgeBasedEnergy {
 
   /**
    * Compute alignment energy for a segment.
+   *
+   * Regularizes tiny segments (n < 2) to avoid degenerate cases where
+   * single-face segments get zero energy.
    */
   private static computeSegmentAlignment(indices: number[], normals: Vec3[]): Value {
     if (indices.length === 0) return V.C(0);
@@ -161,7 +165,10 @@ export class RidgeBasedEnergy {
     const segmentNormals = indices.map(i => normals[i]);
     const n = segmentNormals.length;
 
-    if (n < 1) return V.C(0);
+    // Penalize tiny segments (n < 2) to avoid degenerate single-face clusters
+    if (n < 2) {
+      return V.C(1.0); // High penalty for 1-face segments
+    }
 
     // Compute mean normal
     let meanNormal = Vec3.zero();

@@ -16,6 +16,18 @@ const DEBOUNCE_DELAY = 5000; // Wait 5s after file change before checking
 let lastRunTime = 0;
 let debounceTimer = null;
 let isRunning = false;
+let lastReportedFile = null;
+
+const colors = {
+  reset: '\x1b[0m',
+  dim: '\x1b[90m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+};
+
+function prefix() {
+  return `${colors.dim}[demo-typecheck-watcher]${colors.reset}`;
+}
 
 // Demos to check
 const DEMOS = [
@@ -115,14 +127,14 @@ async function checkDemo(demoPath) {
 
 async function runTypeCheck() {
   if (isRunning) {
-    console.log('[demo-typecheck-watcher] Type-check already running, skipping...');
+    console.log(`${prefix()} ${colors.dim}Type-check already running, skipping...${colors.reset}`);
     return;
   }
 
   isRunning = true;
   lastRunTime = Date.now();
 
-  console.log('[demo-typecheck-watcher] Running demo type-checks...');
+  console.log(`${prefix()} ${colors.dim}Running demo type-checks...${colors.reset}`);
 
   const results = await Promise.all(DEMOS.map(checkDemo));
 
@@ -137,7 +149,7 @@ async function runTypeCheck() {
       totalErrors: 0,
       demosChecked: results.length
     });
-    console.log('[demo-typecheck-watcher] ✓ All demos type-check');
+    console.log(`${prefix()} ${colors.green}✓ All demos type-check${colors.reset}`);
   } else {
     const failedNames = failedDemos.map(r => path.basename(r.demo)).join(', ');
     updateStatus('fail', firstError, {
@@ -145,7 +157,7 @@ async function runTypeCheck() {
       failedDemos: failedDemos.length,
       demosChecked: results.length
     });
-    console.log(`[demo-typecheck-watcher] ✗ ${totalErrors} type errors in: ${failedNames}`);
+    console.log(`${prefix()} ${colors.red}✗ ${totalErrors} type error${totalErrors === 1 ? '' : 's'} in: ${failedNames}${colors.reset}`);
   }
 }
 
@@ -158,7 +170,11 @@ function watchFiles() {
     fs.watch(srcDir, { recursive: true }, (eventType, filename) => {
       if (!filename || (!filename.endsWith('.ts') && !filename.endsWith('.tsx'))) return;
 
-      console.log(`[demo-typecheck-watcher] File changed: ${demoPath}/${filename}`);
+      const fileKey = `${demoPath}/${filename}`;
+      if (fileKey !== lastReportedFile) {
+        console.log(`${prefix()} ${colors.dim}File changed: ${fileKey}${colors.reset}`);
+        lastReportedFile = fileKey;
+      }
 
       // Debounce: wait for changes to settle
       if (debounceTimer) {
@@ -170,12 +186,12 @@ function watchFiles() {
       }, DEBOUNCE_DELAY);
     });
 
-    console.log(`[demo-typecheck-watcher] Watching ${demoPath}/src/`);
+    console.log(`${prefix()} ${colors.dim}Watching ${demoPath}/src/${colors.reset}`);
   }
 }
 
 function main() {
-  console.log('[demo-typecheck-watcher] Starting demo type-check watcher...');
+  console.log(`${prefix()} ${colors.dim}Starting demo type-check watcher...${colors.reset}`);
 
   // Run type-check immediately on startup
   runTypeCheck();

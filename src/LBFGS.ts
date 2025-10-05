@@ -1,4 +1,6 @@
 import { Value } from "./Value";
+import { CompiledResiduals } from "./CompiledResiduals";
+import { CompiledFunctions } from "./CompiledFunctions";
 
 /**
  * Configuration options for L-BFGS optimizer.
@@ -23,6 +25,8 @@ export interface LBFGSOptions {
   initialStepSize?: number;
   /** Print progress information (default: false) */
   verbose?: boolean;
+  /** Callback invoked when a step is accepted */
+  onStepAccepted?: () => void;
 }
 
 /**
@@ -46,20 +50,27 @@ export interface LBFGSResult {
 
 /**
  * Computes objective value and gradient.
- * Returns the objective as a Value (whose backward() gives gradients).
+ * Supports graph backward, CompiledResiduals, and CompiledFunctions.
  */
 function computeObjectiveAndGradient(
   params: Value[],
-  objectiveFn: (params: Value[]) => Value
+  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals | CompiledFunctions
 ): { cost: number; gradient: number[] } {
-  // Zero out gradients
+  if (objectiveFn instanceof CompiledResiduals) {
+    const { value, gradient } = objectiveFn.evaluateSumWithGradient(params);
+    return { cost: value, gradient };
+  }
+
+  if (objectiveFn instanceof CompiledFunctions) {
+    const { value, gradient } = objectiveFn.evaluateSumWithGradient(params);
+    return { cost: value, gradient };
+  }
+
   params.forEach((p) => (p.grad = 0));
 
-  // Compute objective
   const objective = objectiveFn(params);
   const cost = objective.data;
 
-  // Compute gradient via backpropagation
   Value.zeroGradTree(objective);
   params.forEach(p => p.grad = 0);
   objective.backward();
@@ -79,7 +90,7 @@ function computeObjectiveAndGradient(
 function wolfeLineSearch(
   params: Value[],
   direction: number[],
-  objectiveFn: (params: Value[]) => Value,
+  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals | CompiledFunctions,
   currentCost: number,
   currentGradient: number[],
   options: {
@@ -259,7 +270,7 @@ function twoLoopRecursion(
  */
 export function lbfgs(
   params: Value[],
-  objectiveFn: (params: Value[]) => Value,
+  objectiveFn: ((params: Value[]) => Value) | CompiledResiduals | CompiledFunctions,
   options: LBFGSOptions = {}
 ): LBFGSResult {
   const {
@@ -272,6 +283,7 @@ export function lbfgs(
     c2 = 0.9,
     initialStepSize = 1.0,
     verbose = false,
+    onStepAccepted,
   } = options;
 
   // Validate parameters
@@ -346,6 +358,11 @@ export function lbfgs(
     cost = lineSearchResult.newCost;
     gradient = lineSearchResult.newGradient;
     gradientNorm = Math.sqrt(gradient.reduce((sum, g) => sum + g * g, 0));
+
+    // Notify that step was accepted
+    if (onStepAccepted) {
+      onStepAccepted();
+    }
 
     // Compute s_k = x_{k+1} - x_k and y_k = ∇f(x_{k+1}) - ∇f(x_k)
     const s_k = params.map((p, i) => p.data - prevParams[i]);

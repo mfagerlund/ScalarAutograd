@@ -92,6 +92,7 @@ export class PartitionEnumerator {
       return false;
     }
 
+    const faceSet = new Set(faces);
     const visited = new Set<number>();
     const queue: number[] = [faces[0]];
     visited.add(faces[0]);
@@ -101,7 +102,7 @@ export class PartitionEnumerator {
       const neighbors = adjacency.get(current) || [];
 
       for (const neighbor of neighbors) {
-        if (faces.includes(neighbor) && !visited.has(neighbor)) {
+        if (faceSet.has(neighbor) && !visited.has(neighbor)) {
           visited.add(neighbor);
           queue.push(neighbor);
         }
@@ -116,9 +117,9 @@ export class PartitionEnumerator {
    */
   private static canonicalForm(region1: number[], region2: number[]): Partition {
     if (region1.length <= region2.length) {
-      return { region1, region2 };
+      return { region1: [...region1], region2: [...region2] };
     } else {
-      return { region1: region2, region2: region1 };
+      return { region1: [...region2], region2: [...region1] };
     }
   }
 

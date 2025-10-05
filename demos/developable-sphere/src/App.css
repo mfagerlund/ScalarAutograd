@@ -124,6 +124,16 @@ input[type='range']::-moz-range-thumb {
   border: none;
 }
 
+input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+}
+
+input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+}
+
 button {
   padding: 0.75rem 1.5rem;
   background: #2a2a3e;

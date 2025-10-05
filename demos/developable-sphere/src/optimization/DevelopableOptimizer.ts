@@ -4,15 +4,14 @@ import { EnergyRegistry } from '../energy/EnergyRegistry';
 
 // Import all energies to ensure they register
 import '../energy/DevelopableEnergy';
-import '../energy/CovarianceEnergy';
-import '../energy/StochasticBimodalEnergy';
+import '../energy/PaperCovarianceEnergyELambda';
 import '../energy/RidgeBasedEnergy';
 import '../energy/AlignmentBimodalEnergy';
-import '../energy/BoundingBoxEnergy';
-import '../energy/CombinatorialEnergy';
-import '../energy/ContiguousBimodalEnergy';
+import '../energy/PaperPartitionEnergyEP';
+import '../energy/PaperPartitionEnergyEPStochastic';
 import '../energy/EigenProxyEnergy';
 import '../energy/StochasticCovarianceEnergy';
+import '../energy/FastCovarianceEnergy';
 
 export type CompilationMode = 'none' | 'eager' | 'lazy';
 
@@ -65,7 +64,7 @@ export class DevelopableOptimizer {
       maxIterations = 200,
       gradientTolerance = 1e-5,
       verbose = true,
-      energyType = 'boundingbox', // Default to better energy function
+      energyType = EnergyRegistry.getNames()[0] || 'bimodal',
       optimizer = 'lbfgs', // Default optimizer
     } = options;
 
@@ -127,7 +126,7 @@ export class DevelopableOptimizer {
       finalEnergy: result.finalCost,
       history: this.history,
       convergenceReason: result.convergenceReason,
-      functionEvaluations: result.functionEvaluations,
+      functionEvaluations: 'functionEvaluations' in result ? (result as any).functionEvaluations : 0,
       kernelCount: compiled.kernelCount,
       kernelReuseFactor: compiled.kernelReuseFactor,
     };
@@ -166,7 +165,7 @@ export class DevelopableOptimizer {
       captureInterval = 5,
       chunkSize = 5,
       onProgress,
-      energyType = 'boundingbox',
+      energyType = EnergyRegistry.getNames()[0] || 'bimodal',
       useCompiled = true,
       optimizer = 'lbfgs',
     } = options;
@@ -260,7 +259,7 @@ export class DevelopableOptimizer {
           });
 
       totalIterations += result.iterations;
-      totalFunctionEvals += result.functionEvaluations ?? 0;
+      totalFunctionEvals += ('functionEvaluations' in result ? (result as any).functionEvaluations : 0) ?? 0;
       currentEnergy = result.finalCost;
       lastResult = result;
 

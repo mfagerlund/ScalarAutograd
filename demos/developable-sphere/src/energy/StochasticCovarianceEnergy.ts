@@ -1,4 +1,4 @@
-import { Value, V } from 'scalar-autograd';
+import { Value, V, Vec3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
 import { EnergyRegistry } from './EnergyRegistry';
 
@@ -24,14 +24,15 @@ import { EnergyRegistry } from './EnergyRegistry';
  * (compatible with L-BFGS optimization).
  */
 export class StochasticCovarianceEnergy {
-  static readonly name = 'Fast Covariance (SGD)';
+  static readonly name = 'Stochastic Covariance';
+  static readonly className = 'StochasticCovarianceEnergy';
   static readonly description = 'Custom: E^λ approx via gradient descent';
-  static readonly supportsCompilation = false; // Uses iterative SGD with non-deterministic convergence
+  static readonly supportsCompilation = false;
 
   /**
    * Compute total fast covariance energy for the mesh.
    */
-  static compute(mesh: TriangleMesh, method: 'sgd' | 'random' = 'sgd'): Value {
+  static compute(mesh: TriangleMesh, method: 'sgd' | 'grid' = 'sgd'): Value {
     const vertexEnergies: Value[] = [];
 
     for (let i = 0; i < mesh.vertices.length; i++) {
@@ -44,7 +45,7 @@ export class StochasticCovarianceEnergy {
   /**
    * Compute per-vertex residuals for compiled optimization.
    */
-  static computeResiduals(mesh: TriangleMesh, method: 'sgd' | 'random' = 'sgd'): Value[] {
+  static computeResiduals(mesh: TriangleMesh, method: 'sgd' | 'grid' = 'sgd'): Value[] {
     const residuals: Value[] = [];
 
     for (let i = 0; i < mesh.vertices.length; i++) {
@@ -56,25 +57,26 @@ export class StochasticCovarianceEnergy {
   }
 
   /**
-   * Compute stochastic covariance energy for a single vertex.
+   * Compute covariance energy for a single vertex.
    */
   static computeVertexEnergy(
     vertexIdx: number,
     mesh: TriangleMesh,
-    method: 'sgd' | 'random' = 'sgd'
+    method: 'sgd' | 'grid' = 'sgd'
   ): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
-    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
+    if (star.length === 3) return V.C(0);
 
-    // Gather angle-weighted normals (extract raw numbers for stochastic search)
+    const normalsValue: Vec3[] = [];
     const normals: number[][] = [];
     const weights: Value[] = [];
     const weightsRaw: number[] = [];
 
     for (const faceIdx of star) {
-      const normal = mesh.getFaceNormal(faceIdx).normalized;
-      normals.push([normal.x.data, normal.y.data, normal.z.data]);
+      const normalValue = mesh.getFaceNormal(faceIdx).normalized;
+      normalsValue.push(normalValue);
+      normals.push([normalValue.x.data, normalValue.y.data, normalValue.z.data]);
 
       const weight = mesh.getInteriorAngle(faceIdx, vertexIdx);
       weights.push(weight);
@@ -82,32 +84,27 @@ export class StochasticCovarianceEnergy {
     }
 
     if (method === 'sgd') {
-      return this.lambdaMinSGD(normals, weightsRaw, weights);
+      return this.lambdaMinSGD(normalsValue, normals, weightsRaw, weights);
     } else {
-      return this.lambdaMinRandomCut(normals, weightsRaw, weights);
+      return this.lambdaMinGrid(normalsValue, normals, weightsRaw, weights);
     }
   }
 
   /**
    * Spherical SGD: minimize u^T A u on S^2.
-   *
-   * IMPORTANT: For gradient-based optimization (L-BFGS), we need DETERMINISTIC gradients.
-   * Instead of stochastic mini-batches, we use FULL-BATCH gradient descent.
-   * This is still much faster than exact eigenvalue computation (no 3×3 solve).
    */
   private static lambdaMinSGD(
+    normalsValue: Vec3[],
     normals: number[][],
     weightsRaw: number[],
     weights: Value[]
   ): Value {
-    const iters = 30; // Reduced iterations since full-batch converges faster
+    const iters = 30;
     let eta = 0.3;
 
-    // Fixed initial direction for determinism (largest variance direction heuristic)
     let u = this.initializeDirection(normals, weightsRaw);
 
     for (let t = 0; t < iters; t++) {
-      // FULL-BATCH gradient: ∇_u f(u) = 2 Σ θ_k (u·N_k) N_k (deterministic!)
       let grad = [0, 0, 0];
 
       for (let k = 0; k < normals.length; k++) {
@@ -115,37 +112,33 @@ export class StochasticCovarianceEnergy {
         const wk = weightsRaw[k];
         const udotNk = u[0] * Nk[0] + u[1] * Nk[1] + u[2] * Nk[2];
 
-        // grad += 2 * wk * (u·Nk) * Nk
         const factor = 2 * wk * udotNk;
         grad[0] += factor * Nk[0];
         grad[1] += factor * Nk[1];
         grad[2] += factor * Nk[2];
       }
 
-      // Spherical gradient descent: u ← normalize(u - η ∇f)
       u[0] -= eta * grad[0];
       u[1] -= eta * grad[1];
       u[2] -= eta * grad[2];
 
       const norm = Math.sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
-      if (norm < 1e-12) break; // Converged to zero
+      if (norm < 1e-12) break;
       u[0] /= norm;
       u[1] /= norm;
       u[2] /= norm;
 
-      // Learning rate decay
       eta *= 0.92;
     }
 
-    // Rayleigh quotient: λ ≈ u^T A u (construct Value objects only here)
     let lambda = V.C(0);
-    for (let k = 0; k < normals.length; k++) {
-      const Nk = normals[k];
-      const udotNk = u[0] * Nk[0] + u[1] * Nk[1] + u[2] * Nk[2];
-      lambda = V.add(lambda, V.mul(weights[k], udotNk * udotNk));
+    for (let k = 0; k < normalsValue.length; k++) {
+      const N = normalsValue[k];
+      const dotProd = V.add(V.add(V.mul(N.x, u[0]), V.mul(N.y, u[1])), V.mul(N.z, u[2]));
+      lambda = V.add(lambda, V.mul(weights[k], V.mul(dotProd, dotProd)));
     }
 
-    return V.abs(lambda);
+    return V.max(lambda, V.C(0));
   }
 
   /**
@@ -170,16 +163,14 @@ export class StochasticCovarianceEnergy {
   }
 
   /**
-   * Random-cut hill climbing: sample m directions, pick best.
-   *
-   * DETERMINISTIC version: uses fixed icosahedral grid (no random jitter).
+   * Grid sampling: test 12 fixed icosahedral directions, pick best.
    */
-  private static lambdaMinRandomCut(
+  private static lambdaMinGrid(
+    normalsValue: Vec3[],
     normals: number[][],
     weightsRaw: number[],
     weights: Value[]
   ): Value {
-    // Fixed icosahedral sampling (12 directions, deterministic)
     const candidates = this.icosahedralSamplingDeterministic();
     let bestU = candidates[0];
     let bestVal = this.rayleighQuotientRaw(bestU, normals, weightsRaw);
@@ -192,15 +183,14 @@ export class StochasticCovarianceEnergy {
       }
     }
 
-    // Construct final Value using actual Value objects
     let lambda = V.C(0);
-    for (let k = 0; k < normals.length; k++) {
-      const Nk = normals[k];
-      const udotNk = bestU[0] * Nk[0] + bestU[1] * Nk[1] + bestU[2] * Nk[2];
-      lambda = V.add(lambda, V.mul(weights[k], udotNk * udotNk));
+    for (let k = 0; k < normalsValue.length; k++) {
+      const N = normalsValue[k];
+      const dotProd = V.add(V.add(V.mul(N.x, bestU[0]), V.mul(N.y, bestU[1])), V.mul(N.z, bestU[2]));
+      lambda = V.add(lambda, V.mul(weights[k], V.mul(dotProd, dotProd)));
     }
 
-    return V.abs(lambda);
+    return V.max(lambda, V.C(0));
   }
 
   /**
@@ -252,7 +242,7 @@ export class StochasticCovarianceEnergy {
   static classifyVertices(
     mesh: TriangleMesh,
     hingeThreshold: number = 0.1,
-    method: 'sgd' | 'random' = 'sgd'
+    method: 'sgd' | 'grid' = 'sgd'
   ): { hingeVertices: number[]; seamVertices: number[] } {
     const hingeVertices: number[] = [];
     const seamVertices: number[] = [];

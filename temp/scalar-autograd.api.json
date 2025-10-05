@@ -1483,33 +1483,6 @@
             },
             {
               "kind": "PropertySignature",
-              "canonicalReference": "scalar-autograd!NonlinearLeastSquaresOptions#useCompiled:member",
-              "docComment": "/**\n * Use compiled Jacobian computation for better performance (default: true)\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "useCompiled?: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "boolean"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isReadonly": false,
-              "isOptional": true,
-              "releaseTag": "Public",
-              "name": "useCompiled",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "PropertySignature",
               "canonicalReference": "scalar-autograd!NonlinearLeastSquaresOptions#useQR:member",
               "docComment": "",
               "excerptTokens": [
@@ -2837,8 +2810,8 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "CompiledFunctions",
-                  "canonicalReference": "scalar-autograd!~CompiledFunctions:class"
+                  "text": "CompiledResiduals",
+                  "canonicalReference": "scalar-autograd!~CompiledResiduals:class"
                 },
                 {
                   "kind": "Content",

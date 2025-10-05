@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { IcoSphere } from './mesh/IcoSphere';
 import { DevelopableOptimizer } from './optimization/DevelopableOptimizer';
-import { SubdividedMesh } from './mesh/SubdividedMesh';
 import { CurvatureClassifier } from './energy/CurvatureClassifier';
 import { MeshRenderer } from './visualization/MeshRenderer';
 import { TriangleMesh } from './mesh/TriangleMesh';
@@ -11,16 +10,13 @@ import './App.css';
 
 // Import all energies to ensure they register
 import './energy/DevelopableEnergy';
-import './energy/CovarianceEnergy';
-import './energy/StochasticBimodalEnergy';
+import './energy/PaperCovarianceEnergyELambda';
 import './energy/RidgeBasedEnergy';
 import './energy/AlignmentBimodalEnergy';
-import './energy/BoundingBoxEnergy';
-import './energy/CombinatorialEnergy';
-import './energy/ContiguousBimodalEnergy';
+import './energy/PaperPartitionEnergyEP';
 import './energy/EigenProxyEnergy';
 import './energy/StochasticCovarianceEnergy';
-import './energy/GreatCircleEnergy';
+import './energy/FastCovarianceEnergy';
 import './energy/GreatCircleEnergyEx';
 import './energy/DifferentiablePlaneAlignment';
 
@@ -79,6 +75,8 @@ export default function App() {
     kernelReuse: 0,
     numRegions: 0,
   });
+
+  const [developableHistory, setDevelopableHistory] = useState<Array<{iteration: number, percent: number}>>([]);
 
   // Initialize renderer and sphere
   useEffect(() => {
@@ -148,6 +146,7 @@ export default function App() {
     setConvergenceInfo(null);
     setIterationsPerSecond(0);
     meshHistoryRef.current = [];
+    setDevelopableHistory([]);
 
     // Yield to browser to update UI (0ms = yield to event loop)
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -206,6 +205,9 @@ export default function App() {
             renderer.render();
             updateMetrics(latestMesh);
             setCurrentMesh(latestMesh);
+
+            const devPercent = (classification.hingeVertices.length / latestMesh.vertices.length) * 100;
+            setDevelopableHistory(prev => [...prev, { iteration, percent: devPercent }]);
           }
         },
       });
@@ -595,13 +597,19 @@ export default function App() {
             position: 'absolute',
             top: '10px',
             left: '10px',
-            background: 'rgba(0, 0, 0, 0.7)',
+            background: isOptimizing
+              ? 'linear-gradient(45deg, rgba(27, 94, 32, 0.95) 25%, rgba(56, 142, 60, 0.95) 25%, rgba(56, 142, 60, 0.95) 50%, rgba(27, 94, 32, 0.95) 50%, rgba(27, 94, 32, 0.95) 75%, rgba(56, 142, 60, 0.95) 75%)'
+              : 'rgba(0, 0, 0, 0.7)',
+            backgroundSize: isOptimizing ? '40px 40px' : 'auto',
+            animation: isOptimizing ? 'slide 1s linear infinite' : 'none',
             color: 'white',
             padding: '12px',
             borderRadius: '4px',
             fontSize: '12px',
             pointerEvents: 'none',
-            minWidth: '200px'
+            minWidth: '200px',
+            border: isOptimizing ? '2px solid rgba(76, 175, 80, 1)' : 'none',
+            textShadow: isOptimizing ? '0 1px 3px rgba(0, 0, 0, 0.8)' : 'none'
           }}>
             {isOptimizing && (
               <>
@@ -728,11 +736,77 @@ Convergence: ${convergenceInfo.reason}`;
             )}
           </div>
 
-          {/* CSS for spinner animation */}
+          {/* Developable% History Chart - Top Right */}
+          {developableHistory.length > 1 && (
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '12px',
+              borderRadius: '4px',
+              pointerEvents: 'none',
+              width: '480px',
+              height: '160px'
+            }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>
+                Developable %
+              </div>
+              <svg width="456" height="110" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
+                {(() => {
+                  const data = developableHistory;
+                  const width = 456;
+                  const height = 110;
+                  const padding = 5;
+                  const chartWidth = width - padding * 2;
+                  const chartHeight = height - padding * 2;
+
+                  const minPercent = Math.min(...data.map(d => d.percent));
+                  const maxPercent = Math.max(...data.map(d => d.percent));
+                  const rangePercent = maxPercent - minPercent || 1;
+
+                  const maxIteration = Math.max(...data.map(d => d.iteration));
+
+                  const points = data.map((d) => {
+                    const x = padding + (d.iteration / maxIteration) * chartWidth;
+                    const y = padding + chartHeight - ((d.percent - minPercent) / rangePercent) * chartHeight;
+                    return `${x},${y}`;
+                  }).join(' ');
+
+                  return (
+                    <>
+                      <polyline
+                        points={points}
+                        fill="none"
+                        stroke="#4CAF50"
+                        strokeWidth="2"
+                      />
+                      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+
+                      <text x={padding + 2} y={padding + 10} fill="white" fontSize="10" opacity="0.7">
+                        {maxPercent.toFixed(1)}%
+                      </text>
+                      <text x={padding + 2} y={height - padding - 2} fill="white" fontSize="10" opacity="0.7">
+                        {minPercent.toFixed(1)}%
+                      </text>
+                    </>
+                  );
+                })()}
+              </svg>
+            </div>
+          )}
+
+          {/* CSS for animations */}
           <style>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }
               100% { transform: rotate(360deg); }
+            }
+            @keyframes slide {
+              0% { background-position: 0 0; }
+              100% { background-position: 40px 40px; }
             }
           `}</style>
         </div>
@@ -768,7 +842,7 @@ Convergence: ${convergenceInfo.reason}`;
                 {EnergyRegistry.getAll().map((energy) => {
                   return (
                     <option key={energy.name} value={energy.name} title={energy.description}>
-                      {energy.name}
+                      {energy.name}{energy.className ? ` (${energy.className})` : ''}
                     </option>
                   );
                 })}
@@ -827,24 +901,41 @@ Convergence: ${convergenceInfo.reason}`;
 
             <label>
               Subdivisions: {subdivisions}
-              <input
-                type="range"
-                min="0"
-                max="6"
-                value={subdivisions}
-                onChange={(e) => setSubdivisions(parseInt(e.target.value))}
-                disabled={isOptimizing}
-                list="subdivisions-ticks"
-              />
-              <datalist id="subdivisions-ticks">
-                <option value="0" label="0"></option>
-                <option value="1" label="1"></option>
-                <option value="2" label="2"></option>
-                <option value="3" label="3"></option>
-                <option value="4" label="4"></option>
-                <option value="5" label="5"></option>
-                <option value="6" label="6"></option>
-              </datalist>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="range"
+                  min="0"
+                  max="6"
+                  value={subdivisions}
+                  onChange={(e) => setSubdivisions(parseInt(e.target.value))}
+                  disabled={isOptimizing}
+                  list="subdivisions-ticks"
+                />
+                <datalist id="subdivisions-ticks">
+                  <option value="0" label="0"></option>
+                  <option value="1" label="1"></option>
+                  <option value="2" label="2"></option>
+                  <option value="3" label="3"></option>
+                  <option value="4" label="4"></option>
+                  <option value="5" label="5"></option>
+                  <option value="6" label="6"></option>
+                </datalist>
+                <div className="slider-ticks" style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '4px',
+                  pointerEvents: 'none'
+                }}>
+                  {[0, 1, 2, 3, 4, 5, 6].map(v => (
+                    <span key={v} style={{
+                      fontSize: '10px',
+                      color: '#808080',
+                      width: '8px',
+                      textAlign: 'center'
+                    }}>{v}</span>
+                  ))}
+                </div>
+              </div>
               <span className="hint">
                 {subdivisions === 0 && '12 verts (icosahedron)'}
                 {subdivisions === 1 && '42 verts'}
@@ -858,23 +949,41 @@ Convergence: ${convergenceInfo.reason}`;
 
             <label>
               Max Iterations: {maxIterations}
-              <input
-                type="range"
-                min="20"
-                max="200"
-                step="10"
-                value={maxIterations}
-                onChange={(e) => setMaxIterations(parseInt(e.target.value))}
-                disabled={isOptimizing}
-                list="iterations-ticks"
-              />
-              <datalist id="iterations-ticks">
-                <option value="20" label="20"></option>
-                <option value="50" label="50"></option>
-                <option value="100" label="100"></option>
-                <option value="150" label="150"></option>
-                <option value="200" label="200"></option>
-              </datalist>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="range"
+                  min="20"
+                  max="300"
+                  step="10"
+                  value={maxIterations}
+                  onChange={(e) => setMaxIterations(parseInt(e.target.value))}
+                  disabled={isOptimizing}
+                  list="iterations-ticks"
+                />
+                <datalist id="iterations-ticks">
+                  <option value="20" label="20"></option>
+                  <option value="50" label="50"></option>
+                  <option value="100" label="100"></option>
+                  <option value="150" label="150"></option>
+                  <option value="200" label="200"></option>
+                  <option value="300" label="300"></option>
+                </datalist>
+                <div className="slider-ticks" style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '4px',
+                  pointerEvents: 'none'
+                }}>
+                  {[20, 50, 100, 150, 200, 300].map(v => (
+                    <span key={v} style={{
+                      fontSize: '10px',
+                      color: '#808080',
+                      width: '20px',
+                      textAlign: 'center'
+                    }}>{v}</span>
+                  ))}
+                </div>
+              </div>
             </label>
           </div>
 

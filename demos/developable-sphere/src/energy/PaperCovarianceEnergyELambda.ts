@@ -17,10 +17,10 @@ import { EnergyRegistry } from './EnergyRegistry';
  * - Tessellation-invariant (due to angle weighting)
  * - Intrinsic variant avoids "spike" artifacts
  */
-export class CovarianceEnergy {
-  static readonly name = 'Covariance (E^λ)';
+export class PaperCovarianceEnergyELambda {
+  static readonly name = 'PaperCovarianceEnergyELambda';
   static readonly description = 'Paper: E^λ = Σλ_min(A_i), angle-weighted';
-  static readonly supportsCompilation = true;
+  static readonly supportsCompilation = false;
 
   /**
    * Compute total covariance energy for the mesh.
@@ -262,4 +262,4 @@ export class CovarianceEnergy {
 }
 
 // Register with energy registry
-EnergyRegistry.register(CovarianceEnergy);
+EnergyRegistry.register(PaperCovarianceEnergyELambda);

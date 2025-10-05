@@ -18,8 +18,9 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class GreatCircleEnergyEx {
   static readonly name = 'Great Circle Extended';
+  static readonly className = 'GreatCircleEnergyEx';
   static readonly description = 'Custom: angle-weighted, max-sep pair';
-  static readonly supportsCompilation = true;
+  static readonly supportsCompilation = false;
 
   static compute(mesh: TriangleMesh): Value {
     const vertexEnergies: Value[] = [];
@@ -85,14 +86,16 @@ export class GreatCircleEnergyEx {
 
     // Angle-weighted energy
     let energy = V.C(0);
+    let totalAngle = V.C(0);
     for (let i = 0; i < normals.length; i++) {
-      const dist = V.abs(Vec3.dot(normals[i], planeNormalNormalized));
+      const dist = Vec3.dot(normals[i], planeNormalNormalized);
       const weightedDist = V.mul(angles[i], V.mul(dist, dist));
       energy = V.add(energy, weightedDist);
+      totalAngle = V.add(totalAngle, angles[i]);
     }
 
-    // Normalize by vertex count
-    return V.div(energy, star.length);
+    // Normalize by total angle
+    return V.div(energy, totalAngle);
   }
 
   static classifyVertices(
