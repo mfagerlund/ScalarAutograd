@@ -6,6 +6,7 @@ import { CurvatureClassifier } from './energy/CurvatureClassifier';
 import { MeshRenderer } from './visualization/MeshRenderer';
 import { TriangleMesh } from './mesh/TriangleMesh';
 import { EnergyRegistry } from './energy/EnergyRegistry';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import './App.css';
 
 // Import all energies to ensure they register
@@ -49,17 +50,21 @@ export default function App() {
     numFunctions?: number;
   } | null>(null);
 
-  const [subdivisions, setSubdivisions] = useState(3);
-  const [maxIterations, setMaxIterations] = useState(50);
-  const [energyType, setEnergyType] = useState<string>(EnergyRegistry.getNames()[0] || 'bimodal');
-  const [useCompiled, setUseCompiled] = useState(false);
-  const [optimizer, setOptimizer] = useState<'lbfgs' | 'leastsquares'>('lbfgs');
-  const [iterationsPerSecond, setIterationsPerSecond] = useState<number>(0);
+  // Persisted settings (stored in localStorage)
+  const [subdivisions, setSubdivisions] = useLocalStorage('subdivisions', 3);
+  const [maxIterations, setMaxIterations] = useLocalStorage('maxIterations', 50);
+  const [energyType, setEnergyType] = useLocalStorage<string>('energyType', EnergyRegistry.getNames()[0] || 'bimodal');
+  const [useCompiled, setUseCompiled] = useLocalStorage('useCompiled', false);
+  const [optimizer, setOptimizer] = useLocalStorage<'lbfgs' | 'leastsquares'>('optimizer', 'lbfgs');
+  const [chunkSize, setChunkSize] = useLocalStorage('chunkSize', 5);
 
   // Multi-resolution settings
-  const [useMultiRes, setUseMultiRes] = useState(false);
-  const [multiResStartLevel, setMultiResStartLevel] = useState(0);
-  const [multiResTargetLevel, setMultiResTargetLevel] = useState(2);
+  const [useMultiRes, setUseMultiRes] = useLocalStorage('useMultiRes', false);
+  const [multiResStartLevel, setMultiResStartLevel] = useLocalStorage('multiResStartLevel', 0);
+  const [multiResTargetLevel, setMultiResTargetLevel] = useLocalStorage('multiResTargetLevel', 2);
+
+  // Non-persisted state
+  const [iterationsPerSecond, setIterationsPerSecond] = useState<number>(0);
 
   const [metrics, setMetrics] = useState({
     hingeVertices: 0,
@@ -212,7 +217,7 @@ export default function App() {
           gradientTolerance: 1e-8, // Relaxed from 1e-5 to allow more iterations
           verbose: true,
           captureInterval: Math.max(1, Math.floor(maxIterations / 20)),
-          chunkSize: 5, // Process 5 iterations at a time
+          chunkSize, // User-configurable chunk size for UI responsiveness
           energyType, // Pass energy type to optimizer
           useCompiled, // Use compiled gradients
           optimizer, // Pass optimizer selection
@@ -549,18 +554,28 @@ Convergence: ${convergenceInfo.reason}`;
                 onChange={(e) => setEnergyType(e.target.value)}
                 disabled={isOptimizing}
                 style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                title={EnergyRegistry.get(energyType)?.description || ''}
               >
                 {EnergyRegistry.getAll().map((energy) => {
-                  // Extract class name from the energy object
-                  const className = energy.constructor?.name || energy.name;
                   return (
-                    <option key={energy.name} value={energy.name}>
-                      {energy.name} ({className})
+                    <option key={energy.name} value={energy.name} title={energy.description}>
+                      {energy.name}
                     </option>
                   );
                 })}
               </select>
             </label>
+            {EnergyRegistry.get(energyType)?.description && (
+              <div style={{
+                fontSize: '11px',
+                color: '#888',
+                marginTop: '-4px',
+                marginBottom: '4px',
+                fontFamily: 'monospace'
+              }}>
+                {EnergyRegistry.get(energyType)?.description}
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '13px' }}>
               <div><span className="hinge-color">●</span> Hinges: {metrics.hingeVertices}</div>
@@ -594,6 +609,22 @@ Convergence: ${convergenceInfo.reason}`;
                 disabled={isOptimizing}
               />
               Use Compiled Gradients (faster)
+            </label>
+
+            <label style={{ marginBottom: '8px' }}>
+              Chunk Size (responsiveness)
+              <input
+                type="number"
+                value={chunkSize}
+                onChange={(e) => setChunkSize(Math.max(1, parseInt(e.target.value) || 5))}
+                disabled={isOptimizing}
+                min="1"
+                max="50"
+                style={{ width: '60px', fontFamily: 'monospace' }}
+              />
+              <span style={{ fontSize: '11px', color: '#666', marginLeft: '4px' }}>
+                iters/chunk
+              </span>
             </label>
 
             <label className="checkbox-label">

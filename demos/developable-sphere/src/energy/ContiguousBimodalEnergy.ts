@@ -14,6 +14,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class ContiguousBimodalEnergy {
   static readonly name = 'Contiguous Bimodal Variance';
+  static readonly description = 'Custom: contiguous partition, variance';
   /**
    * Compute total energy for the mesh.
    */
@@ -53,6 +54,7 @@ export class ContiguousBimodalEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals (normalized)
     const normals: Vec3[] = [];

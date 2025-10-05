@@ -24,6 +24,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class AlignmentBimodalEnergy {
   static readonly name = 'Bimodal Alignment (Spatial Midpoint)';
+  static readonly description = 'Custom: midpoint split, alignment metric';
 
   /**
    * Compute total energy for the mesh.
@@ -66,6 +67,7 @@ export class AlignmentBimodalEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals (normalized)
     const normals: Vec3[] = [];

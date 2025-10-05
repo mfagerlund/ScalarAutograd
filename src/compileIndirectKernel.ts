@@ -91,11 +91,11 @@ export function compileIndirectKernel(
   const gradDeclarations = Array.from(nodeToVar.entries())
     .map(([node, varName]) => `let grad_${varName} = 0;`);
 
-  // Generate backward pass
+  // Generate backward pass - iterate REVERSE topological order (same as Value.backward)
   for (let i = topoOrder.length - 1; i >= 0; i--) {
     const node = topoOrder[i];
     const prev = (node as any).prev as Value[];
-    if (prev.length === 0) continue;
+    if (prev.length === 0 || !node.requiresGrad) continue;
 
     const gradVar = `grad_${getVarName(node)}`;
     const childGrads = prev.map((c: Value) => `grad_${getVarName(c)}`);
@@ -113,13 +113,14 @@ export function compileIndirectKernel(
 
   // Build gradient updates using gradientIndices mapping
   // For each graph input that requires grad, ACCUMULATE to gradient[gradientIndices[inputIdx]]
+  // Note: gradientIndices[i] can be -1 for constants, so we check >= 0 at runtime
   const gradientUpdates = graphInputs
     .map((input, inputIdx) => {
       if (!input.requiresGrad) {
         return ''; // Skip constants
       }
       const gradVar = `grad_${getVarName(input)}`;
-      return `gradient[gradientIndices[${inputIdx}]] += ${gradVar};`;
+      return `if (gradientIndices[${inputIdx}] >= 0) gradient[gradientIndices[${inputIdx}]] += ${gradVar};`;
     })
     .filter(line => line !== '')
     .join('\n    ');

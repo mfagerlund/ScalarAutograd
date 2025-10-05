@@ -193,7 +193,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v62 = Math.sqrt(_v61);
     const _v63 = (_v53 * _v62);
     const _v64 = (_v44 / _v63);
-    const _v65 = 0.5;
+    const _v65 = Math.max(-1, Math.min(_v64, 1));
     const _v66 = Math.acos(_v65);
     const _v67 = (_v24 - _v7);
     const _v68 = (_v12 - _v13);
@@ -700,7 +700,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v569 = Math.sqrt(_v568);
     const _v570 = (_v560 * _v569);
     const _v571 = (_v551 / _v570);
-    const _v572 = 0.5;
+    const _v572 = Math.max(-1, Math.min(_v571, 1));
     const _v573 = Math.acos(_v572);
     const _v574 = (_v152 * _v505);
     const _v575 = (_v148 * _v507);
@@ -766,7 +766,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v635 = Math.sqrt(_v634);
     const _v636 = (_v626 * _v635);
     const _v637 = (_v617 / _v636);
-    const _v638 = 0.5;
+    const _v638 = Math.max(-1, Math.min(_v637, 1));
     const _v639 = Math.acos(_v638);
     const _v640 = (_v206 * _v505);
     const _v641 = (_v202 * _v507);
@@ -832,7 +832,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v701 = Math.sqrt(_v700);
     const _v702 = (_v692 * _v701);
     const _v703 = (_v683 / _v702);
-    const _v704 = 0.5;
+    const _v704 = Math.max(-1, Math.min(_v703, 1));
     const _v705 = Math.acos(_v704);
     const _v706 = (_v260 * _v505);
     const _v707 = (_v256 * _v507);
@@ -898,7 +898,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v767 = Math.sqrt(_v766);
     const _v768 = (_v758 * _v767);
     const _v769 = (_v749 / _v768);
-    const _v770 = 0.5000000000000001;
+    const _v770 = Math.max(-1, Math.min(_v769, 1));
     const _v771 = Math.acos(_v770);
     const _v772 = (_v311 * _v505);
     const _v773 = (_v307 * _v507);
@@ -1706,7 +1706,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v307 += grad__v773 * _v507; grad__v507 += grad__v773 * _v307;
     grad__v311 += grad__v772 * _v505; grad__v505 += grad__v772 * _v311;
     grad__v770 += grad__v771 / (-Math.sqrt(1 - _v770 * _v770));
-    
+    grad__v769 += grad__v770 * (_v769 > -1 && _v769 < 1 ? 1 : 0);
     grad__v749 += grad__v769 / _v768; grad__v768 -= grad__v769 * _v749 / (_v768 * _v768);
     grad__v758 += grad__v768 * _v767; grad__v767 += grad__v768 * _v758;
     grad__v766 += grad__v767 * 0.5 / Math.sqrt(_v766);
@@ -1760,7 +1760,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v256 += grad__v707 * _v507; grad__v507 += grad__v707 * _v256;
     grad__v260 += grad__v706 * _v505; grad__v505 += grad__v706 * _v260;
     grad__v704 += grad__v705 / (-Math.sqrt(1 - _v704 * _v704));
-    
+    grad__v703 += grad__v704 * (_v703 > -1 && _v703 < 1 ? 1 : 0);
     grad__v683 += grad__v703 / _v702; grad__v702 -= grad__v703 * _v683 / (_v702 * _v702);
     grad__v692 += grad__v702 * _v701; grad__v701 += grad__v702 * _v692;
     grad__v700 += grad__v701 * 0.5 / Math.sqrt(_v700);
@@ -1814,7 +1814,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v202 += grad__v641 * _v507; grad__v507 += grad__v641 * _v202;
     grad__v206 += grad__v640 * _v505; grad__v505 += grad__v640 * _v206;
     grad__v638 += grad__v639 / (-Math.sqrt(1 - _v638 * _v638));
-    
+    grad__v637 += grad__v638 * (_v637 > -1 && _v637 < 1 ? 1 : 0);
     grad__v617 += grad__v637 / _v636; grad__v636 -= grad__v637 * _v617 / (_v636 * _v636);
     grad__v626 += grad__v636 * _v635; grad__v635 += grad__v636 * _v626;
     grad__v634 += grad__v635 * 0.5 / Math.sqrt(_v634);
@@ -1868,7 +1868,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v148 += grad__v575 * _v507; grad__v507 += grad__v575 * _v148;
     grad__v152 += grad__v574 * _v505; grad__v505 += grad__v574 * _v152;
     grad__v572 += grad__v573 / (-Math.sqrt(1 - _v572 * _v572));
-    
+    grad__v571 += grad__v572 * (_v571 > -1 && _v571 < 1 ? 1 : 0);
     grad__v551 += grad__v571 / _v570; grad__v570 -= grad__v571 * _v551 / (_v570 * _v570);
     grad__v560 += grad__v570 * _v569; grad__v569 += grad__v570 * _v560;
     grad__v568 += grad__v569 * 0.5 / Math.sqrt(_v568);
@@ -2307,7 +2307,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v12 += grad__v68; grad__v13 -= grad__v68;
     grad__v24 += grad__v67; grad__v7 -= grad__v67;
     grad__v65 += grad__v66 / (-Math.sqrt(1 - _v65 * _v65));
-    
+    grad__v64 += grad__v65 * (_v64 > -1 && _v64 < 1 ? 1 : 0);
     grad__v44 += grad__v64 / _v63; grad__v63 -= grad__v64 * _v44 / (_v63 * _v63);
     grad__v53 += grad__v63 * _v62; grad__v62 += grad__v63 * _v53;
     grad__v61 += grad__v62 * 0.5 / Math.sqrt(_v61);
@@ -2351,24 +2351,24 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v6 += grad__v8; grad__v7 -= grad__v8;
     grad__v3 += grad__v5 * _v4 * Math.pow(_v3, _v4 - 1); grad__v4 += grad__v5 * Math.pow(_v3, _v4) * Math.log(_v3);
     grad__v1 += grad__v3; grad__v2 -= grad__v3;
-    gradient[gradientIndices[1]] += grad__v1;
-    gradient[gradientIndices[2]] += grad__v2;
-    gradient[gradientIndices[4]] += grad__v6;
-    gradient[gradientIndices[5]] += grad__v7;
-    gradient[gradientIndices[7]] += grad__v12;
-    gradient[gradientIndices[8]] += grad__v13;
-    gradient[gradientIndices[10]] += grad__v20;
-    gradient[gradientIndices[12]] += grad__v24;
-    gradient[gradientIndices[14]] += grad__v29;
-    gradient[gradientIndices[29]] += grad__v107;
-    gradient[gradientIndices[30]] += grad__v111;
-    gradient[gradientIndices[31]] += grad__v115;
-    gradient[gradientIndices[39]] += grad__v162;
-    gradient[gradientIndices[40]] += grad__v166;
-    gradient[gradientIndices[41]] += grad__v170;
-    gradient[gradientIndices[49]] += grad__v216;
-    gradient[gradientIndices[50]] += grad__v220;
-    gradient[gradientIndices[51]] += grad__v224;
+    if (gradientIndices[1] >= 0) gradient[gradientIndices[1]] += grad__v1;
+    if (gradientIndices[2] >= 0) gradient[gradientIndices[2]] += grad__v2;
+    if (gradientIndices[4] >= 0) gradient[gradientIndices[4]] += grad__v6;
+    if (gradientIndices[5] >= 0) gradient[gradientIndices[5]] += grad__v7;
+    if (gradientIndices[7] >= 0) gradient[gradientIndices[7]] += grad__v12;
+    if (gradientIndices[8] >= 0) gradient[gradientIndices[8]] += grad__v13;
+    if (gradientIndices[10] >= 0) gradient[gradientIndices[10]] += grad__v20;
+    if (gradientIndices[12] >= 0) gradient[gradientIndices[12]] += grad__v24;
+    if (gradientIndices[14] >= 0) gradient[gradientIndices[14]] += grad__v29;
+    if (gradientIndices[29] >= 0) gradient[gradientIndices[29]] += grad__v107;
+    if (gradientIndices[30] >= 0) gradient[gradientIndices[30]] += grad__v111;
+    if (gradientIndices[31] >= 0) gradient[gradientIndices[31]] += grad__v115;
+    if (gradientIndices[39] >= 0) gradient[gradientIndices[39]] += grad__v162;
+    if (gradientIndices[40] >= 0) gradient[gradientIndices[40]] += grad__v166;
+    if (gradientIndices[41] >= 0) gradient[gradientIndices[41]] += grad__v170;
+    if (gradientIndices[49] >= 0) gradient[gradientIndices[49]] += grad__v216;
+    if (gradientIndices[50] >= 0) gradient[gradientIndices[50]] += grad__v220;
+    if (gradientIndices[51] >= 0) gradient[gradientIndices[51]] += grad__v224;
     return _v782;
   
 }

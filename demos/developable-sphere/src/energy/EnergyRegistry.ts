@@ -6,6 +6,7 @@ import { Value } from 'scalar-autograd';
  */
 export interface DevelopableEnergyFunction {
   name: string;
+  description: string;
   compute(mesh: TriangleMesh): Value;
   computeResiduals(mesh: TriangleMesh): Value[];
   classifyVertices(

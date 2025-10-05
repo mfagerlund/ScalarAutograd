@@ -4,7 +4,7 @@
 
 import { V } from "../src/V";
 import { CompiledFunctions } from "../src/CompiledFunctions";
-import { canonicalizeGraphNoSort } from "../src/GraphCanonicalizer";
+import { canonicalizeGraphNoSort } from "../src/GraphCanonicalizerNoSort";
 
 describe('Debug Jacobian Issue', () => {
   it('should show canonical strings for different param usage', () => {

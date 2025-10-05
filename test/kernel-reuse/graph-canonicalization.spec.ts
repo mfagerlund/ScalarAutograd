@@ -4,7 +4,7 @@
  */
 
 import { V } from "../../src/V";
-import { canonicalizeGraphNoSort } from "../../src/GraphCanonicalizer";
+import { canonicalizeGraphNoSort } from "../../src/GraphCanonicalizerNoSort";
 
 describe('Graph Canonicalization', () => {
   it('should match identical graph structures', () => {

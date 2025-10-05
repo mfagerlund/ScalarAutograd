@@ -184,6 +184,7 @@ export class DevelopableOptimizer {
       onProgress,
       energyType = 'boundingbox',
       useCompiled = true,
+      optimizer = 'lbfgs',
     } = options;
 
     this.shouldStop = false;
@@ -252,15 +253,21 @@ export class DevelopableOptimizer {
       // Run a chunk of iterations
       const chunkIterations = Math.min(chunkSize, maxIterations - totalIterations);
 
-      // Run optimization chunk
-      const result = lbfgs(this.params, objectiveFn, {
-        maxIterations: chunkIterations,
-        gradientTolerance,
-        verbose,
-      });
+      // Run optimization chunk based on selected optimizer
+      const result = optimizer === 'leastsquares'
+        ? nonlinearLeastSquares(this.params, objectiveFn, {
+            maxIterations: chunkIterations,
+            gradientTolerance,
+            verbose,
+          })
+        : lbfgs(this.params, objectiveFn, {
+            maxIterations: chunkIterations,
+            gradientTolerance,
+            verbose,
+          });
 
       totalIterations += result.iterations;
-      totalFunctionEvals += result.functionEvaluations;
+      totalFunctionEvals += result.functionEvaluations ?? 0;
       currentEnergy = result.finalCost;
       lastResult = result;
 

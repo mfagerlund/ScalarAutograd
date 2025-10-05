@@ -24,6 +24,9 @@ import { EnergyRegistry } from './EnergyRegistry';
  * (compatible with L-BFGS optimization).
  */
 export class StochasticCovarianceEnergy {
+  static readonly name = 'Fast Covariance (SGD)';
+  static readonly description = 'Custom: E^λ approx via gradient descent';
+
   /**
    * Compute total fast covariance energy for the mesh.
    */
@@ -61,6 +64,7 @@ export class StochasticCovarianceEnergy {
   ): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Gather angle-weighted normals (extract raw numbers for stochastic search)
     const normals: number[][] = [];

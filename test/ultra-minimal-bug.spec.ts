@@ -81,6 +81,20 @@ describe('Ultra Minimal Bug', () => {
       paramsToMesh(p);
 
       const star = mesh.getVertexStar(0);
+      console.log(`Vertex 0 star faces: [${star}]`);
+
+      // Check which vertices are in each face
+      const face0 = mesh.faces[star[0]];
+      const face1 = mesh.faces[star[1]];
+      const face2 = mesh.faces[star[2]];
+      console.log(`Face ${star[0]} vertices: [${face0.a}, ${face0.b}, ${face0.c}]`);
+      console.log(`Face ${star[1]} vertices: [${face1.a}, ${face1.b}, ${face1.c}]`);
+      console.log(`Face ${star[2]} vertices: [${face2.a}, ${face2.b}, ${face2.c}]`);
+
+      // Check if p[0] is shared
+      console.log(`\nParameter p[0] shared?`);
+      console.log(`  mesh.vertices[0].x === p[0]: ${mesh.vertices[0].x === p[0]}`);
+
       const n0 = mesh.getFaceNormal(star[0]).normalized;
       const n1 = mesh.getFaceNormal(star[1]).normalized;
       const n2 = mesh.getFaceNormal(star[2]).normalized;

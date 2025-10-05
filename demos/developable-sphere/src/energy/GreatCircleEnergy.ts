@@ -34,6 +34,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class GreatCircleEnergy {
   static readonly name = 'Great Circle (Minor Axis)';
+  static readonly description = 'Custom: max-sep pair defines plane';
 
   /**
    * Compute total great circle energy for the mesh.
@@ -73,6 +74,7 @@ export class GreatCircleEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals (normalized)
     const normals: Vec3[] = [];

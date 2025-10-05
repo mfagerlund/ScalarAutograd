@@ -17,6 +17,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class StochasticBimodalEnergy {
   static readonly name = 'Bimodal Alignment (Random Edge Split)';
+  static readonly description = 'Custom: adaptive random split, alignment';
 
   private static currentSplits: Map<number, [number, number]> = new Map();
   private static iterationCount = 0;
@@ -78,6 +79,7 @@ export class StochasticBimodalEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals
     const normals: Vec3[] = [];

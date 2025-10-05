@@ -18,6 +18,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class GreatCircleEnergyEx {
   static readonly name = 'Great Circle Extended';
+  static readonly description = 'Custom: angle-weighted, max-sep pair';
 
   static compute(mesh: TriangleMesh): Value {
     const vertexEnergies: Value[] = [];

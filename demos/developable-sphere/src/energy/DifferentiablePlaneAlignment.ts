@@ -23,6 +23,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class DifferentiablePlaneAlignment {
   static readonly name = 'Differentiable Plane Alignment';
+  static readonly description = 'Custom: smooth avg all cross products';
 
   static compute(mesh: TriangleMesh): Value {
     const vertexEnergies: Value[] = [];

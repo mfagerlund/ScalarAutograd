@@ -1636,6 +1636,33 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "scalar-autograd!NonlinearLeastSquaresResult#functionEvaluations:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "functionEvaluations?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "functionEvaluations",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "scalar-autograd!NonlinearLeastSquaresResult#iterations:member",
               "docComment": "",
               "excerptTokens": [

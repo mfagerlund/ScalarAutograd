@@ -19,6 +19,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class CovarianceEnergy {
   static readonly name = 'Covariance (Smallest Eigenvalue)';
+  static readonly description = 'Paper: E^λ = Σλ_min(A_i), angle-weighted';
 
   /**
    * Compute total covariance energy for the mesh.
@@ -59,10 +60,9 @@ export class CovarianceEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Build angle-weighted outer product matrix
-    // Note: Unlike the paper's suggestion, we DO compute energy for all vertices
-    // including valence-3, as they still contribute to developability
     let c00 = V.C(0),
       c01 = V.C(0),
       c02 = V.C(0);

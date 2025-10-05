@@ -9,6 +9,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class BoundingBoxEnergy {
   static readonly name = 'Bounding Box Spread';
+  static readonly description = 'Custom: axis-aligned bbox of normals';
   /**
    * Compute total bounding box energy for the mesh.
    * Uses n-ary sum to avoid deep expression chains.
@@ -44,6 +45,7 @@ export class BoundingBoxEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Split into two regions
     const mid = Math.floor(star.length / 2);

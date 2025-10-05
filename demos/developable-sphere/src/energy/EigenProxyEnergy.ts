@@ -20,6 +20,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class EigenProxyEnergy {
   static readonly name = 'Eigenvalue Proxy (Trace - Frobenius)';
+  static readonly description = 'Custom: Tr(C) - √||C||²_F approximation';
   /**
    * Compute total eigenvalue proxy energy for the mesh.
    */
@@ -54,6 +55,7 @@ export class EigenProxyEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Split into two regions
     const mid = Math.floor(star.length / 2);

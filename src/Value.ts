@@ -13,7 +13,6 @@ export { Vec3 } from './Vec3';
 
 const EPS = 1e-12;
 
-
 import { ValueActivation } from './ValueActivation';
 import { ValueArithmetic } from './ValueArithmetic';
 import { ValueComparison } from './ValueComparison';
@@ -75,6 +74,12 @@ export class Value {
    * @internal
    */
   public _registryId?: number;
+
+  /**
+   * Operation constants (e.g., min/max for clamp, exponent for pow).
+   * @internal
+   */
+  public _opConstants?: number[];
 
   constructor(data: number, label = "", requiresGrad = false) {
     if (typeof data !== 'number' || Number.isNaN(data) || !Number.isFinite(data)) {
@@ -573,6 +578,10 @@ export class Value {
         case 'floor': return `Math.floor(${child})`;
         case 'ceil': return `Math.ceil(${child})`;
         case 'round': return `Math.round(${child})`;
+        case 'clamp': {
+          const [min, max] = this._opConstants || [0, 1];
+          return `Math.max(${min}, Math.min(${child}, ${max}))`;
+        }
         default: return String(this.data);
       }
     }
@@ -647,6 +656,10 @@ export class Value {
         case 'ceil':
         case 'round':
           return `${childGrad} += 0;`;
+        case 'clamp': {
+          const [min, max] = this._opConstants || [0, 1];
+          return `${childGrad} += ${gradVar} * (${child} > ${min} && ${child} < ${max} ? 1 : 0);`;
+        }
         default:
           return '';
       }

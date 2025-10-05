@@ -78,6 +78,8 @@ export interface NonlinearLeastSquaresResult {
     // (undocumented)
     finalCost: number;
     // (undocumented)
+    functionEvaluations?: number;
+    // (undocumented)
     iterations: number;
     // (undocumented)
     success: boolean;

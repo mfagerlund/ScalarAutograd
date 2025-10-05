@@ -4,6 +4,7 @@ import { EnergyRegistry } from './EnergyRegistry';
 
 export class DevelopableEnergy {
   static readonly name = 'Bimodal Variance (Spatial Midpoint)';
+  static readonly description = 'Custom: fixed midpoint split, variance';
   /**
    * Compute total developability energy for the mesh.
    * This is the sum of vertex energies over all vertices.
@@ -81,6 +82,7 @@ export class DevelopableEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals (normalized)
     const normals: Vec3[] = [];

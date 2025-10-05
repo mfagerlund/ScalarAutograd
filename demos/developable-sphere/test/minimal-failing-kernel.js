@@ -125,7 +125,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v61 = Math.sqrt(_v60);
     const _v62 = (_v52 * _v61);
     const _v63 = (_v43 / _v62);
-    const _v64 = 0.5;
+    const _v64 = Math.max(-1, Math.min(_v63, 1));
     const _v65 = Math.acos(_v64);
     const _v66 = (_v23 - _v6);
     const _v67 = (_v11 - _v12);
@@ -345,7 +345,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     const _v281 = Math.sqrt(_v280);
     const _v282 = (_v272 * _v281);
     const _v283 = (_v263 / _v282);
-    const _v284 = 0.5;
+    const _v284 = Math.max(-1, Math.min(_v283, 1));
     const _v285 = Math.acos(_v284);
     const _v286 = (_v196 * _v219);
     const _v287 = (_v146 * _v221);
@@ -659,7 +659,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v146 += grad__v287 * _v221; grad__v221 += grad__v287 * _v146;
     grad__v196 += grad__v286 * _v219; grad__v219 += grad__v286 * _v196;
     grad__v284 += grad__v285 / (-Math.sqrt(1 - _v284 * _v284));
-    
+    grad__v283 += grad__v284 * (_v283 > -1 && _v283 < 1 ? 1 : 0);
     grad__v263 += grad__v283 / _v282; grad__v282 -= grad__v283 * _v263 / (_v282 * _v282);
     grad__v272 += grad__v282 * _v281; grad__v281 += grad__v282 * _v272;
     grad__v280 += grad__v281 * 0.5 / Math.sqrt(_v280);
@@ -840,7 +840,7 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v11 += grad__v67; grad__v12 -= grad__v67;
     grad__v23 += grad__v66; grad__v6 -= grad__v66;
     grad__v64 += grad__v65 / (-Math.sqrt(1 - _v64 * _v64));
-    
+    grad__v63 += grad__v64 * (_v63 > -1 && _v63 < 1 ? 1 : 0);
     grad__v43 += grad__v63 / _v62; grad__v62 -= grad__v63 * _v43 / (_v62 * _v62);
     grad__v52 += grad__v62 * _v61; grad__v61 += grad__v62 * _v52;
     grad__v60 += grad__v61 * 0.5 / Math.sqrt(_v60);
@@ -884,21 +884,21 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v5 += grad__v7; grad__v6 -= grad__v7;
     grad__v2 += grad__v4 * _v3 * Math.pow(_v2, _v3 - 1); grad__v3 += grad__v4 * Math.pow(_v2, _v3) * Math.log(_v2);
     grad__v0 += grad__v2; grad__v1 -= grad__v2;
-    gradient[gradientIndices[0]] += grad__v0;
-    gradient[gradientIndices[1]] += grad__v1;
-    gradient[gradientIndices[3]] += grad__v5;
-    gradient[gradientIndices[4]] += grad__v6;
-    gradient[gradientIndices[6]] += grad__v11;
-    gradient[gradientIndices[7]] += grad__v12;
-    gradient[gradientIndices[9]] += grad__v19;
-    gradient[gradientIndices[11]] += grad__v23;
-    gradient[gradientIndices[13]] += grad__v28;
-    gradient[gradientIndices[27]] += grad__v105;
-    gradient[gradientIndices[28]] += grad__v109;
-    gradient[gradientIndices[29]] += grad__v113;
-    gradient[gradientIndices[36]] += grad__v150;
-    gradient[gradientIndices[37]] += grad__v154;
-    gradient[gradientIndices[38]] += grad__v158;
+    if (gradientIndices[0] >= 0) gradient[gradientIndices[0]] += grad__v0;
+    if (gradientIndices[1] >= 0) gradient[gradientIndices[1]] += grad__v1;
+    if (gradientIndices[3] >= 0) gradient[gradientIndices[3]] += grad__v5;
+    if (gradientIndices[4] >= 0) gradient[gradientIndices[4]] += grad__v6;
+    if (gradientIndices[6] >= 0) gradient[gradientIndices[6]] += grad__v11;
+    if (gradientIndices[7] >= 0) gradient[gradientIndices[7]] += grad__v12;
+    if (gradientIndices[9] >= 0) gradient[gradientIndices[9]] += grad__v19;
+    if (gradientIndices[11] >= 0) gradient[gradientIndices[11]] += grad__v23;
+    if (gradientIndices[13] >= 0) gradient[gradientIndices[13]] += grad__v28;
+    if (gradientIndices[27] >= 0) gradient[gradientIndices[27]] += grad__v105;
+    if (gradientIndices[28] >= 0) gradient[gradientIndices[28]] += grad__v109;
+    if (gradientIndices[29] >= 0) gradient[gradientIndices[29]] += grad__v113;
+    if (gradientIndices[36] >= 0) gradient[gradientIndices[36]] += grad__v150;
+    if (gradientIndices[37] >= 0) gradient[gradientIndices[37]] += grad__v154;
+    if (gradientIndices[38] >= 0) gradient[gradientIndices[38]] += grad__v158;
     return _v293;
   
 }

@@ -28,6 +28,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class RidgeBasedEnergy {
   static readonly name = 'Bimodal Alignment (Ridge Detection)';
+  static readonly description = 'Custom: split at max dihedral angle';
 
   static compute(mesh: TriangleMesh): Value {
     const vertexEnergies: Value[] = [];
@@ -55,6 +56,7 @@ export class RidgeBasedEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals
     const normals: Vec3[] = [];

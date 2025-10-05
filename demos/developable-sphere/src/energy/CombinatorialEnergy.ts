@@ -17,6 +17,7 @@ import { EnergyRegistry } from './EnergyRegistry';
  */
 export class CombinatorialEnergy {
   static readonly name = 'Combinatorial (E^P)';
+  static readonly description = 'Paper: E^P = min partition variance';
   /**
    * Compute total combinatorial energy for the mesh.
    */
@@ -53,10 +54,7 @@ export class CombinatorialEnergy {
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
-
-    // Note: We compute energy for all vertices, including valence-3
-    // The paper suggests omitting them for seam detection, but they
-    // still contribute to the optimization objective
+    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
 
     // Get all normals (normalized)
     const normals: Vec3[] = [];
