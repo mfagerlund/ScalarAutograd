@@ -6,10 +6,11 @@
  */
 
 import { V, Value, CompiledResiduals } from '../src';
+import { testLog } from './testUtils';
 
 describe('Minimal Shared Parameter Bug', () => {
   it('should give same gradients for shared params in multiply', () => {
-    console.log('\n=== MINIMAL SHARED PARAMETER BUG ===\n');
+    testLog('\n=== MINIMAL SHARED PARAMETER BUG ===\n');
 
     // Create 3 parameters
     const params = [V.W(1.0), V.W(2.0), V.W(3.0)];
@@ -43,37 +44,37 @@ describe('Minimal Shared Parameter Bug', () => {
     });
 
     // Graph backward
-    console.log(`Forward value: ${compilationGraph!.data.toExponential(6)}\n`);
+    testLog(`Forward value: ${compilationGraph!.data.toExponential(6)}\n`);
     params.forEach(p => p.grad = 0);
     compilationGraph!.backward();
     const graphGrads = params.map(p => p.grad);
 
-    console.log('Graph gradients:', graphGrads.map(g => g.toExponential(6)));
+    testLog('Graph gradients:', graphGrads.map(g => g.toExponential(6)));
 
     // Compiled backward
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
-    console.log('Compiled gradients:', compiledGrads.map(g => g.toExponential(6)));
+    testLog('Compiled gradients:', compiledGrads.map(g => g.toExponential(6)));
 
     // Compare
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`\nMax gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`\nMax gradient diff: ${maxDiff.toExponential(6)}`);
 
     for (let i = 0; i < params.length; i++) {
-      console.log(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${Math.abs(graphGrads[i] - compiledGrads[i]).toExponential(6)}`);
+      testLog(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${Math.abs(graphGrads[i] - compiledGrads[i]).toExponential(6)}`);
     }
 
     if (maxDiff < 1e-10) {
-      console.log('\n✅ PASS - Gradients match!');
+      testLog('\n✅ PASS - Gradients match!');
     } else {
-      console.log('\n❌ FAIL - Gradients differ! BUG REPRODUCED!');
+      testLog('\n❌ FAIL - Gradients differ! BUG REPRODUCED!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);
   });
 
   it('should handle multiple residuals using same parameters', () => {
-    console.log('\n=== MULTIPLE RESIDUALS TEST ===\n');
+    testLog('\n=== MULTIPLE RESIDUALS TEST ===\n');
 
     // Create 9 parameters (3 vertices x 3 components)
     const params = [
@@ -124,21 +125,21 @@ describe('Minimal Shared Parameter Bug', () => {
     graphSum.backward();
     const graphGrads = params.map(p => p.grad);
 
-    console.log('Graph gradients:', graphGrads.slice(0, 6).map(g => g.toExponential(6)));
+    testLog('Graph gradients:', graphGrads.slice(0, 6).map(g => g.toExponential(6)));
 
     // Compiled backward
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
-    console.log('Compiled gradients:', compiledGrads.slice(0, 6).map(g => g.toExponential(6)));
+    testLog('Compiled gradients:', compiledGrads.slice(0, 6).map(g => g.toExponential(6)));
 
     // Compare
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`\nMax gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`\nMax gradient diff: ${maxDiff.toExponential(6)}`);
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS - Gradients match!');
+      testLog('✅ PASS - Gradients match!');
     } else {
-      console.log('❌ FAIL - Gradients differ! BUG REPRODUCED!');
+      testLog('❌ FAIL - Gradients differ! BUG REPRODUCED!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);

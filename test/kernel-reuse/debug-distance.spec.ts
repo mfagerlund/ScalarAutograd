@@ -6,6 +6,7 @@ import { V } from "../../src/V";
 import { ValueRegistry } from "../../src/ValueRegistry";
 import { compileIndirectKernel, extractInputIndices } from "../../src/compileIndirectKernel";
 import { Value } from "../../src/Value";
+import { testLog } from "../testUtils";
 
 describe('Debug Distance Constraint', () => {
   it('should debug distance constraint kernel', () => {
@@ -30,19 +31,19 @@ describe('Debug Distance Constraint', () => {
     const kernel = compileIndirectKernel(residual, params, registry);
     const indices = extractInputIndices(residual, registry);
 
-    console.log('\n=== Compiled Kernel ===');
-    console.log(kernel.toString());
+    testLog('\n=== Compiled Kernel ===');
+    testLog(kernel.toString());
 
-    console.log('\n=== Registry ===');
-    console.log('Size:', registry.size);
-    console.log('Data array:', registry.getDataArray());
+    testLog('\n=== Registry ===');
+    testLog('Size:', registry.size);
+    testLog('Data array:', registry.getDataArray());
 
-    console.log('\n=== Indices ===');
-    console.log('Input indices:', indices);
+    testLog('\n=== Indices ===');
+    testLog('Input indices:', indices);
 
-    console.log('\n=== Graph Info ===');
-    console.log('Parameters:', params.map(p => `${p.label}=${p.data} (id=${p._registryId})`));
-    console.log('Residual value:', residual.data);
+    testLog('\n=== Graph Info ===');
+    testLog('Parameters:', params.map(p => `${p.label}=${p.data} (id=${p._registryId})`));
+    testLog('Residual value:', residual.data);
 
     // Build gradient indices mapping
     const paramIds = params.map(p => registry.getId(p));
@@ -56,9 +57,9 @@ describe('Debug Distance Constraint', () => {
     const jacobianRow = new Array(params.length).fill(0);
     const kernelValue = kernel(allValues, indices, gradientIndices, jacobianRow);
 
-    console.log('\n=== Kernel Results ===');
-    console.log('Value:', kernelValue);
-    console.log('Jacobian:', jacobianRow);
+    testLog('\n=== Kernel Results ===');
+    testLog('Value:', kernelValue);
+    testLog('Jacobian:', jacobianRow);
 
     // Run backward
     Value.zeroGradTree(residual);
@@ -67,13 +68,13 @@ describe('Debug Distance Constraint', () => {
 
     const graphGradients = params.map(p => p.grad);
 
-    console.log('\n=== Graph Results ===');
-    console.log('Value:', residual.data);
-    console.log('Gradients:', graphGradients);
+    testLog('\n=== Graph Results ===');
+    testLog('Value:', residual.data);
+    testLog('Gradients:', graphGradients);
 
-    console.log('\n=== Comparison ===');
+    testLog('\n=== Comparison ===');
     for (let i = 0; i < params.length; i++) {
-      console.log(`${params[i].label}: kernel=${jacobianRow[i]}, graph=${graphGradients[i]}, diff=${jacobianRow[i] - graphGradients[i]}`);
+      testLog(`${params[i].label}: kernel=${jacobianRow[i]}, graph=${graphGradients[i]}, diff=${jacobianRow[i] - graphGradients[i]}`);
     }
   });
 });

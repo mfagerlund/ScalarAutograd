@@ -33,6 +33,7 @@ export default function App() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [progress, setProgress] = useState({ iteration: 0, energy: 0 });
+  const [compileProgress, setCompileProgress] = useState({ current: 0, total: 0, percent: 0 });
   const [currentMesh, setCurrentMesh] = useState<TriangleMesh | null>(null);
   const [history, setHistory] = useState<TriangleMesh[]>([]);
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -137,6 +138,7 @@ export default function App() {
     setIsCompiling(useCompiled && !useMultiRes); // Multi-res handles compilation per level
     setHistory([]);
     setProgress({ iteration: 0, energy: 0 });
+    setCompileProgress({ current: 0, total: 0, percent: 0 });
     setConvergenceInfo(null);
     setIterationsPerSecond(0);
     meshHistoryRef.current = [];
@@ -221,12 +223,13 @@ export default function App() {
           energyType, // Pass energy type to optimizer
           useCompiled, // Use compiled gradients
           optimizer, // Pass optimizer selection
+          onCompileProgress: (current, total, percent) => {
+            setCompileProgress({ current, total, percent });
+          },
+          onCompileComplete: () => {
+            setIsCompiling(false);
+          },
           onProgress: (iteration, energy, history) => {
-            // End compilation phase when optimization starts
-            if (isCompiling) {
-              setIsCompiling(false);
-            }
-
             // Always update progress numbers
             setProgress({ iteration, energy });
 
@@ -423,9 +426,23 @@ export default function App() {
                 </div>
                 {isCompiling ? (
                   <>
-                    <div>Building computation graph...</div>
+                    <div>Compiling {compileProgress.current} / {compileProgress.total} functions</div>
                     <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '2px' }}>
-                      This may take a moment for large meshes
+                      {compileProgress.percent}% complete
+                    </div>
+                    <div style={{
+                      marginTop: '6px',
+                      background: 'rgba(255,255,255,0.2)',
+                      borderRadius: '2px',
+                      height: '4px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${compileProgress.percent}%`,
+                        height: '100%',
+                        background: '#FFA726',
+                        transition: 'width 0.3s'
+                      }} />
                     </div>
                   </>
                 ) : (

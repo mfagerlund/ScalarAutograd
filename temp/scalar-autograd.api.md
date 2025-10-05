@@ -203,6 +203,8 @@ export class Value {
     // @internal
     _op?: string;
     // @internal
+    _opConstants?: number[];
+    // @internal
     paramName?: string;
     pow(exp: number): Value;
     powValue(other: Value | number): Value;

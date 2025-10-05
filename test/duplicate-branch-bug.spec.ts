@@ -5,10 +5,11 @@
  */
 
 import { V, Value, CompiledResiduals } from '../src';
+import { testLog } from './testUtils';
 
 describe('Duplicate Branch Bug', () => {
   it('should accumulate gradients when same branch used twice', () => {
-    console.log('\n=== DUPLICATE BRANCH TEST ===\n');
+    testLog('\n=== DUPLICATE BRANCH TEST ===\n');
 
     const params = [V.W(2.0), V.W(3.0)];
 
@@ -34,28 +35,28 @@ describe('Duplicate Branch Bug', () => {
 
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
-    console.log('Graph gradients:', graphGrads);
-    console.log('Compiled gradients:', compiledGrads);
+    testLog('Graph gradients:', graphGrads);
+    testLog('Compiled gradients:', compiledGrads);
 
     // Analytical: f(x,y) = 2xy
     // df/dx = 2y = 2*3 = 6
     // df/dy = 2x = 2*2 = 4
-    console.log('Expected gradients: [6, 4]');
+    testLog('Expected gradients: [6, 4]');
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL - Compiler only visited branch once!');
+      testLog('❌ FAIL - Compiler only visited branch once!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);
   });
 
   it('should handle branch used in multiple residuals', () => {
-    console.log('\n=== MULTIPLE RESIDUALS WITH SHARED BRANCH ===\n');
+    testLog('\n=== MULTIPLE RESIDUALS WITH SHARED BRANCH ===\n');
 
     const params = [V.W(2.0), V.W(3.0)];
 
@@ -85,8 +86,8 @@ describe('Duplicate Branch Bug', () => {
 
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
-    console.log('Graph gradients:', graphGrads);
-    console.log('Compiled gradients:', compiledGrads);
+    testLog('Graph gradients:', graphGrads);
+    testLog('Compiled gradients:', compiledGrads);
 
     // Analytical: f1(x,y) = (xy)^2, f2(x,y) = xy + 1
     // df1/dx = 2xy*y = 2*2*3*3 = 36
@@ -96,15 +97,15 @@ describe('Duplicate Branch Bug', () => {
     // df1/dy = 2xy*x = 2*2*2*3 = 24
     // df2/dy = x = 2
     // Total df/dy = 24 + 2 = 26
-    console.log('Expected gradients: [39, 26]');
+    testLog('Expected gradients: [39, 26]');
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL - Shared branch only visited once!');
+      testLog('❌ FAIL - Shared branch only visited once!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);

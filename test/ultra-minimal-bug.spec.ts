@@ -4,10 +4,11 @@
 
 import { V, Value, Vec3, CompiledResiduals } from '../src';
 import { IcoSphere } from '../demos/developable-sphere/src/mesh/IcoSphere';
+import { testLog } from './testUtils';
 
 describe('Ultra Minimal Bug', () => {
   it('TWO normals', () => {
-    console.log('\n=== TWO NORMALS ===\n');
+    testLog('\n=== TWO NORMALS ===\n');
 
     const mesh = IcoSphere.generate(0, 1.0);
     const params: Value[] = [];
@@ -47,19 +48,19 @@ describe('Ultra Minimal Bug', () => {
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL');
+      testLog('❌ FAIL');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);
   });
 
   it('MINIMAL BUG: Compute normals from triangle vertices', () => {
-    console.log('\n=== MINIMAL BUG: NORMALS FROM VERTICES ===\n');
+    testLog('\n=== MINIMAL BUG: NORMALS FROM VERTICES ===\n');
 
     const mesh = IcoSphere.generate(0, 1.0);
     const params: Value[] = [];
@@ -81,19 +82,19 @@ describe('Ultra Minimal Bug', () => {
       paramsToMesh(p);
 
       const star = mesh.getVertexStar(0);
-      console.log(`Vertex 0 star faces: [${star}]`);
+      testLog(`Vertex 0 star faces: [${star}]`);
 
       // Check which vertices are in each face
       const face0 = mesh.faces[star[0]];
       const face1 = mesh.faces[star[1]];
       const face2 = mesh.faces[star[2]];
-      console.log(`Face ${star[0]} vertices: [${face0.a}, ${face0.b}, ${face0.c}]`);
-      console.log(`Face ${star[1]} vertices: [${face1.a}, ${face1.b}, ${face1.c}]`);
-      console.log(`Face ${star[2]} vertices: [${face2.a}, ${face2.b}, ${face2.c}]`);
+      testLog(`Face ${star[0]} vertices: [${face0.a}, ${face0.b}, ${face0.c}]`);
+      testLog(`Face ${star[1]} vertices: [${face1.a}, ${face1.b}, ${face1.c}]`);
+      testLog(`Face ${star[2]} vertices: [${face2.a}, ${face2.b}, ${face2.c}]`);
 
       // Check if p[0] is shared
-      console.log(`\nParameter p[0] shared?`);
-      console.log(`  mesh.vertices[0].x === p[0]: ${mesh.vertices[0].x === p[0]}`);
+      testLog(`\nParameter p[0] shared?`);
+      testLog(`  mesh.vertices[0].x === p[0]: ${mesh.vertices[0].x === p[0]}`);
 
       const n0 = mesh.getFaceNormal(star[0]).normalized;
       const n1 = mesh.getFaceNormal(star[1]).normalized;
@@ -127,18 +128,18 @@ describe('Ultra Minimal Bug', () => {
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
-    console.log('First 6 gradients:');
+    testLog('First 6 gradients:');
     for (let i = 0; i < Math.min(6, params.length); i++) {
       const diff = Math.abs(graphGrads[i] - compiledGrads[i]);
-      console.log(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
+      testLog(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
     }
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL - BUG REPRODUCED!');
+      testLog('❌ FAIL - BUG REPRODUCED!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);

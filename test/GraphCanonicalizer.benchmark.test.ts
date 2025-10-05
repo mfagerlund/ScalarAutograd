@@ -2,6 +2,7 @@ import { describe, it } from 'vitest';
 import { V } from '../src/Value';
 import { canonicalizeGraphHash } from '../src/GraphHashCanonicalizer';
 import { canonicalizeGraphNoSort } from '../src/GraphCanonicalizerNoSort';
+import { testLog } from './testUtils';
 
 describe('Canonicalizer Performance Comparison', () => {
   it('should compare performance on complex graphs', () => {
@@ -53,17 +54,17 @@ describe('Canonicalizer Performance Comparison', () => {
       return result;
     }
 
-    const testSizes = [21, 42, 63, 84, 126, 168]; // Up to ~1000 nodes
+    const testSizes = [21, 42, 63, 84, 126, 168, 252, 336, 420]; // Up to ~2500 nodes (500-600 Value nodes)
 
-    console.log('\n' + '='.repeat(70));
-    console.log('Canonicalizer Performance Comparison');
-    console.log('='.repeat(70));
+    testLog('\n' + '='.repeat(70));
+    testLog('Canonicalizer Performance Comparison');
+    testLog('='.repeat(70));
 
     for (const numParams of testSizes) {
       const params = Array.from({ length: numParams }, () => V.W(Math.random()));
       const graph = buildComplexGraph(params);
 
-      console.log(`\nGraph with ${numParams} parameters:`);
+      testLog(`\nGraph with ${numParams} parameters:`);
 
       // Warmup
       canonicalizeGraphHash(graph, params);
@@ -88,16 +89,16 @@ describe('Canonicalizer Performance Comparison', () => {
       const avgNoSort = noSortTimes.reduce((a, b) => a + b, 0) / noSortTimes.length;
       const avgHash = hashTimes.reduce((a, b) => a + b, 0) / hashTimes.length;
 
-      console.log(`  ID-based (no-sort): ${avgNoSort.toFixed(2)}ms`);
-      console.log(`  Hash-based:         ${avgHash.toFixed(2)}ms  (${(avgNoSort / avgHash).toFixed(2)}x)`);
+      testLog(`  ID-based (no-sort): ${avgNoSort.toFixed(2)}ms`);
+      testLog(`  Hash-based:         ${avgHash.toFixed(2)}ms  (${(avgNoSort / avgHash).toFixed(2)}x)`);
 
       // Compare canonical outputs
       const noSortResult = canonicalizeGraphNoSort(graph, params);
       const hashResult = canonicalizeGraphHash(graph, params);
-      console.log(`  No-sort canon:  ${noSortResult.canon.substring(0, 80)}...`);
-      console.log(`  Hash canon:     ${hashResult.canon.substring(0, 80)}...`);
+      testLog(`  No-sort canon:  ${noSortResult.canon.substring(0, 80)}...`);
+      testLog(`  Hash canon:     ${hashResult.canon.substring(0, 80)}...`);
     }
 
-    console.log('\n' + '='.repeat(70));
+    testLog('\n' + '='.repeat(70));
   });
 });

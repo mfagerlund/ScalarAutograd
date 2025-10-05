@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { V, Vec3, lbfgs, CompiledFunctions } from '../src';
+import { testLog } from './testUtils';
 
 describe('Compiled vs Non-compiled comparison', () => {
   it('should produce identical results for simple sphere energy', () => {
@@ -60,8 +61,8 @@ describe('Compiled vs Non-compiled comparison', () => {
 
     const result2 = lbfgs(params2, compiled, { maxIterations: 50, verbose: false });
 
-    console.log('Non-compiled:', result1.finalCost, 'iterations:', result1.iterations);
-    console.log('Compiled:', result2.finalCost, 'iterations:', result2.iterations);
+    testLog('Non-compiled:', result1.finalCost, 'iterations:', result1.iterations);
+    testLog('Compiled:', result2.finalCost, 'iterations:', result2.iterations);
 
     // Check results are close
     expect(Math.abs(result1.finalCost - result2.finalCost)).toBeLessThan(1e-6);

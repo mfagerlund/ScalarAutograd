@@ -3,10 +3,11 @@
  */
 
 import { V, Value, Vec3, CompiledResiduals } from '../src';
+import { testLog } from './testUtils';
 
 describe('Cross Product Bug', () => {
   it('should handle single cross product normalized', () => {
-    console.log('\n=== SINGLE CROSS PRODUCT ===\n');
+    testLog('\n=== SINGLE CROSS PRODUCT ===\n');
 
     // 6 parameters for 2 vectors
     const params = [
@@ -36,19 +37,19 @@ describe('Cross Product Bug', () => {
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL');
+      testLog('❌ FAIL');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);
   });
 
   it('should handle two cross products multiplied', () => {
-    console.log('\n=== TWO CROSS PRODUCTS MULTIPLIED ===\n');
+    testLog('\n=== TWO CROSS PRODUCTS MULTIPLIED ===\n');
 
     // 9 parameters for 3 vectors
     const params = [
@@ -82,24 +83,24 @@ describe('Cross Product Bug', () => {
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     for (let i = 0; i < params.length; i++) {
       const diff = Math.abs(graphGrads[i] - compiledGrads[i]);
-      console.log(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
+      testLog(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
     }
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL - BUG REPRODUCED!');
+      testLog('❌ FAIL - BUG REPRODUCED!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);
   });
 
   it('should handle cross products with plane normal pattern', () => {
-    console.log('\n=== PLANE NORMAL PATTERN ===\n');
+    testLog('\n=== PLANE NORMAL PATTERN ===\n');
 
     // 9 parameters for 3 vectors
     const params = [
@@ -136,19 +137,19 @@ describe('Cross Product Bug', () => {
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     for (let i = 0; i < params.length; i++) {
       const diff = Math.abs(graphGrads[i] - compiledGrads[i]);
       if (diff > 1e-12) {
-        console.log(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
+        testLog(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
       }
     }
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL - BUG REPRODUCED!');
+      testLog('❌ FAIL - BUG REPRODUCED!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);

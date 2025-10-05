@@ -6,6 +6,7 @@ import { CovarianceEnergy } from '../demos/developable-sphere/src/energy/Covaria
 import { DevelopableEnergy } from '../demos/developable-sphere/src/energy/DevelopableEnergy';
 import { Vec3, V } from '../src';
 import { TriangleMesh } from '../demos/developable-sphere/src/mesh/TriangleMesh';
+import { testLog } from './testUtils';
 
 describe('Combinatorial Energy (E^P)', () => {
   it('should be zero for a perfect plane', () => {
@@ -25,7 +26,7 @@ describe('Combinatorial Energy (E^P)', () => {
     const mesh = new TriangleMesh(vertices, faces);
     const energy = CombinatorialEnergy.compute(mesh);
 
-    console.log(`Plane energy: ${energy.data.toExponential(6)}`);
+    testLog(`Plane energy: ${energy.data.toExponential(6)}`);
 
     // Should be essentially zero for a perfect plane
     expect(energy.data).toBeLessThan(1e-6);
@@ -56,7 +57,7 @@ describe('Combinatorial Energy (E^P)', () => {
     const mesh = new TriangleMesh(vertices, faces);
     const energy = CombinatorialEnergy.compute(mesh);
 
-    console.log(`Hinge energy: ${energy.data.toExponential(6)}`);
+    testLog(`Hinge energy: ${energy.data.toExponential(6)}`);
 
     // Should be essentially zero for a perfect hinge
     expect(energy.data).toBeLessThan(1e-4);
@@ -80,7 +81,7 @@ describe('Combinatorial Energy (E^P)', () => {
     }
 
     const energy = CombinatorialEnergy.compute(sphere);
-    console.log(`Perturbed sphere E^P: ${energy.data.toExponential(3)}`);
+    testLog(`Perturbed sphere E^P: ${energy.data.toExponential(3)}`);
 
     // Should have measurable energy
     expect(energy.data).toBeGreaterThan(0.001);
@@ -92,10 +93,10 @@ describe('Combinatorial Energy (E^P)', () => {
 
     const metrics = CombinatorialEnergy.computeQualityMetrics(sphere, 1e-3);
 
-    console.log('\n=== Quality Metrics (Sphere) ===');
-    console.log(`Developability: ${metrics.developabilityPct.toFixed(2)}%`);
-    console.log(`Estimated regions: ${metrics.numRegions.toFixed(1)}`);
-    console.log(`Quality score: ${metrics.qualityScore.toFixed(2)}`);
+    testLog('\n=== Quality Metrics (Sphere) ===');
+    testLog(`Developability: ${metrics.developabilityPct.toFixed(2)}%`);
+    testLog(`Estimated regions: ${metrics.numRegions.toFixed(1)}`);
+    testLog(`Quality score: ${metrics.qualityScore.toFixed(2)}`);
 
     expect(metrics.developabilityPct).toBeGreaterThanOrEqual(0);
     expect(metrics.developabilityPct).toBeLessThanOrEqual(100);
@@ -124,9 +125,9 @@ describe('Combinatorial Energy (E^P)', () => {
     const initialEnergy = CombinatorialEnergy.compute(sphere).data;
     const initialMetrics = CombinatorialEnergy.computeQualityMetrics(sphere, 1e-3);
 
-    console.log('\n=== Combinatorial Energy Optimization ===');
-    console.log(`Initial E^P: ${initialEnergy.toExponential(3)}`);
-    console.log(
+    testLog('\n=== Combinatorial Energy Optimization ===');
+    testLog(`Initial E^P: ${initialEnergy.toExponential(3)}`);
+    testLog(
       `Initial developability: ${initialMetrics.developabilityPct.toFixed(1)}% (${initialMetrics.numRegions.toFixed(1)} regions)`
     );
 
@@ -135,18 +136,18 @@ describe('Combinatorial Energy (E^P)', () => {
       maxIterations: 50,
       gradientTolerance: 1e-6,
       verbose: true,
-      energyType: 'variance', // Use as baseline since we don't have direct support yet
+      energyType: 'Bimodal Variance (Spatial Midpoint)', // Use as baseline since we don't have direct support yet
       chunkSize: 50,
     });
 
     const finalEnergy = CombinatorialEnergy.compute(sphere).data;
     const finalMetrics = CombinatorialEnergy.computeQualityMetrics(sphere, 1e-3);
 
-    console.log(`Final E^P: ${finalEnergy.toExponential(3)}`);
-    console.log(
+    testLog(`Final E^P: ${finalEnergy.toExponential(3)}`);
+    testLog(
       `Final developability: ${finalMetrics.developabilityPct.toFixed(1)}% (${finalMetrics.numRegions.toFixed(1)} regions)`
     );
-    console.log(`Quality improvement: ${initialMetrics.qualityScore.toFixed(2)} → ${finalMetrics.qualityScore.toFixed(2)}`);
+    testLog(`Quality improvement: ${initialMetrics.qualityScore.toFixed(2)} → ${finalMetrics.qualityScore.toFixed(2)}`);
 
     // Energy should be measurable
     expect(finalEnergy).toBeGreaterThan(0);
@@ -174,7 +175,7 @@ describe('Covariance Energy (E^λ)', () => {
     const mesh = new TriangleMesh(vertices, faces);
     const energy = CovarianceEnergy.compute(mesh);
 
-    console.log(`Plane E^λ: ${energy.data.toExponential(6)}`);
+    testLog(`Plane E^λ: ${energy.data.toExponential(6)}`);
 
     // Should be small (numerical precision may cause small non-zero values)
     // For a perfect plane, all normals are identical, so smallest eigenvalue should be near zero
@@ -202,7 +203,7 @@ describe('Covariance Energy (E^λ)', () => {
     const mesh = new TriangleMesh(vertices, faces);
     const energy = CovarianceEnergy.compute(mesh);
 
-    console.log(`Hinge E^λ: ${energy.data.toExponential(6)}`);
+    testLog(`Hinge E^λ: ${energy.data.toExponential(6)}`);
 
     // Should be small for coplanar normals (two planes = coplanar normal set)
     expect(energy.data).toBeLessThan(0.01);
@@ -226,7 +227,7 @@ describe('Covariance Energy (E^λ)', () => {
     }
 
     const energy = CovarianceEnergy.compute(sphere);
-    console.log(`Perturbed sphere E^λ: ${energy.data.toExponential(3)}`);
+    testLog(`Perturbed sphere E^λ: ${energy.data.toExponential(3)}`);
 
     expect(energy.data).toBeGreaterThan(0.001);
     expect(energy.data).toBeLessThan(1000);
@@ -255,8 +256,8 @@ describe('Covariance Energy (E^λ)', () => {
       .map((_, i) => CovarianceEnergy.computeVertexEnergyIntrinsic(i, sphere).data)
       .reduce((a, b) => a + b, 0);
 
-    console.log(`E^λ (standard): ${energyStandard.toExponential(3)}`);
-    console.log(`E^λ (intrinsic): ${energyIntrinsic.toExponential(3)}`);
+    testLog(`E^λ (standard): ${energyStandard.toExponential(3)}`);
+    testLog(`E^λ (intrinsic): ${energyIntrinsic.toExponential(3)}`);
 
     // Both should be non-zero and positive
     expect(energyStandard).toBeGreaterThan(0);
@@ -290,8 +291,8 @@ describe('Covariance Energy (E^λ)', () => {
       .map((_, i) => CovarianceEnergy.computeVertexEnergyMax(i, sphere).data)
       .reduce((a, b) => a + b, 0);
 
-    console.log(`E^λ (standard): ${energyStandard.toExponential(3)}`);
-    console.log(`E^λ (max): ${energyMax.toExponential(3)}`);
+    testLog(`E^λ (standard): ${energyStandard.toExponential(3)}`);
+    testLog(`E^λ (max): ${energyMax.toExponential(3)}`);
 
     // Both should be non-zero and positive
     expect(energyStandard).toBeGreaterThan(0);
@@ -303,10 +304,10 @@ describe('Covariance Energy (E^λ)', () => {
 
     const metrics = CovarianceEnergy.computeQualityMetrics(sphere, 0.1);
 
-    console.log('\n=== Quality Metrics (Covariance) ===');
-    console.log(`Developability: ${metrics.developabilityPct.toFixed(2)}%`);
-    console.log(`Estimated regions: ${metrics.numRegions.toFixed(1)}`);
-    console.log(`Quality score: ${metrics.qualityScore.toFixed(2)}`);
+    testLog('\n=== Quality Metrics (Covariance) ===');
+    testLog(`Developability: ${metrics.developabilityPct.toFixed(2)}%`);
+    testLog(`Estimated regions: ${metrics.numRegions.toFixed(1)}`);
+    testLog(`Quality score: ${metrics.qualityScore.toFixed(2)}`);
 
     expect(metrics.developabilityPct).toBeGreaterThanOrEqual(0);
     expect(metrics.developabilityPct).toBeLessThanOrEqual(100);
@@ -334,9 +335,9 @@ describe('Covariance Energy (E^λ)', () => {
     const initialEnergy = CovarianceEnergy.compute(sphere).data;
     const initialMetrics = CovarianceEnergy.computeQualityMetrics(sphere, 0.1);
 
-    console.log('\n=== Covariance Energy Optimization ===');
-    console.log(`Initial E^λ: ${initialEnergy.toExponential(3)}`);
-    console.log(
+    testLog('\n=== Covariance Energy Optimization ===');
+    testLog(`Initial E^λ: ${initialEnergy.toExponential(3)}`);
+    testLog(
       `Initial developability: ${initialMetrics.developabilityPct.toFixed(1)}% (${initialMetrics.numRegions.toFixed(1)} regions)`
     );
 
@@ -345,18 +346,18 @@ describe('Covariance Energy (E^λ)', () => {
       maxIterations: 50,
       gradientTolerance: 1e-6,
       verbose: true,
-      energyType: 'variance',
+      energyType: 'Bimodal Variance (Spatial Midpoint)',
       chunkSize: 50,
     });
 
     const finalEnergy = CovarianceEnergy.compute(sphere).data;
     const finalMetrics = CovarianceEnergy.computeQualityMetrics(sphere, 0.1);
 
-    console.log(`Final E^λ: ${finalEnergy.toExponential(3)}`);
-    console.log(
+    testLog(`Final E^λ: ${finalEnergy.toExponential(3)}`);
+    testLog(
       `Final developability: ${finalMetrics.developabilityPct.toFixed(1)}% (${finalMetrics.numRegions.toFixed(1)} regions)`
     );
-    console.log(`Quality improvement: ${initialMetrics.qualityScore.toFixed(2)} → ${finalMetrics.qualityScore.toFixed(2)}`);
+    testLog(`Quality improvement: ${initialMetrics.qualityScore.toFixed(2)} → ${finalMetrics.qualityScore.toFixed(2)}`);
 
     expect(finalEnergy).toBeGreaterThan(0);
     expect(finalMetrics.developabilityPct).toBeGreaterThan(initialMetrics.developabilityPct * 0.8);
@@ -382,7 +383,7 @@ describe('Combinatorial vs Covariance Energy Comparison', () => {
     const eP = CombinatorialEnergy.compute(mesh).data;
     const eLambda = CovarianceEnergy.compute(mesh).data;
 
-    console.log(`\nPerfect plane: E^P = ${eP.toExponential(6)}, E^λ = ${eLambda.toExponential(6)}`);
+    testLog(`\nPerfect plane: E^P = ${eP.toExponential(6)}, E^λ = ${eLambda.toExponential(6)}`);
 
     expect(eP).toBeLessThan(1e-6);
     expect(eLambda).toBeLessThan(0.01); // Covariance may have small numerical error
@@ -410,7 +411,7 @@ describe('Combinatorial vs Covariance Energy Comparison', () => {
     const eP = CombinatorialEnergy.compute(mesh).data;
     const eLambda = CovarianceEnergy.compute(mesh).data;
 
-    console.log(`\nPerfect hinge: E^P = ${eP.toExponential(6)}, E^λ = ${eLambda.toExponential(6)}`);
+    testLog(`\nPerfect hinge: E^P = ${eP.toExponential(6)}, E^λ = ${eLambda.toExponential(6)}`);
 
     expect(eP).toBeLessThan(1e-4);
     expect(eLambda).toBeLessThan(0.01); // Covariance may have small numerical error
@@ -438,11 +439,11 @@ describe('Combinatorial vs Covariance Energy Comparison', () => {
     const metricsP = CombinatorialEnergy.computeQualityMetrics(sphere, 1e-3);
     const metricsLambda = CovarianceEnergy.computeQualityMetrics(sphere, 0.1);
 
-    console.log('\n=== Energy Comparison (Perturbed Sphere) ===');
-    console.log(`E^P: ${eP.toExponential(3)}`);
-    console.log(`E^λ: ${eLambda.toExponential(3)}`);
-    console.log(`E^P developability: ${metricsP.developabilityPct.toFixed(1)}% (quality: ${metricsP.qualityScore.toFixed(2)})`);
-    console.log(
+    testLog('\n=== Energy Comparison (Perturbed Sphere) ===');
+    testLog(`E^P: ${eP.toExponential(3)}`);
+    testLog(`E^λ: ${eLambda.toExponential(3)}`);
+    testLog(`E^P developability: ${metricsP.developabilityPct.toFixed(1)}% (quality: ${metricsP.qualityScore.toFixed(2)})`);
+    testLog(
       `E^λ developability: ${metricsLambda.developabilityPct.toFixed(1)}% (quality: ${metricsLambda.qualityScore.toFixed(2)})`
     );
 

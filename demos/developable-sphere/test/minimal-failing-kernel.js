@@ -884,21 +884,21 @@ function anonymous(allValues,indices,gradientIndices,gradient
     grad__v5 += grad__v7; grad__v6 -= grad__v7;
     grad__v2 += grad__v4 * _v3 * Math.pow(_v2, _v3 - 1); grad__v3 += grad__v4 * Math.pow(_v2, _v3) * Math.log(_v2);
     grad__v0 += grad__v2; grad__v1 -= grad__v2;
-    if (gradientIndices[0] >= 0) gradient[gradientIndices[0]] += grad__v0;
-    if (gradientIndices[1] >= 0) gradient[gradientIndices[1]] += grad__v1;
-    if (gradientIndices[3] >= 0) gradient[gradientIndices[3]] += grad__v5;
-    if (gradientIndices[4] >= 0) gradient[gradientIndices[4]] += grad__v6;
-    if (gradientIndices[6] >= 0) gradient[gradientIndices[6]] += grad__v11;
-    if (gradientIndices[7] >= 0) gradient[gradientIndices[7]] += grad__v12;
-    if (gradientIndices[9] >= 0) gradient[gradientIndices[9]] += grad__v19;
-    if (gradientIndices[11] >= 0) gradient[gradientIndices[11]] += grad__v23;
-    if (gradientIndices[13] >= 0) gradient[gradientIndices[13]] += grad__v28;
-    if (gradientIndices[27] >= 0) gradient[gradientIndices[27]] += grad__v105;
-    if (gradientIndices[28] >= 0) gradient[gradientIndices[28]] += grad__v109;
-    if (gradientIndices[29] >= 0) gradient[gradientIndices[29]] += grad__v113;
-    if (gradientIndices[36] >= 0) gradient[gradientIndices[36]] += grad__v150;
-    if (gradientIndices[37] >= 0) gradient[gradientIndices[37]] += grad__v154;
-    if (gradientIndices[38] >= 0) gradient[gradientIndices[38]] += grad__v158;
+    gradient[gradientIndices[0]] += grad__v0;
+    gradient[gradientIndices[1]] += grad__v1;
+    gradient[gradientIndices[3]] += grad__v5;
+    gradient[gradientIndices[4]] += grad__v6;
+    gradient[gradientIndices[6]] += grad__v11;
+    gradient[gradientIndices[7]] += grad__v12;
+    gradient[gradientIndices[9]] += grad__v19;
+    gradient[gradientIndices[11]] += grad__v23;
+    gradient[gradientIndices[13]] += grad__v28;
+    gradient[gradientIndices[27]] += grad__v105;
+    gradient[gradientIndices[28]] += grad__v109;
+    gradient[gradientIndices[29]] += grad__v113;
+    gradient[gradientIndices[36]] += grad__v150;
+    gradient[gradientIndices[37]] += grad__v154;
+    gradient[gradientIndices[38]] += grad__v158;
     return _v293;
   
 }

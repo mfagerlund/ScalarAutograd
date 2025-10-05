@@ -24,6 +24,7 @@ export interface OptimizationOptions {
   captureInterval?: number; // Save mesh every N iterations
   onProgress?: (iteration: number, energy: number, history: TriangleMesh[]) => void;
   onCompileProgress?: (current: number, total: number, percent: number) => void;
+  onCompileComplete?: () => void; // Called when compilation finishes
   chunkSize?: number; // Number of iterations per chunk (for async optimization)
   energyType?: string; // Energy function name (from registry)
   useCompiled?: boolean; // Use compiled gradients (default: true)
@@ -216,7 +217,7 @@ export class DevelopableOptimizer {
       compiled = await CompiledResiduals.compileAsync(this.params, (p: Value[]) => {
         this.paramsToMesh(p);
         return energyFunction.computeResiduals(this.mesh);
-      }, 50); // Process 50 residuals at a time
+      }, 50, options.onCompileProgress); // Process 50 residuals at a time, with progress callback
 
       compilationTime = (Date.now() - compileStart) / 1000;
       kernelCount = compiled.kernelCount;
@@ -230,6 +231,14 @@ export class DevelopableOptimizer {
       // IMPORTANT: Restore mesh to initial state after compilation
       // (compilation modifies the mesh during graph building)
       this.paramsToMesh(this.params);
+
+      // Signal compilation complete
+      if (options.onCompileComplete) {
+        options.onCompileComplete();
+      }
+
+      // Yield to browser to update UI before starting optimization
+      await new Promise(resolve => setTimeout(resolve, 0));
     }
 
     let totalIterations = 0;
@@ -271,11 +280,6 @@ export class DevelopableOptimizer {
       currentEnergy = result.finalCost;
       lastResult = result;
 
-      // Always update progress numbers
-      if (onProgress) {
-        onProgress(totalIterations, currentEnergy, this.history);
-      }
-
       // Update mesh and capture for visualization less frequently
       this.paramsToMesh(this.params);
       if (totalIterations % captureInterval === 0) {
@@ -285,6 +289,14 @@ export class DevelopableOptimizer {
       if (verbose) {
         console.log(`Chunk complete: ${totalIterations}/${maxIterations}, energy=${currentEnergy.toExponential(3)}, reason: ${result.convergenceReason}`);
       }
+
+      // Always update progress numbers
+      if (onProgress) {
+        onProgress(totalIterations, currentEnergy, this.history);
+      }
+
+      // YIELD TO BROWSER IMMEDIATELY AFTER PROGRESS UPDATE
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Check if optimization converged or failed
       if (result.convergenceReason !== "Maximum iterations reached") {
@@ -305,9 +317,6 @@ export class DevelopableOptimizer {
           numFunctions,
         };
       }
-
-      // Yield to browser
-      await new Promise(resolve => setTimeout(resolve, 0));
     }
 
     this.paramsToMesh(this.params);

@@ -111,18 +111,17 @@ export function compileIndirectKernel(
     .map((input, i) => `const ${nodeToIndexVar.get(input)} = indices[${i}];`)
     .join('\n    ');
 
-  // Build gradient updates using gradientIndices mapping
-  // For each graph input that requires grad, ACCUMULATE to gradient[gradientIndices[inputIdx]]
-  // Note: gradientIndices[i] can be -1 for constants, so we check >= 0 at runtime
+  // Build gradient updates - only for inputs that require gradients
+  // Skip constants and any values with requiresGrad=false
   const gradientUpdates = graphInputs
     .map((input, inputIdx) => {
       if (!input.requiresGrad) {
-        return ''; // Skip constants
+        return null; // Skip - this input doesn't need gradients
       }
       const gradVar = `grad_${getVarName(input)}`;
-      return `if (gradientIndices[${inputIdx}] >= 0) gradient[gradientIndices[${inputIdx}]] += ${gradVar};`;
+      return `gradient[gradientIndices[${inputIdx}]] += ${gradVar};`;
     })
-    .filter(line => line !== '')
+    .filter((line): line is string => line !== null)
     .join('\n    ');
 
   const functionBody = `

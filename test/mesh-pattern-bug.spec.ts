@@ -8,10 +8,11 @@
  */
 
 import { V, Value, Vec3, CompiledResiduals } from '../src';
+import { testLog } from './testUtils';
 
 describe('Mesh Pattern Bug', () => {
   it('should handle cross product and dot product pattern', () => {
-    console.log('\n=== MESH PATTERN TEST ===\n');
+    testLog('\n=== MESH PATTERN TEST ===\n');
 
     // 9 parameters for 3 vertices (non-planar for different normals)
     const params = [
@@ -65,31 +66,31 @@ describe('Mesh Pattern Bug', () => {
     });
 
     // Graph backward
-    console.log(`Forward value: ${compilationGraph!.data.toExponential(6)}\n`);
+    testLog(`Forward value: ${compilationGraph!.data.toExponential(6)}\n`);
     params.forEach(p => p.grad = 0);
     compilationGraph!.backward();
     const graphGrads = params.map(p => p.grad);
 
-    console.log('Graph gradients (first 6):', graphGrads.slice(0, 6).map(g => g.toExponential(6)));
+    testLog('Graph gradients (first 6):', graphGrads.slice(0, 6).map(g => g.toExponential(6)));
 
     // Compiled backward
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
-    console.log('Compiled gradients (first 6):', compiledGrads.slice(0, 6).map(g => g.toExponential(6)));
+    testLog('Compiled gradients (first 6):', compiledGrads.slice(0, 6).map(g => g.toExponential(6)));
 
     // Compare
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`\nMax gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`\nMax gradient diff: ${maxDiff.toExponential(6)}`);
 
     for (let i = 0; i < Math.min(6, params.length); i++) {
       const diff = Math.abs(graphGrads[i] - compiledGrads[i]);
-      console.log(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
+      testLog(`  p[${i}]: graph=${graphGrads[i].toExponential(10)}, compiled=${compiledGrads[i].toExponential(10)}, diff=${diff.toExponential(6)}`);
     }
 
     if (maxDiff < 1e-10) {
-      console.log('\n✅ PASS - Gradients match!');
+      testLog('\n✅ PASS - Gradients match!');
     } else {
-      console.log('\n❌ FAIL - Gradients differ! BUG REPRODUCED!');
+      testLog('\n❌ FAIL - Gradients differ! BUG REPRODUCED!');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);

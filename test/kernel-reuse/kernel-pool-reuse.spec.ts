@@ -4,6 +4,7 @@
 
 import { V } from "../../src/V";
 import { CompiledFunctions } from "../../src/CompiledFunctions";
+import { testLog } from "../testUtils";
 
 describe('Kernel Pool Reuse', () => {
   it('should reuse kernels for identical distance constraints', () => {
@@ -36,10 +37,10 @@ describe('Kernel Pool Reuse', () => {
 
     const compiled = CompiledFunctions.compile(points, residuals);
 
-    console.log(`Distance constraints:`);
-    console.log(`  Residuals: ${compiled.numResiduals}`);
-    console.log(`  Kernels: ${compiled.kernelCount}`);
-    console.log(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
+    testLog(`Distance constraints:`);
+    testLog(`  Residuals: ${compiled.numResiduals}`);
+    testLog(`  Kernels: ${compiled.kernelCount}`);
+    testLog(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
 
     // Should only have 1 unique kernel (all distance constraints identical)
     expect(compiled.kernelCount).toBe(1);
@@ -63,10 +64,10 @@ describe('Kernel Pool Reuse', () => {
 
     const compiled = CompiledFunctions.compile(params, residuals);
 
-    console.log(`\nMixed operations:`);
-    console.log(`  Residuals: ${compiled.numResiduals}`);
-    console.log(`  Kernels: ${compiled.kernelCount}`);
-    console.log(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
+    testLog(`\nMixed operations:`);
+    testLog(`  Residuals: ${compiled.numResiduals}`);
+    testLog(`  Kernels: ${compiled.kernelCount}`);
+    testLog(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
 
     // Should have 2 unique kernels (add and mul)
     expect(compiled.kernelCount).toBe(2);
@@ -86,9 +87,9 @@ describe('Kernel Pool Reuse', () => {
 
     const compiled = CompiledFunctions.compile(params, residuals);
 
-    console.log(`\nConstant deduplication:`);
-    console.log(`  Residuals: ${compiled.numResiduals}`);
-    console.log(`  Kernels: ${compiled.kernelCount}`);
+    testLog(`\nConstant deduplication:`);
+    testLog(`  Residuals: ${compiled.numResiduals}`);
+    testLog(`  Kernels: ${compiled.kernelCount}`);
 
     // All have same structure (sub), but different constants
     // However, constants are deduped in registry!
@@ -153,10 +154,10 @@ describe('Kernel Pool Reuse', () => {
 
     const compiled = CompiledFunctions.compile(points, residuals);
 
-    console.log(`\nParallel line constraints:`);
-    console.log(`  Residuals: ${compiled.numResiduals}`);
-    console.log(`  Kernels: ${compiled.kernelCount}`);
-    console.log(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
+    testLog(`\nParallel line constraints:`);
+    testLog(`  Residuals: ${compiled.numResiduals}`);
+    testLog(`  Kernels: ${compiled.kernelCount}`);
+    testLog(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
 
     expect(compiled.kernelCount).toBeLessThan(5); // Should be ~1
     expect(compiled.numResiduals).toBe(100);
@@ -181,10 +182,10 @@ describe('Kernel Pool Reuse', () => {
 
     const compiled = CompiledFunctions.compile(params, residuals);
 
-    console.log(`\nCurve fitting:`);
-    console.log(`  Residuals: ${compiled.numResiduals}`);
-    console.log(`  Kernels: ${compiled.kernelCount}`);
-    console.log(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
+    testLog(`\nCurve fitting:`);
+    testLog(`  Residuals: ${compiled.numResiduals}`);
+    testLog(`  Kernels: ${compiled.kernelCount}`);
+    testLog(`  Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
 
     // All curve fitting residuals have same structure
     expect(compiled.kernelCount).toBe(1);

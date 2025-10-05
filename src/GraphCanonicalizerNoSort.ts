@@ -6,8 +6,14 @@ import { Value } from './Value';
  * Fast variant that doesn't sort children of commutative operations.
  * This means fewer kernel matches (add(a,b) != add(b,a)), but much faster.
  *
+ * Uses traverse counter optimization: instead of Map<Value, number> lookups,
+ * stamps each Value with a traverse ID for O(1) property access.
+ *
  * @internal
  */
+
+// Global traverse counter for memoization
+let globalTraverseId = 0;
 
 export interface CanonicalResult {
   /** Canonical string uniquely identifying graph structure */
@@ -31,25 +37,30 @@ export interface CanonicalResult {
 export function canonicalizeGraphNoSort(output: Value, params: Value[]): CanonicalResult {
   const t0 = performance.now();
   const leafToId = new Map<Value, number>();
-  const visited = new Set<Value>();
   const allLeaves = new Set<Value>();
 
-  // Phase 1: Discover all leaves in the graph
-  function discoverLeaves(node: Value) {
-    if (visited.has(node)) return;
-    visited.add(node);
+  // Increment global traverse ID for this canonicalization
+  const traverseId = ++globalTraverseId;
+
+  // Phase 1: Discover all leaves in the graph (iterative)
+  const discoverStack: Value[] = [output];
+  const discoverVisited = new Set<Value>();
+
+  while (discoverStack.length > 0) {
+    const node = discoverStack.pop()!;
+    if (discoverVisited.has(node)) continue;
+    discoverVisited.add(node);
 
     const prev = (node as any).prev as Value[];
     if (prev.length === 0) {
       allLeaves.add(node);
     } else {
       for (const child of prev) {
-        discoverLeaves(child);
+        discoverStack.push(child);
       }
     }
   }
 
-  discoverLeaves(output);
   const t1 = performance.now();
 
   // Phase 2: Assign IDs in stable, deterministic order
@@ -70,35 +81,77 @@ export function canonicalizeGraphNoSort(output: Value, params: Value[]): Canonic
   }
   const t2 = performance.now();
 
-  // Phase 3: Build canonical expression (NO SORTING!)
-  // NEW APPROACH: Build string lazily only when needed for final output
-  // During traversal, just assign node IDs
-  const nodeToId = new Map<Value, number>();
+  // Phase 3: Build canonical expression (NO SORTING, NO RECURSION!)
   let nextNodeId = nextId; // Start after leaf IDs
-  let getNodeIdCalls = 0;
-  let cacheHits = 0;
 
   // Build a compact representation: array of [nodeId, op, childIds...]
   const nodeExprs: Array<[number, string, number[]]> = [];
 
-  function getNodeId(node: Value): number {
-    getNodeIdCalls++;
-    // Check if it's a leaf
-    const leafId = leafToId.get(node);
-    if (leafId !== undefined) return leafId;
+  // Topological sort to process nodes bottom-up (iterative)
+  const topoOrder: Value[] = [];
+  const topoVisited = new Set<Value>();
+  const topoStack: Value[] = [output];
 
-    // Check if already processed
-    const existingId = nodeToId.get(node);
-    if (existingId !== undefined) {
-      cacheHits++;
-      return existingId;
+  while (topoStack.length > 0) {
+    const node = topoStack[topoStack.length - 1];
+
+    if (topoVisited.has(node)) {
+      topoStack.pop();
+      continue;
     }
 
-    // Assign new ID
-    const myId = nextNodeId++;
-    nodeToId.set(node, myId);
+    const prev = (node as any).prev as Value[];
+
+    // If leaf, mark visited and add to order
+    if (prev.length === 0 || leafToId.has(node)) {
+      topoVisited.add(node);
+      topoOrder.push(node);
+      topoStack.pop();
+      continue;
+    }
+
+    // Check if all children processed
+    let allChildrenProcessed = true;
+    for (let i = prev.length - 1; i >= 0; i--) {
+      if (!topoVisited.has(prev[i])) {
+        allChildrenProcessed = false;
+        topoStack.push(prev[i]);
+      }
+    }
+
+    if (allChildrenProcessed) {
+      topoVisited.add(node);
+      topoOrder.push(node);
+      topoStack.pop();
+    }
+  }
+
+  const tTraversal = performance.now();
+
+  // Process nodes in topological order (leaves first)
+  // Use traverse counter stamping instead of Map lookups
+  for (const node of topoOrder) {
+    const nodeAny = node as any;
+
+    // Skip if already processed in this traverse
+    if (nodeAny._canonTraverseId === traverseId) continue;
+
+    // Leaf node
+    const leafId = leafToId.get(node);
+    if (leafId !== undefined) {
+      nodeAny._canonTraverseId = traverseId;
+      nodeAny._canonNodeId = leafId;
+      continue;
+    }
 
     const prev = (node as any).prev as Value[];
+    if (prev.length === 0) continue; // Skip empty prev
+
+    // Assign new ID and stamp it
+    const myId = nextNodeId++;
+    nodeAny._canonTraverseId = traverseId;
+    nodeAny._canonNodeId = myId;
+
     let op = node._op || 'unknown';
 
     // Normalize pow(x, const_2) -> square(x)
@@ -107,50 +160,23 @@ export function canonicalizeGraphNoSort(output: Value, params: Value[]): Canonic
       const exponentId = leafToId.get(exponent);
       if (exponentId !== undefined && exponent.data === 2 && !exponent.requiresGrad) {
         op = 'square';
-        const childId = getNodeId(prev[0]);
+        const childId = (prev[0] as any)._canonNodeId;
         nodeExprs.push([myId, op, [childId]]);
-        return myId;
+        continue;
       }
     }
 
     if (op === 'sum') op = '+';
 
-    const isCommutative = op === '+' || op === '*' || op === 'min' || op === 'max';
-
-    if (isCommutative) {
-      // Flatten same-op children
-      const childIds: number[] = [];
-
-      function collectChildIds(n: Value) {
-        if (n._op === op) {
-          const nPrev = (n as any).prev as Value[];
-          for (let i = 0; i < nPrev.length; i++) {
-            collectChildIds(nPrev[i]);
-          }
-        } else {
-          childIds.push(getNodeId(n));
-        }
-      }
-
-      for (let i = 0; i < prev.length; i++) {
-        collectChildIds(prev[i]);
-      }
-
-      nodeExprs.push([myId, op, childIds]);
-      return myId;
-    }
-
-    // Non-commutative
-    const childIds = prev.map(p => getNodeId(p));
+    // All operations: just use children as-is (no flattening)
+    const childIds = prev.map(p => (p as any)._canonNodeId);
     nodeExprs.push([myId, op, childIds]);
-    return myId;
   }
 
-  const tTraversal = performance.now();
-  const outputId = getNodeId(output);
+  const outputId = (output as any)._canonNodeId;
   const tTraversalEnd = performance.now();
 
-  // Now build the string ONCE from the compact representation
+  // Build compact canonical signature from node expressions
   const tStringStart = performance.now();
 
   // Build leaf lookup for gradient flags (id -> 'g' suffix or '')
@@ -159,26 +185,20 @@ export function canonicalizeGraphNoSort(output: Value, params: Value[]): Canonic
     leafGradFlags.set(id, leaf.requiresGrad ? 'g' : '');
   }
 
-  // Build expression using node IDs (no string embedding!)
-  // Format: n123:(op,child1,child2) where children are IDs with optional 'g' or 'n' prefix
+  // Build expression parts (compact format)
   const exprParts: string[] = [];
-
   for (const [nodeId, op, childIds] of nodeExprs) {
     const childRefs = childIds.map(id => {
       const gradFlag = leafGradFlags.get(id);
       if (gradFlag !== undefined) {
-        // It's a leaf
         return `${id}${gradFlag}`;
       }
-      // It's a node - prefix with 'n'
       return `n${id}`;
     }).join(',');
     exprParts.push(`n${nodeId}:(${op},${childRefs})`);
   }
 
   const expr = exprParts.join(';');
-  const tStringEnd = performance.now();
-  const t3 = performance.now();
 
   // Phase 4: Build param list
   const paramList: string[] = [];
@@ -189,7 +209,12 @@ export function canonicalizeGraphNoSort(output: Value, params: Value[]): Canonic
     paramList.push(`${i}${gradFlag}`);
   }
 
-  const canon = `${paramList.join(',')}|${expr}`;
+  // For single-node leaf graphs, include the leaf ID
+  const finalExpr = expr.length > 0 ? expr : `${outputId}${leafGradFlags.get(outputId) || ''}`;
+  const canon = `${paramList.join(',')}|${finalExpr}`;
+
+  const tStringEnd = performance.now();
+  const t3 = performance.now();
 
   // Build reverse map
   const paramMap = new Map<Value, number>();
@@ -202,8 +227,7 @@ export function canonicalizeGraphNoSort(output: Value, params: Value[]): Canonic
   if (total > 10) {
     const traversalTime = tTraversalEnd - tTraversal;
     const stringBuildTime = tStringEnd - tStringStart;
-    const revisitRatio = getNodeIdCalls > 0 ? (cacheHits / getNodeIdCalls * 100).toFixed(1) : '0';
-    console.log(`[GraphCanonicalizerNoSort] Total: ${total.toFixed(0)}ms | Phase1(discover): ${(t1-t0).toFixed(0)}ms | Phase2(assign): ${(t2-t1).toFixed(0)}ms | Phase3(expr): ${(t3-t2).toFixed(0)}ms [traversal: ${traversalTime.toFixed(0)}ms, stringBuild: ${stringBuildTime.toFixed(0)}ms] | Phase4(build): ${(t4-t3).toFixed(0)}ms | Nodes: ${visited.size} | NodeExprs: ${nodeExprs.length} | getNodeId calls: ${getNodeIdCalls}, cacheHits: ${cacheHits} (${revisitRatio}%), keyLength: ${canon.length}`);
+    console.log(`[GraphCanonicalizerNoSort] Total: ${total.toFixed(0)}ms | Phase1(discover): ${(t1-t0).toFixed(0)}ms | Phase2(assign): ${(t2-t1).toFixed(0)}ms | Phase3(expr): ${(t3-t2).toFixed(0)}ms [traversal: ${traversalTime.toFixed(0)}ms, stringBuild: ${stringBuildTime.toFixed(0)}ms] | Phase4(build): ${(t4-t3).toFixed(0)}ms | Nodes: ${discoverVisited.size} | NodeExprs: ${nodeExprs.length} | keyLength: ${canon.length}`);
   }
 
   return { canon, paramMap };

@@ -113,18 +113,41 @@ export class CompiledFunctions {
   }
 
   /**
+   * Count nodes in a computation graph.
+   * @internal
+   */
+  private static countGraphNodes(output: Value): number {
+    const visited = new Set<Value>();
+
+    function traverse(node: Value) {
+      if (visited.has(node)) return;
+      visited.add(node);
+
+      const prev = (node as any).prev as Value[];
+      for (const child of prev) {
+        traverse(child);
+      }
+    }
+
+    traverse(output);
+    return visited.size;
+  }
+
+  /**
    * Compile scalar functions for reuse with kernel sharing (async version).
    * Yields to browser between chunks to prevent UI freezing on large problems.
    *
    * @param params - Parameter Values (must have .paramName set)
    * @param functionsFn - Function that builds scalar outputs from params
    * @param chunkSize - Number of functions to process per chunk (default: 50)
+   * @param onProgress - Optional callback for progress updates (current, total, percent)
    * @returns Compiled functions ready for optimization
    */
   static async compileAsync(
     params: Value[],
     functionsFn: (params: Value[]) => Value[],
-    chunkSize: number = 50
+    chunkSize: number = 50,
+    onProgress?: (current: number, total: number, percent: number) => void
   ): Promise<CompiledFunctions> {
     // Ensure params have names for compilation
     params.forEach((p, i) => {
@@ -150,6 +173,7 @@ export class CompiledFunctions {
     const functionDescriptors: FunctionDescriptor[] = [];
     const totalChunks = Math.ceil(functionValues.length / chunkSize);
     let lastLoggedPercent = 0;
+    let totalGraphSize = 0;
 
     for (let i = 0; i < functionValues.length; i += chunkSize) {
       const chunkEnd = Math.min(i + chunkSize, functionValues.length);
@@ -161,8 +185,18 @@ export class CompiledFunctions {
         lastLoggedPercent = percentComplete;
       }
 
+      // Call progress callback
+      if (onProgress) {
+        onProgress(chunkEnd, functionValues.length, percentComplete);
+      }
+
       for (let j = i; j < chunkEnd; j++) {
         const f = functionValues[j];
+
+        // Count graph size (number of nodes)
+        const graphSize = this.countGraphNodes(f);
+        totalGraphSize += graphSize;
+
         const descriptor = kernelPool.getOrCompile(f, params, registry);
         const inputIndices = extractInputIndices(f, registry);
         const gradientIndices = inputIndices.map(regId =>
@@ -180,7 +214,8 @@ export class CompiledFunctions {
       await new Promise(resolve => setTimeout(resolve, 0));
     }
 
-    console.log(`[CompiledFunctions] Complete: ${kernelPool.kernels.size} unique kernels, ${(functionValues.length / kernelPool.kernels.size).toFixed(1)}x reuse`);
+    const avgGraphSize = Math.round(totalGraphSize / functionValues.length);
+    console.log(`[CompiledFunctions] Complete: ${kernelPool.kernels.size} unique kernels, ${(functionValues.length / kernelPool.kernels.size).toFixed(1)}x reuse (${kernelPool.canonMode}, avg ${avgGraphSize} nodes)`);
 
     return new CompiledFunctions(registry, kernelPool, functionDescriptors, params.length);
   }

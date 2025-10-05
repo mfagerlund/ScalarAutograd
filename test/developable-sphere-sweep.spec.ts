@@ -11,6 +11,7 @@ import { V } from '../src/V';
 import { Value, Vec3 } from '../src/Value';
 import { lbfgs } from '../src/LBFGS';
 import { CompiledFunctions } from '../src/CompiledFunctions';
+import { testLog } from './testUtils';
 
 // Skip this test by default unless explicitly requested
 const shouldRun = process.env.FORCE_SWEEP === '1';
@@ -474,7 +475,7 @@ interface OptimizationResult {
 async function runOptimization(config: OptimizationConfig): Promise<OptimizationResult> {
   const { subdivisions, maxIterations, gradientTolerance, energyFunction } = config;
 
-  console.log(`\nTesting: ${energyFunction.name}, subdiv=${subdivisions}, maxIter=${maxIterations}, gradTol=${gradientTolerance}`);
+  testLog(`\nTesting: ${energyFunction.name}, subdiv=${subdivisions}, maxIter=${maxIterations}, gradTol=${gradientTolerance}`);
 
   const startTime = performance.now();
 
@@ -488,7 +489,7 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
   }
 
   // Compile residuals for all energy types
-  console.log(`  Compiling residuals...`);
+  testLog(`  Compiling residuals...`);
   const compiled = CompiledFunctions.compile(params, (p: Value[]) => {
     // Update mesh with parameters
     const numVertices = sphere.vertices.length;
@@ -501,7 +502,7 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
     return energyFunction.computeResiduals(sphere);
   });
 
-  console.log(`  Compiled: ${compiled.kernelCount} kernels, ${compiled.kernelReuseFactor.toFixed(1)}x reuse`);
+  testLog(`  Compiled: ${compiled.kernelCount} kernels, ${compiled.kernelReuseFactor.toFixed(1)}x reuse`);
 
   // IMPORTANT: Restore mesh to initial state after compilation
   // (compilation modifies the mesh during graph building)
@@ -512,14 +513,14 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
     sphere.setVertexPosition(i, new Vec3(x, y, z));
   }
 
-  console.log(`  Starting L-BFGS optimization...`);
+  testLog(`  Starting L-BFGS optimization...`);
   // Run optimization
   const result = lbfgs(params, compiled, {
     maxIterations,
     gradientTolerance,
     verbose: false,
   });
-  console.log(`  L-BFGS finished: ${result.convergenceReason}`);
+  testLog(`  L-BFGS finished: ${result.convergenceReason}`);
 
   // Update final mesh
   const numVertices = sphere.vertices.length;
@@ -550,11 +551,11 @@ async function runOptimization(config: OptimizationConfig): Promise<Optimization
     seamVertices: classification.seamVertices.length,
   };
 
-  console.log(`  ✓ Developable: ${(developableRatio * 100).toFixed(2)}%`);
-  console.log(`    Energy: ${result.finalCost.toExponential(3)}`);
-  console.log(`    Iterations: ${result.iterations}`);
-  console.log(`    Convergence: ${result.convergenceReason}`);
-  console.log(`    Time: ${timeMs.toFixed(0)}ms`);
+  testLog(`  ✓ Developable: ${(developableRatio * 100).toFixed(2)}%`);
+  testLog(`    Energy: ${result.finalCost.toExponential(3)}`);
+  testLog(`    Iterations: ${result.iterations}`);
+  testLog(`    Convergence: ${result.convergenceReason}`);
+  testLog(`    Time: ${timeMs.toFixed(0)}ms`);
 
   return stats;
 }
@@ -574,10 +575,10 @@ describe('Developable Sphere Optimization', () => {
 
     const results: OptimizationResult[] = [];
 
-    console.log(`\n${'='.repeat(60)}`);
-    console.log('PARAMETER SWEEP - DEVELOPABLE SPHERE');
-    console.log(`Testing ${configs.length} configurations`);
-    console.log('='.repeat(60));
+    testLog(`\n${'='.repeat(60)}`);
+    testLog('PARAMETER SWEEP - DEVELOPABLE SPHERE');
+    testLog(`Testing ${configs.length} configurations`);
+    testLog('='.repeat(60));
 
     for (const config of configs) {
       try {
@@ -589,31 +590,31 @@ describe('Developable Sphere Optimization', () => {
     }
 
     // Analysis
-    console.log(`\n${'='.repeat(60)}`);
-    console.log('RESULTS SUMMARY');
-    console.log('='.repeat(60));
+    testLog(`\n${'='.repeat(60)}`);
+    testLog('RESULTS SUMMARY');
+    testLog('='.repeat(60));
 
     const sorted = [...results].sort((a, b) => b.developableRatio - a.developableRatio);
 
-    console.log('\nTop 5 configurations:');
+    testLog('\nTop 5 configurations:');
     sorted.slice(0, 5).forEach((r, i) => {
-      console.log(`\n${i + 1}. ${(r.developableRatio * 100).toFixed(2)}% developable`);
-      console.log(`   Energy: ${r.config.energyFunction.name}, subdiv=${r.config.subdivisions}, maxIter=${r.config.maxIterations}, gradTol=${r.config.gradientTolerance}`);
-      console.log(`   Final Energy: ${r.finalEnergy.toExponential(3)}, Time: ${r.timeMs.toFixed(0)}ms`);
-      console.log(`   Convergence: ${r.convergenceReason}`);
+      testLog(`\n${i + 1}. ${(r.developableRatio * 100).toFixed(2)}% developable`);
+      testLog(`   Energy: ${r.config.energyFunction.name}, subdiv=${r.config.subdivisions}, maxIter=${r.config.maxIterations}, gradTol=${r.config.gradientTolerance}`);
+      testLog(`   Final Energy: ${r.finalEnergy.toExponential(3)}, Time: ${r.timeMs.toFixed(0)}ms`);
+      testLog(`   Convergence: ${r.convergenceReason}`);
     });
 
-    console.log('\n\nBest per subdivision level:');
+    testLog('\n\nBest per subdivision level:');
     for (const subdiv of [2, 3, 4]) {
       const best = sorted.find(r => r.config.subdivisions === subdiv);
       if (best) {
-        console.log(`\nSubdivision ${subdiv} (${best.vertices} vertices):`);
-        console.log(`  ${(best.developableRatio * 100).toFixed(2)}% developable`);
-        console.log(`  maxIter=${best.config.maxIterations}, gradTol=${best.config.gradientTolerance}`);
-        console.log(`  Time: ${best.timeMs.toFixed(0)}ms`);
+        testLog(`\nSubdivision ${subdiv} (${best.vertices} vertices):`);
+        testLog(`  ${(best.developableRatio * 100).toFixed(2)}% developable`);
+        testLog(`  maxIter=${best.config.maxIterations}, gradTol=${best.config.gradientTolerance}`);
+        testLog(`  Time: ${best.timeMs.toFixed(0)}ms`);
       }
     }
 
-    console.log('\n' + '='.repeat(60));
+    testLog('\n' + '='.repeat(60));
   }, { timeout: 600000 }); // 10 minute timeout
 });

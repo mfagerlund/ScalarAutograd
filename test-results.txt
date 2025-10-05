@@ -1,0 +1,919 @@
+
+> scalar-autograd@0.1.8 test
+> vitest run --globals
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Dev/ScalarAutograd[39m
+
+ [31m❯[39m test/GraphHashCanonicalizer.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 73[2mms[22m[39m
+[31m   [31m×[31m GraphHashCanonicalizer[2m > [22mshould produce same hash for commutative operations regardless of order[39m[32m 39[2mms[22m[39m
+[31m     → expected '0g,1g,2g|3305a2aa0f8ac204' to be '0g,1g,2g|12b8ef2ad149c244' // Object.is equality[39m
+[31m   [31m×[31m GraphHashCanonicalizer[2m > [22mshould produce same hash for mul commutativity[39m[32m 6[2mms[22m[39m
+[31m     → expected '0g,1g,2g|3205a03d0f8ac205' to be '0g,1g,2g|01589bddcf4c9d0d' // Object.is equality[39m
+   [32m✓[39m GraphHashCanonicalizer[2m > [22mshould produce different hashes for non-commutative operations[32m 2[2mms[22m[39m
+   [32m✓[39m GraphHashCanonicalizer[2m > [22mshould produce different hashes for sub operations[32m 2[2mms[22m[39m
+[31m   [31m×[31m GraphHashCanonicalizer[2m > [22mshould handle mixed commutative and non-commutative operations[39m[32m 5[2mms[22m[39m
+[31m     → expected '0g,1g,2g|bf1d948b53f8e265' to be '0g,1g,2g|fe8f35cb919f8f5d' // Object.is equality[39m
+[31m   [31m×[31m GraphHashCanonicalizer[2m > [22mshould handle complex nested expressions[39m[32m 3[2mms[22m[39m
+[31m     → expected '0g,1g,2g|735a6051f906cfeb' to be '0g,1g,2g|08865ab1dab1df33' // Object.is equality[39m
+   [32m✓[39m GraphHashCanonicalizer[2m > [22mshould handle gradient flags correctly[32m 1[2mms[22m[39m
+   [32m✓[39m GraphHashCanonicalizer[2m > [22mshould produce same hash as operations are reused[32m 1[2mms[22m[39m
+[31m   [31m×[31m GraphHashCanonicalizer[2m > [22mshould match the position independence property for deeply nested adds[39m[32m 6[2mms[22m[39m
+[31m     → expected '0g,1g,2g,3g|1dce21000658daf0' to be '0g,1g,2g,3g|4b48fac07924ac38' // Object.is equality[39m
+   [32m✓[39m GraphHashCanonicalizer[2m > [22mshould handle debug mode[32m 3[2mms[22m[39m
+ [31m❯[39m test/mesh-pattern-bug.spec.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 48[2mms[22m[39m
+[31m   [31m×[31m Mesh Pattern Bug[2m > [22mshould handle cross product and dot product pattern[39m[32m 43[2mms[22m[39m
+[31m     → Division by zero or near-zero encountered in div: denominator=1.3877787807814457e-17[39m
+ [32m✓[39m test/CircleFormation.comparison.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 5076[2mms[22m[39m
+   [33m[2m✓[22m[39m Circle Formation - All Optimizers Comparison[2m > [22mshould compare NonlinearLeastSquares, SGD, Adam, and AdamW on circle fitting [33m 5070[2mms[22m[39m
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCombinatorial Energy (E^P)[2m > [22m[2mshould reduce energy during optimization
+[22m[39mUsing Bimodal Variance (Spatial Midpoint) energy (compiled)...
+[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 63ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 62ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5323
+[KernelPool] Canonicalization took 63ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 13)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould run multiple iterations and reduce energy
+[22m[39mUsing Eigenvalue Proxy (Trace - Frobenius) energy (compiled)...
+[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 11ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 10ms [traversal: 4ms, stringBuild: 5ms] | Phase4(build): 0ms | Nodes: 454 | NodeExprs: 359 | keyLength: 6946
+[KernelPool] Canonicalization took 12ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n95:(-,7g,1g);n96:(-,5g,2g);n97:(*,n96,n95);n98:(-,8g,2g);n99:(-,4g,1g);n100:(*,n99,n98);n101:(-,n97,n100);n102:(square,n101);n103:(-,3g,0g);n104:(*,n103,n98);n105:(-,6g,0g);n106:(*,n96,n105);n107:(-,n104,n106);n108:(square,n1...
+[GraphCanonicalizerNoSort] Total: 10ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 9ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 454 | NodeExprs: 359 | keyLength: 6946
+[KernelPool] Canonicalization took 11ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n95:(-,7g,1g);n96:(-,5g,2g);n97:(*,n96,n95);n98:(-,8g,2g);n99:(-,4g,1g);n100:(*,n99,n98);n101:(-,n97,n100);n102:(square,n101);n103:(-,3g,0g);n104:(*,n103,n98);n105:(-,6g,0g);n106:(*,n96,n105);n107:(-,n104,n106);n108:(square,n1...
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCombinatorial Energy (E^P)[2m > [22m[2mshould reduce energy during optimization
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+[GraphCanonicalizerNoSort] Total: 128ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 128ms [traversal: 0ms, stringBuild: 127ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 129ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 14)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+[KernelPool] Canonicalization took 136ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 18)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,13g,4g);n90:(-,11g,5g);n91:(*,n90,n89);n92:(-,14g,5g);n93:(-,10g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,9g,3g);n98:(*,n97,n92);n99:(-,12g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+[GraphCanonicalizerNoSort] Total: 89ms | Phase1(discover): 74ms | Phase2(assign): 13ms | Phase3(expr): 2ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5323
+[KernelPool] Canonicalization took 95ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 20)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39mUsing Bimodal Variance (Spatial Midpoint) energy (compiled)...
+[CompiledFunctions] Compiling 642 functions...
+[GraphCanonicalizerNoSort] Total: 61ms | Phase1(discover): 59ms | Phase2(assign): 0ms | Phase3(expr): 2ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 63ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 1)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+[GraphCanonicalizerNoSort] Total: 140ms | Phase1(discover): 138ms | Phase2(assign): 0ms | Phase3(expr): 1ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 140ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould run multiple iterations and reduce energy
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+[GraphCanonicalizerNoSort] Total: 88ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 87ms [traversal: 1ms, stringBuild: 86ms] | Phase4(build): 0ms | Nodes: 454 | NodeExprs: 359 | keyLength: 6961
+[KernelPool] Canonicalization took 88ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 20)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n95:(-,7g,1g);n96:(-,14g,2g);n97:(*,n96,n95);n98:(-,8g,2g);n99:(-,13g,1g);n100:(*,n99,n98);n101:(-,n97,n100);n102:(square,n101);n103:(-,12g,0g);n104:(*,n103,n98);n105:(-,6g,0g);n106:(*,n96,n105);n107:(-,n104,n106);n108:(square...
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCombinatorial Energy (E^P)[2m > [22m[2mshould reduce energy during optimization
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+[GraphCanonicalizerNoSort] Total: 176ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 176ms [traversal: 0ms, stringBuild: 175ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5323
+[KernelPool] Canonicalization took 176ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 22)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+[GraphCanonicalizerNoSort] Total: 25ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 24ms [traversal: 0ms, stringBuild: 24ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 25ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 24)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,13g,1g);n90:(-,11g,2g);n91:(*,n90,n89);n92:(-,14g,2g);n93:(-,10g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,9g,0g);n98:(*,n97,n92);n99:(-,12g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+[GraphCanonicalizerNoSort] Total: 115ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 115ms [traversal: 0ms, stringBuild: 114ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5338
+[KernelPool] Canonicalization took 115ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 24)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,16g,4g);n90:(-,14g,5g);n91:(*,n90,n89);n92:(-,17g,5g);n93:(-,13g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,3g);n98:(*,n97,n92);n99:(-,15g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n...
+[GraphCanonicalizerNoSort] Total: 15ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 14ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 16ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 24)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,13g,4g);n90:(-,11g,5g);n91:(*,n90,n89);n92:(-,14g,5g);n93:(-,10g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,9g,3g);n98:(*,n97,n92);n99:(-,12g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+
+[90mstdout[2m | test/variance-developability.spec.ts[2m > [22m[2mVariance Developability Test[2m > [22m[2mshould increase developability percentage
+[22m[39mUsing Bimodal Variance (Spatial Midpoint) energy (compiled)...
+[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 59ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 59ms [traversal: 0ms, stringBuild: 58ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 60ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+[GraphCanonicalizerNoSort] Total: 14ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 13ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 14ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+[GraphCanonicalizerNoSort] Total: 89ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 89ms [traversal: 0ms, stringBuild: 88ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5320
+[KernelPool] Canonicalization took 89ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,5g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,4g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,3g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:(+...
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCombinatorial Energy (E^P)[2m > [22m[2mshould reduce energy during optimization
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould run multiple iterations and reduce energy
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+[GraphCanonicalizerNoSort] Total: 84ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 83ms [traversal: 0ms, stringBuild: 82ms] | Phase4(build): 0ms | Nodes: 454 | NodeExprs: 359 | keyLength: 6949
+[KernelPool] Canonicalization took 84ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 22)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n95:(-,7g,1g);n96:(-,14g,2g);n97:(*,n96,n95);n98:(-,8g,2g);n99:(-,13g,1g);n100:(*,n99,n98);n101:(-,n97,n100);n102:(square,n101);n103:(-,12g,0g);n104:(*,n103,n98);n105:(-,6g,0g);n106:(*,n96,n105);n107:(-,n104,n106);n108:(square...
+[GraphCanonicalizerNoSort] Total: 118ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 117ms [traversal: 1ms, stringBuild: 116ms] | Phase4(build): 0ms | Nodes: 454 | NodeExprs: 359 | keyLength: 6963
+[KernelPool] Canonicalization took 118ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 23)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n95:(-,13g,4g);n96:(-,11g,5g);n97:(*,n96,n95);n98:(-,14g,5g);n99:(-,10g,4g);n100:(*,n99,n98);n101:(-,n97,n100);n102:(square,n101);n103:(-,9g,3g);n104:(*,n103,n98);n105:(-,12g,3g);n106:(*,n96,n105);n107:(-,n104,n106);n108:(squa...
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould run multiple iterations and reduce energy
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[GraphCanonicalizerNoSort] Total: 68ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 68ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5320
+[KernelPool] Canonicalization took 69ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 12)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,5g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,4g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,3g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:(+...
+[GraphCanonicalizerNoSort] Total: 93ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 92ms [traversal: 91ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5320
+[KernelPool] Canonicalization took 93ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 12)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,5g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,4g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,3g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:(+...
+[GraphCanonicalizerNoSort] Total: 50ms | Phase1(discover): 50ms | Phase2(assign): 0ms | Phase3(expr): 1ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5320
+[KernelPool] Canonicalization took 51ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 12)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,5g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,4g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,3g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:(+...
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCombinatorial Energy (E^P)[2m > [22m[2mshould reduce energy during optimization
+[22m[39mCompiled: 162 functions → 27 kernels, 6.0x reuse in 2.83s
+L-BFGS Optimization
+Initial: cost=34.798930, ||∇||=0.00e+0
+Chunk complete: 0/50, energy=3.480e+1, reason: Initial gradient below tolerance
+
+[90mstdout[2m | test/variance-developability.spec.ts[2m > [22m[2mVariance Developability Test[2m > [22m[2mshould increase developability percentage
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+[GraphCanonicalizerNoSort] Total: 128ms | Phase1(discover): 100ms | Phase2(assign): 0ms | Phase3(expr): 29ms [traversal: 2ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5331
+[KernelPool] Canonicalization took 129ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 16)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,10g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,11g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,9g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:...
+[GraphCanonicalizerNoSort] Total: 101ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 101ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5333
+[KernelPool] Canonicalization took 101ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 20)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,10g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,11g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,9g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:...
+[KernelPool] Canonicalization took 10ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 21)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,10g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,11g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,9g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:...
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[CompiledFunctions] Processing 200/642 (31%)
+
+[90mstdout[2m | demos/developable-sphere/test/planeAlignment.test.ts[2m > [22m[2mDifferentiablePlaneAlignment - Compiled vs Uncompiled[2m > [22m[2mshould produce identical residuals (compiled vs uncompiled)
+[22m[39m
+Test mesh: 42 vertices, 80 faces
+Uncompiled residuals: 42 values
+Sample residuals: [7.292e-2, 7.292e-2, 7.292e-2, 7.292e-2, 7.292e-2]
+[CompiledFunctions] Compiling 42 functions...
+[CompiledFunctions] Processing function 0/42
+[KernelPool] Canonicalization took 14ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 1)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,0g);n128:(square,n127);n129:(-,7g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,3g,0g);n138:(square,n137);n139:(-,4g,1g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 15ms | Phase1(discover): 9ms | Phase2(assign): 0ms | Phase3(expr): 6ms [traversal: 1ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 16ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 3)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,0g);n128:(square,n127);n129:(-,7g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,3g,0g);n138:(square,n137);n139:(-,4g,1g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 17ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 16ms [traversal: 1ms, stringBuild: 14ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 18ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 3)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,3g,0g);n128:(square,n127);n129:(-,4g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,5g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,6g,0g);n138:(square,n137);n139:(-,7g,1g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 76ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 75ms [traversal: 1ms, stringBuild: 73ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 76ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,3g,0g);n128:(square,n127);n129:(-,4g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,5g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,6g,0g);n138:(square,n137);n139:(-,7g,1g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 109ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 108ms [traversal: 105ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17734
+[KernelPool] Canonicalization took 109ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,0g,9g);n154:(square,n153);n155:(-,1g,10g);n156:(square,n155);n157:(+,n156,n154);n158:(-,2g,11g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,6g,9g);n164:(square,n163);n165:(-,7...
+[GraphCanonicalizerNoSort] Total: 10ms | Phase1(discover): 1ms | Phase2(assign): 1ms | Phase3(expr): 8ms [traversal: 1ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17734
+[KernelPool] Canonicalization took 10ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,0g,9g);n154:(square,n153);n155:(-,1g,10g);n156:(square,n155);n157:(+,n156,n154);n158:(-,2g,11g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,6g,9g);n164:(square,n163);n165:(-,7...
+[KernelPool] Canonicalization took 98ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 14)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,3g,9g);n154:(square,n153);n155:(-,4g,10g);n156:(square,n155);n157:(+,n156,n154);n158:(-,5g,11g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,6g,9g);n164:(square,n163);n165:(-,7...
+[GraphCanonicalizerNoSort] Total: 10ms | Phase1(discover): 2ms | Phase2(assign): 0ms | Phase3(expr): 8ms [traversal: 1ms, stringBuild: 5ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17749
+[KernelPool] Canonicalization took 10ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 16)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,0g,12g);n154:(square,n153);n155:(-,1g,13g);n156:(square,n155);n157:(+,n156,n154);n158:(-,2g,14g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,6g,12g);n164:(square,n163);n165:(-...
+[GraphCanonicalizerNoSort] Total: 78ms | Phase1(discover): 56ms | Phase2(assign): 0ms | Phase3(expr): 22ms [traversal: 16ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17707
+[KernelPool] Canonicalization took 78ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 17)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,0g,6g);n154:(square,n153);n155:(-,1g,7g);n156:(square,n155);n157:(+,n156,n154);n158:(-,2g,8g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,12g,6g);n164:(square,n163);n165:(-,13...
+[GraphCanonicalizerNoSort] Total: 22ms | Phase1(discover): 2ms | Phase2(assign): 0ms | Phase3(expr): 19ms [traversal: 2ms, stringBuild: 12ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17749
+[KernelPool] Canonicalization took 22ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 18)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,6g,12g);n154:(square,n153);n155:(-,7g,13g);n156:(square,n155);n157:(+,n156,n154);n158:(-,8g,14g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,0g,12g);n164:(square,n163);n165:(-...
+[GraphCanonicalizerNoSort] Total: 93ms | Phase1(discover): 85ms | Phase2(assign): 0ms | Phase3(expr): 8ms [traversal: 2ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17752
+[KernelPool] Canonicalization took 93ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 18)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,3g,15g);n154:(square,n153);n155:(-,4g,16g);n156:(square,n155);n157:(+,n156,n154);n158:(-,5g,17g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,12g,15g);n164:(square,n163);n165:(...
+[GraphCanonicalizerNoSort] Total: 27ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 25ms [traversal: 2ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17749
+[KernelPool] Canonicalization took 27ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 20)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,6g,12g);n154:(square,n153);n155:(-,7g,13g);n156:(square,n155);n157:(+,n156,n154);n158:(-,8g,14g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,0g,12g);n164:(square,n163);n165:(-...
+Compiled: 21 kernels, 2.0x reuse
+Compiled residuals: 42 values
+Sample residuals: [7.292e-2, 7.292e-2, 7.292e-2, 7.292e-2, 7.292e-2]
+✓ Residuals match!
+
+
+[90mstdout[2m | test/variance-developability.spec.ts[2m > [22m[2mVariance Developability Test[2m > [22m[2mshould increase developability percentage
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+[GraphCanonicalizerNoSort] Total: 123ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 123ms [traversal: 1ms, stringBuild: 121ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5338
+[KernelPool] Canonicalization took 124ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 21)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,16g,4g);n90:(-,14g,5g);n91:(*,n90,n89);n92:(-,17g,5g);n93:(-,13g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,3g);n98:(*,n97,n92);n99:(-,15g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n...
+[GraphCanonicalizerNoSort] Total: 53ms | Phase1(discover): 51ms | Phase2(assign): 0ms | Phase3(expr): 1ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 53ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 24)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+[GraphCanonicalizerNoSort] Total: 160ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 159ms [traversal: 0ms, stringBuild: 158ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 160ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 25)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,16g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,17g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,15g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/variance-developability.spec.ts[2m > [22m[2mVariance Developability Test[2m > [22m[2mshould increase developability percentage
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[GraphCanonicalizerNoSort] Total: 89ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 88ms [traversal: 0ms, stringBuild: 88ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5323
+[KernelPool] Canonicalization took 89ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 27)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/variance-developability.spec.ts[2m > [22m[2mVariance Developability Test[2m > [22m[2mshould increase developability percentage
+[22m[39mCompiled: 162 functions → 27 kernels, 6.0x reuse in 3.28s
+L-BFGS Optimization
+Initial: cost=5.159564, ||∇||=0.00e+0
+Chunk complete: 0/50, energy=5.160e+0, reason: Initial gradient below tolerance
+
+ [32m✓[39m test/variance-developability.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 5229[2mms[22m[39m
+   [33m[2m✓[22m[39m Variance Developability Test[2m > [22mshould increase developability percentage [33m 5223[2mms[22m[39m
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[CompiledFunctions] Processing 400/642 (62%)
+[GraphCanonicalizerNoSort] Total: 72ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 72ms [traversal: 71ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 72ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 28)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+[GraphCanonicalizerNoSort] Total: 11ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 10ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 11ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 28)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,10g,1g);n90:(-,17g,2g);n91:(*,n90,n89);n92:(-,11g,2g);n93:(-,16g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,15g,0g);n98:(*,n97,n92);n99:(-,9g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+[GraphCanonicalizerNoSort] Total: 80ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 79ms [traversal: 79ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 80ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 28)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,16g,4g);n90:(-,14g,5g);n91:(*,n90,n89);n92:(-,17g,5g);n93:(-,13g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,3g);n98:(*,n97,n92);n99:(-,15g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n...
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould run multiple iterations and reduce energy
+[22m[39mCompiled: 162 functions → 27 kernels, 6.0x reuse in 3.31s
+L-BFGS Optimization
+Initial: cost=3.053789, ||∇||=1.20e+1
+Iteration 1: cost=1.844507, ||∇||=8.40e+0, α=0.0625, history=1
+Iteration 2: cost=0.852455, ||∇||=4.91e+0, α=1.0000, history=2
+Iteration 3: cost=0.484716, ||∇||=3.38e+0, α=1.0000, history=3
+Iteration 4: cost=0.306321, ||∇||=2.83e+0, α=1.0000, history=4
+Iteration 5: cost=0.207409, ||∇||=2.12e+0, α=1.0000, history=5
+Iteration 6: cost=0.142775, ||∇||=1.74e+0, α=1.0000, history=6
+Iteration 7: cost=0.107688, ||∇||=1.19e+0, α=1.0000, history=7
+Iteration 8: cost=0.088594, ||∇||=8.39e-1, α=1.0000, history=8
+Iteration 9: cost=0.075338, ||∇||=7.39e-1, α=1.0000, history=9
+Iteration 10: cost=0.061038, ||∇||=7.74e-1, α=1.0000, history=10
+Iteration 11: cost=0.050585, ||∇||=8.36e-1, α=1.0000, history=10
+Iteration 12: cost=0.039738, ||∇||=7.41e-1, α=1.0000, history=10
+Iteration 13: cost=0.031666, ||∇||=5.53e-1, α=1.0000, history=10
+Iteration 14: cost=0.027606, ||∇||=5.77e-1, α=1.0000, history=10
+Iteration 15: cost=0.023793, ||∇||=3.81e-1, α=1.0000, history=10
+Iteration 16: cost=0.020294, ||∇||=3.48e-1, α=1.0000, history=10
+Iteration 17: cost=0.017698, ||∇||=3.41e-1, α=1.0000, history=10
+Iteration 18: cost=0.015142, ||∇||=3.53e-1, α=1.0000, history=10
+Iteration 19: cost=0.012868, ||∇||=3.87e-1, α=1.0000, history=10
+Iteration 20: cost=0.011126, ||∇||=2.69e-1, α=1.0000, history=10
+Iteration 21: cost=0.009833, ||∇||=2.66e-1, α=1.0000, history=10
+Iteration 22: cost=0.008772, ||∇||=2.26e-1, α=1.0000, history=10
+Iteration 23: cost=0.007713, ||∇||=2.08e-1, α=1.0000, history=10
+Iteration 24: cost=0.006720, ||∇||=2.10e-1, α=1.0000, history=10
+Iteration 25: cost=0.005859, ||∇||=2.03e-1, α=1.0000, history=10
+Iteration 26: cost=0.005095, ||∇||=1.87e-1, α=1.0000, history=10
+Iteration 27: cost=0.004394, ||∇||=1.85e-1, α=1.0000, history=10
+Iteration 28: cost=0.003868, ||∇||=1.63e-1, α=1.0000, history=10
+Iteration 29: cost=0.003415, ||∇||=1.20e-1, α=1.0000, history=10
+Iteration 30: cost=0.003038, ||∇||=1.20e-1, α=1.0000, history=10
+Iteration 31: cost=0.002651, ||∇||=1.21e-1, α=1.0000, history=10
+Iteration 32: cost=0.002324, ||∇||=1.24e-1, α=1.0000, history=10
+Iteration 33: cost=0.001992, ||∇||=1.18e-1, α=1.0000, history=10
+Iteration 34: cost=0.001690, ||∇||=9.55e-2, α=1.0000, history=10
+Iteration 35: cost=0.001469, ||∇||=1.26e-1, α=1.0000, history=10
+Iteration 36: cost=0.001253, ||∇||=9.12e-2, α=1.0000, history=10
+Iteration 37: cost=0.001090, ||∇||=7.62e-2, α=1.0000, history=10
+Iteration 38: cost=0.000931, ||∇||=7.96e-2, α=1.0000, history=10
+Iteration 39: cost=0.000797, ||∇||=8.21e-2, α=1.0000, history=10
+Iteration 40: cost=0.000699, ||∇||=5.79e-2, α=1.0000, history=10
+Iteration 41: cost=0.000612, ||∇||=5.30e-2, α=1.0000, history=10
+Iteration 42: cost=0.000549, ||∇||=6.65e-2, α=1.0000, history=10
+Iteration 43: cost=0.000497, ||∇||=4.18e-2, α=1.0000, history=10
+Iteration 44: cost=0.000463, ||∇||=3.65e-2, α=1.0000, history=10
+Iteration 45: cost=0.000422, ||∇||=4.61e-2, α=1.0000, history=10
+Iteration 46: cost=0.000385, ||∇||=4.99e-2, α=1.0000, history=10
+Iteration 47: cost=0.000351, ||∇||=3.66e-2, α=1.0000, history=10
+Iteration 48: cost=0.000320, ||∇||=5.17e-2, α=1.0000, history=10
+Iteration 49: cost=0.000290, ||∇||=3.71e-2, α=1.0000, history=10
+Iteration 50: cost=0.000264, ||∇||=4.26e-2, α=1.0000, history=10
+Chunk complete: 50/50, energy=2.640e-4, reason: Maximum iterations reached
+
+ [31m❯[39m test/sphere-curvature-analysis.spec.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 10033[2mms[22m[39m
+[31m   [31m×[31m Sphere Curvature Analysis[2m > [22mmeasures angle defect at different subdivision levels[39m[33m 10019[2mms[22m[39m
+[31m     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+   [32m✓[39m Sphere Curvature Analysis[2m > [22mcorrectly identifies flat surfaces as developable[32m 8[2mms[22m[39m
+[90mstdout[2m | demos/developable-sphere/test/planeAlignment.test.ts[2m > [22m[2mDifferentiablePlaneAlignment - Compiled vs Uncompiled[2m > [22m[2mshould produce identical gradients (compiled vs uncompiled)
+[22m[39m
+Test mesh: 42 vertices, 80 faces
+Uncompiled energy: 2.366761e+0
+Uncompiled gradient norm: 4.498645e+0
+Sample gradients: [5.079e-1, -8.540e-1, 1.227e-2, -5.097e-1, -7.950e-1]
+[CompiledFunctions] Compiling 42 functions...
+[CompiledFunctions] Processing function 0/42
+[GraphCanonicalizerNoSort] Total: 16ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 15ms [traversal: 1ms, stringBuild: 12ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 16ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 1)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,0g);n128:(square,n127);n129:(-,7g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,3g,0g);n138:(square,n137);n139:(-,4g,1g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 14ms | Phase1(discover): 10ms | Phase2(assign): 0ms | Phase3(expr): 4ms [traversal: 1ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 15ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 3)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,3g,0g);n128:(square,n127);n129:(-,4g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,5g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,6g,0g);n138:(square,n137);n139:(-,7g,1g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 12ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 11ms [traversal: 1ms, stringBuild: 8ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17734
+[KernelPool] Canonicalization took 12ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 7)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,3g,9g);n154:(square,n153);n155:(-,4g,10g);n156:(square,n155);n157:(+,n156,n154);n158:(-,5g,11g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,6g,9g);n164:(square,n163);n165:(-,7...
+[GraphCanonicalizerNoSort] Total: 12ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 11ms [traversal: 0ms, stringBuild: 11ms] | Phase4(build): 0ms | Nodes: 1001 | NodeExprs: 848 | keyLength: 17749
+[KernelPool] Canonicalization took 12ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 16)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n153:(-,0g,12g);n154:(square,n153);n155:(-,1g,13g);n156:(square,n155);n157:(+,n156,n154);n158:(-,2g,14g);n159:(square,n158);n160:(+,n159,n154,n156);n161:(sqrt,n160);n162:(/,n153,n161);n163:(-,6g,12g);n164:(square,n163);n165:(-...
+Compiled: 21 kernels, 2.0x reuse
+Compiled energy: 2.366761e+0
+Compiled gradient norm: 4.498645e+0
+Sample gradients: [5.079e-1, -8.540e-1, 1.227e-2, -5.097e-1, -7.950e-1]
+
+Using evaluateSumWithGradient:
+Energy: 2.366761e+0
+Sample gradients: [5.079e-1, -8.540e-1, 1.227e-2, -5.097e-1, -7.950e-1]
+
+Max gradient difference (Jacobian sum): 7.772e-16
+Relative gradient difference: 1.728e-16
+
+❌ BUG DETECTED: Gradients do not match!
+   This test documents the compilation bug where energies are identical
+   but gradients differ significantly between compiled and uncompiled versions.
+
+
+ [32m✓[39m demos/developable-sphere/test/planeAlignment.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 6297[2mms[22m[39m
+   [33m[2m✓[22m[39m DifferentiablePlaneAlignment - Compiled vs Uncompiled[2m > [22mshould produce identical residuals (compiled vs uncompiled) [33m 3437[2mms[22m[39m
+   [33m[2m✓[22m[39m DifferentiablePlaneAlignment - Compiled vs Uncompiled[2m > [22mshould produce identical gradients (compiled vs uncompiled) [33m 2854[2mms[22m[39m
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mFull energy function
+[22m[39m
+=== TESTING: Full DifferentiablePlaneAlignment ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 17ms | Phase1(discover): 9ms | Phase2(assign): 0ms | Phase3(expr): 7ms [traversal: 1ms, stringBuild: 5ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 19ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 1)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,0g);n128:(square,n127);n129:(-,7g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,15g,0g);n138:(square,n137);n139:(-,16g,1g);n140:(...
+[GraphCanonicalizerNoSort] Total: 64ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 63ms [traversal: 1ms, stringBuild: 60ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13148
+[KernelPool] Canonicalization took 66ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 2)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,3g);n128:(square,n127);n129:(-,7g,4g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,5g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,0g,3g);n138:(square,n137);n139:(-,1g,4g);n140:(sq...
+[GraphCanonicalizerNoSort] Total: 83ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 82ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 84ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,3g);n128:(square,n127);n129:(-,7g,4g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,5g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,15g,3g);n138:(square,n137);n139:(-,16g,4g);n140:(...
+[GraphCanonicalizerNoSort] Total: 70ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 68ms [traversal: 2ms, stringBuild: 65ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13181
+[KernelPool] Canonicalization took 70ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 12)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,0g,15g);n128:(square,n127);n129:(-,1g,16g);n130:(square,n129);n131:(+,n130,n128);n132:(-,2g,17g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,9g,15g);n138:(square,n137);n139:(-,10g,16g);n1...
+Max gradient diff: 5.551115e-16
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mJust the normals part
+[22m[39m
+=== TESTING: Just normals computation ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 0.000000e+0
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mJust cross products
+[22m[39m
+=== TESTING: Just cross products ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 40ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 40ms [traversal: 1ms, stringBuild: 39ms] | Phase4(build): 0ms | Nodes: 345 | NodeExprs: 291 | keyLength: 6013
+[KernelPool] Canonicalization took 40ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 3)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n54:(-,14g,17g);n55:(-,0g,15g);n56:(*,n55,n54);n57:(-,12g,15g);n58:(-,2g,17g);n59:(*,n58,n57);n60:(-,n56,n59);n61:(-,13g,16g);n62:(*,n58,n61);n63:(-,1g,16g);n64:(*,n63,n54);n65:(-,n62,n64);n66:(square,n65);n67:(square,n60);n68:(+,n67,n66)...
+[GraphCanonicalizerNoSort] Total: 66ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 66ms [traversal: 6ms, stringBuild: 43ms] | Phase4(build): 0ms | Nodes: 345 | NodeExprs: 291 | keyLength: 6010
+[KernelPool] Canonicalization took 66ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 5)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n54:(-,17g,11g);n55:(-,6g,9g);n56:(*,n55,n54);n57:(-,15g,9g);n58:(-,8g,11g);n59:(*,n58,n57);n60:(-,n56,n59);n61:(-,16g,10g);n62:(*,n58,n61);n63:(-,7g,10g);n64:(*,n63,n54);n65:(-,n62,n64);n66:(square,n65);n67:(square,n60);n68:(+,n67,n66);n...
+Max gradient diff: 1.776357e-15
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[CompiledFunctions] Processing 600/642 (93%)
+[GraphCanonicalizerNoSort] Total: 29ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 27ms [traversal: 0ms, stringBuild: 27ms] | Phase4(build): 1ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 29ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 30)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,17g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,16g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,15g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+[GraphCanonicalizerNoSort] Total: 10ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 10ms [traversal: 0ms, stringBuild: 10ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 10ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 30)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,13g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,14g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,12g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mCross products WITH separation weighting
+[22m[39m
+=== TESTING: Cross products with separation ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 3.552714e-15
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 15ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 15ms [traversal: 15ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 16ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 2)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+[GraphCanonicalizerNoSort] Total: 27ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 27ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 28ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 3)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+[GraphCanonicalizerNoSort] Total: 53ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 53ms [traversal: 0ms, stringBuild: 52ms] | Phase4(build): 0ms | Nodes: 308 | NodeExprs: 231 | keyLength: 4410
+[KernelPool] Canonicalization took 53ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 5)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n77:(-,4g,1g);n78:(-,8g,2g);n79:(*,n78,n77);n80:(-,5g,2g);n81:(-,7g,1g);n82:(*,n81,n80);n83:(-,n79,n82);n84:(square,n83);n85:(-,6g,0g);n86:(*,n85,n80);n87:(-,3g,0g);n88:(*,n78,n87);n89:(-,n86,n88);n90:(square,n89);n91:(+,n90,n84);n92:(*,n...
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mUp to normalized plane normal
+[22m[39m
+=== TESTING: Normalized plane normal ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 63ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 63ms [traversal: 1ms, stringBuild: 62ms] | Phase4(build): 0ms | Nodes: 459 | NodeExprs: 391 | keyLength: 7981
+[KernelPool] Canonicalization took 64ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 6)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n68:(-,17g,2g);n69:(-,9g,0g);n70:(*,n69,n68);n71:(-,15g,0g);n72:(-,11g,2g);n73:(*,n72,n71);n74:(-,n70,n73);n75:(-,16g,1g);n76:(*,n72,n75);n77:(-,10g,1g);n78:(*,n77,n68);n79:(-,n76,n78);n80:(square,n79);n81:(square,n74);n82:(+,n81,n80);n83...
+Max gradient diff: 7.119148e-16
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[GraphCanonicalizerNoSort] Total: 79ms | Phase1(discover): 78ms | Phase2(assign): 0ms | Phase3(expr): 1ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 80ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 30)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,16g,4g);n90:(-,11g,5g);n91:(*,n90,n89);n92:(-,17g,5g);n93:(-,10g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,9g,3g);n98:(*,n97,n92);n99:(-,15g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+[GraphCanonicalizerNoSort] Total: 101ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 101ms [traversal: 0ms, stringBuild: 101ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 102ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 30)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,19g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,20g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,18g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39m[CompiledFunctions] Complete: 30 unique kernels, 21.4x reuse
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mEnergy accumulation WITHOUT angles
+[22m[39m
+=== TESTING: Energy accumulation (no angles) ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 100ms | Phase1(discover): 98ms | Phase2(assign): 0ms | Phase3(expr): 2ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 491 | NodeExprs: 425 | keyLength: 8648
+[KernelPool] Canonicalization took 100ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n66:(-,16g,4g);n67:(-,8g,5g);n68:(*,n67,n66);n69:(-,17g,5g);n70:(-,7g,4g);n71:(*,n70,n69);n72:(-,n68,n71);n73:(square,n72);n74:(-,6g,3g);n75:(*,n74,n69);n76:(-,15g,3g);n77:(*,n67,n76);n78:(-,n75,n77);n79:(square,n78);n80:(+,n79,n73);n81:(...
+[GraphCanonicalizerNoSort] Total: 87ms | Phase1(discover): 80ms | Phase2(assign): 0ms | Phase3(expr): 7ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 491 | NodeExprs: 425 | keyLength: 8665
+[KernelPool] Canonicalization took 87ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n66:(-,1g,10g);n67:(-,14g,11g);n68:(*,n67,n66);n69:(-,2g,11g);n70:(-,13g,10g);n71:(*,n70,n69);n72:(-,n68,n71);n73:(square,n72);n74:(-,12g,9g);n75:(*,n74,n69);n76:(-,0g,9g);n77:(*,n67,n76);n78:(-,n75,n77);n79:(square,n78);n80:(+,n79,n73);n...
+Max gradient diff: 1.554312e-15
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCovariance Energy (E^λ)[2m > [22m[2mshould reduce energy during optimization
+[22m[39mUsing Bimodal Variance (Spatial Midpoint) energy (compiled)...
+[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 82ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 82ms [traversal: 0ms, stringBuild: 82ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5320
+[KernelPool] Canonicalization took 82ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,5g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,4g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,3g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:(+...
+[GraphCanonicalizerNoSort] Total: 20ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 20ms [traversal: 0ms, stringBuild: 20ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5320
+[KernelPool] Canonicalization took 21ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,5g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,4g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,3g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:(+...
+[GraphCanonicalizerNoSort] Total: 52ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 51ms [traversal: 51ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 52ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 13)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mEnergy accumulation WITH angles
+[22m[39m
+=== TESTING: Energy accumulation (with angles) ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 47ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 46ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 781 | NodeExprs: 655 | keyLength: 13126
+[KernelPool] Canonicalization took 47ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n126:(-,6g,3g);n127:(square,n126);n128:(-,7g,4g);n129:(square,n128);n130:(+,n129,n127);n131:(-,8g,5g);n132:(square,n131);n133:(+,n132,n127,n129);n134:(sqrt,n133);n135:(/,n126,n134);n136:(-,15g,3g);n137:(square,n136);n138:(-,16g,4g);n139:(...
+[GraphCanonicalizerNoSort] Total: 19ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 18ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 781 | NodeExprs: 655 | keyLength: 13167
+[KernelPool] Canonicalization took 19ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n126:(-,0g,12g);n127:(square,n126);n128:(-,1g,13g);n129:(square,n128);n130:(+,n129,n127);n131:(-,2g,14g);n132:(square,n131);n133:(+,n132,n127,n129);n134:(sqrt,n133);n135:(/,n126,n134);n136:(-,9g,12g);n137:(square,n136);n138:(-,10g,13g);n1...
+Max gradient diff: 1.998401e-15
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mJUST the angles
+[22m[39m
+=== TESTING: Just angles ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 9.992007e-16
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCovariance Energy (E^λ)[2m > [22m[2mshould reduce energy during optimization
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+[GraphCanonicalizerNoSort] Total: 19ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 19ms [traversal: 5ms, stringBuild: 14ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 23ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 18)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,13g,4g);n90:(-,11g,5g);n91:(*,n90,n89);n92:(-,14g,5g);n93:(-,10g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,9g,3g);n98:(*,n97,n92);n99:(-,12g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mAngles AND one face normal (combined)
+[22m[39m
+=== TESTING: Angles + one normal ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 9.992007e-16
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mNormals used in TWO different ways
+[22m[39m
+=== TESTING: Normals used twice ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 15ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 14ms [traversal: 13ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 674 | NodeExprs: 559 | keyLength: 11328
+[KernelPool] Canonicalization took 15ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 9)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n115:(-,0g,12g);n116:(square,n115);n117:(-,1g,13g);n118:(square,n117);n119:(+,n118,n116);n120:(-,2g,14g);n121:(square,n120);n122:(+,n121,n116,n118);n123:(sqrt,n122);n124:(/,n115,n123);n125:(-,9g,12g);n126:(square,n125);n127:(-,10g,13g);n1...
+[GraphCanonicalizerNoSort] Total: 25ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 24ms [traversal: 0ms, stringBuild: 24ms] | Phase4(build): 0ms | Nodes: 674 | NodeExprs: 559 | keyLength: 11325
+[KernelPool] Canonicalization took 25ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 12)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n115:(-,0g,15g);n116:(square,n115);n117:(-,1g,16g);n118:(square,n117);n119:(+,n118,n116);n120:(-,2g,17g);n121:(square,n120);n122:(+,n121,n116,n118);n123:(sqrt,n122);n124:(/,n115,n123);n125:(-,9g,15g);n126:(square,n125);n127:(-,10g,16g);n1...
+Max gradient diff: 1.332268e-15
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCovariance Energy (E^λ)[2m > [22m[2mshould reduce energy during optimization
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+[GraphCanonicalizerNoSort] Total: 69ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 68ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 1ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5331
+[KernelPool] Canonicalization took 72ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 23)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,10g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,11g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,9g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:...
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCovariance Energy (E^λ)[2m > [22m[2mshould reduce energy during optimization
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mNormals WITHOUT .normalized property
+[22m[39m
+=== TESTING: Normals without .normalized ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 1.332268e-15
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/combinatorial-covariance-energy.spec.ts[2m > [22m[2mCovariance Energy (E^λ)[2m > [22m[2mshould reduce energy during optimization
+[22m[39mCompiled: 162 functions → 27 kernels, 6.0x reuse in 1.97s
+L-BFGS Optimization
+Initial: cost=40.020691, ||∇||=0.00e+0
+Chunk complete: 0/50, energy=4.002e+1, reason: Initial gradient below tolerance
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mSimplified: remove planeNormal computation
+[22m[39m
+=== TESTING: No planeNormal ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 23ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 23ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 554 | NodeExprs: 430 | keyLength: 8183
+[KernelPool] Canonicalization took 23ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n124:(-,6g,3g);n125:(square,n124);n126:(-,7g,4g);n127:(square,n126);n128:(+,n127,n125);n129:(-,8g,5g);n130:(square,n129);n131:(+,n130,n125,n127);n132:(sqrt,n131);n133:(/,n124,n132);n134:(-,15g,3g);n135:(square,n134);n136:(-,16g,4g);n137:(...
+Max gradient diff: 9.992007e-16
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mOne normal, one angle, with planeNormal
+[22m[39m
+=== TESTING: Minimal with planeNormal ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 64ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 64ms [traversal: 0ms, stringBuild: 64ms] | Phase4(build): 0ms | Nodes: 175 | NodeExprs: 136 | keyLength: 2440
+[KernelPool] Canonicalization took 64ms for graph with 12 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g|n39:(-,6g,3g);n40:(square,n39);n41:(-,7g,4g);n42:(square,n41);n43:(+,n42,n40);n44:(-,8g,5g);n45:(square,n44);n46:(+,n45,n40,n42);n47:(sqrt,n46);n48:(/,n39,n47);n49:(-,9g,3g);n50:(square,n49);n51:(-,10g,4g);n52:(square,n51);n53:(+,n52,n50);n54:(-,11g,5g);n55:(squ...
+Max gradient diff: 2.123013e-32
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mTHREE normals - add to planeNormal
+[22m[39m
+=== TESTING: Three normals planeNormal ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 0.000000e+0
+✅ PASS - Gradients match!
+
+[90mstdout[2m | test/ui-exact-match.spec.ts[2m > [22m[2mUI Exact Match Test[2m > [22m[2mshould match UI behavior exactly
+[22m[39mCompiled: 642 functions → 30 kernels, 21.4x reuse in 10.29s
+L-BFGS Optimization
+Initial: cost=5.227822, ||∇||=0.00e+0
+Chunk complete: 0/20, energy=5.228e+0, reason: Initial gradient below tolerance
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mUse BOTH n0 and n1 in final energy
+[22m[39m
+=== TESTING: Both normals in energy ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 2.220446e-16
+✅ PASS - Gradients match!
+
+[90mstdout[2m | demos/developable-sphere/test/bisect-energy.spec.ts[2m > [22m[2mBisect Energy Function[2m > [22m[2mWITHOUT n2
+[22m[39m
+=== TESTING: No n2 ===
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+Max gradient diff: 7.820124e-32
+✅ PASS - Gradients match!
+
+ [32m✓[39m demos/developable-sphere/test/bisect-energy.spec.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 4768[2mms[22m[39m
+   [33m[2m✓[22m[39m Bisect Energy Function[2m > [22mFull energy function [33m 1087[2mms[22m[39m
+   [33m[2m✓[22m[39m Bisect Energy Function[2m > [22mJust cross products [33m 313[2mms[22m[39m
+   [33m[2m✓[22m[39m Bisect Energy Function[2m > [22mCross products WITH separation weighting [33m 431[2mms[22m[39m
+   [33m[2m✓[22m[39m Bisect Energy Function[2m > [22mUp to normalized plane normal [33m 342[2mms[22m[39m
+   [33m[2m✓[22m[39m Bisect Energy Function[2m > [22mEnergy accumulation WITHOUT angles [33m 555[2mms[22m[39m
+   [33m[2m✓[22m[39m Bisect Energy Function[2m > [22mEnergy accumulation WITH angles [33m 568[2mms[22m[39m
+ [32m✓[39m test/ui-exact-match.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 14315[2mms[22m[39m
+   [33m[2m✓[22m[39m UI Exact Match Test[2m > [22mshould match UI behavior exactly [33m 14309[2mms[22m[39m
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 30ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 1ms [traversal: 0ms, stringBuild: 1ms] | Phase4(build): 29ms | Nodes: 549 | NodeExprs: 426 | keyLength: 8210
+[KernelPool] Canonicalization took 31ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 1)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n123:(-,4g,1g);n124:(-,8g,2g);n125:(*,n124,n123);n126:(-,5g,2g);n127:(-,7g,1g);n128:(*,n127,n126);n129:(-,n125,n128);n130:(square,n129);n131:(-,6g,0g);n132:(*,n131,n126);n133:(-,3g,0g);n134:(*,n124,n133);n135:(-,n132,n134);n136:(square,n1...
+[GraphCanonicalizerNoSort] Total: 26ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 24ms [traversal: 0ms, stringBuild: 21ms] | Phase4(build): 2ms | Nodes: 668 | NodeExprs: 521 | keyLength: 10108
+[KernelPool] Canonicalization took 26ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 13)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n147:(-,13g,4g);n148:(-,11g,5g);n149:(*,n148,n147);n150:(-,14g,5g);n151:(-,10g,4g);n152:(*,n151,n150);n153:(-,n149,n152);n154:(square,n153);n155:(-,9g,3g);n156:(*,n155,n150);n157:(-,12g,3g);n158:(*,n148,n157);n159:(-,n156,n158...
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+[GraphCanonicalizerNoSort] Total: 11ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 11ms [traversal: 10ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 668 | NodeExprs: 521 | keyLength: 10106
+[KernelPool] Canonicalization took 11ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 19)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n147:(-,7g,1g);n148:(-,14g,2g);n149:(*,n148,n147);n150:(-,8g,2g);n151:(-,13g,1g);n152:(*,n151,n150);n153:(-,n149,n152);n154:(square,n153);n155:(-,12g,0g);n156:(*,n155,n150);n157:(-,6g,0g);n158:(*,n148,n157);n159:(-,n156,n158);...
+[GraphCanonicalizerNoSort] Total: 109ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 109ms [traversal: 0ms, stringBuild: 0ms] | Phase4(build): 0ms | Nodes: 668 | NodeExprs: 521 | keyLength: 10102
+[KernelPool] Canonicalization took 109ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 19)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n147:(-,10g,1g);n148:(-,8g,2g);n149:(*,n148,n147);n150:(-,11g,2g);n151:(-,7g,1g);n152:(*,n151,n150);n153:(-,n149,n152);n154:(square,n153);n155:(-,6g,0g);n156:(*,n155,n150);n157:(-,9g,0g);n158:(*,n148,n157);n159:(-,n156,n158);n...
+[GraphCanonicalizerNoSort] Total: 13ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 12ms [traversal: 0ms, stringBuild: 12ms] | Phase4(build): 0ms | Nodes: 668 | NodeExprs: 521 | keyLength: 10094
+[KernelPool] Canonicalization took 13ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 21)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n147:(-,7g,1g);n148:(-,14g,2g);n149:(*,n148,n147);n150:(-,8g,2g);n151:(-,13g,1g);n152:(*,n151,n150);n153:(-,n149,n152);n154:(square,n153);n155:(-,12g,0g);n156:(*,n155,n150);n157:(-,6g,0g);n158:(*,n148,n157);n159:(-,n156,n158);...
+[GraphCanonicalizerNoSort] Total: 10ms | Phase1(discover): 3ms | Phase2(assign): 0ms | Phase3(expr): 7ms [traversal: 0ms, stringBuild: 7ms] | Phase4(build): 0ms | Nodes: 668 | NodeExprs: 521 | keyLength: 10106
+[KernelPool] Canonicalization took 10ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 21)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n147:(-,7g,1g);n148:(-,14g,2g);n149:(*,n148,n147);n150:(-,8g,2g);n151:(-,13g,1g);n152:(*,n151,n150);n153:(-,n149,n152);n154:(square,n153);n155:(-,12g,0g);n156:(*,n155,n150);n157:(-,6g,0g);n158:(*,n148,n157);n159:(-,n156,n158);...
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+
+[90mstdout[2m | test/eigen-proxy-energy.spec.ts[2m > [22m[2mEigenvalue Proxy Energy[2m > [22m[2mshould compare eigenproxy with variance and bounding box
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+ [31m❯[39m test/combinatorial-covariance-energy.spec.ts [2m([22m[2m15 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 15778[2mms[22m[39m
+   [32m✓[39m Combinatorial Energy (E^P)[2m > [22mshould be zero for a perfect plane[32m 19[2mms[22m[39m
+   [32m✓[39m Combinatorial Energy (E^P)[2m > [22mshould be zero for a perfect hinge (two planes)[32m 4[2mms[22m[39m
+   [33m[2m✓[22m[39m Combinatorial Energy (E^P)[2m > [22mshould have non-zero energy on perturbed sphere [33m 1223[2mms[22m[39m
+   [32m✓[39m Combinatorial Energy (E^P)[2m > [22mshould compute quality metrics correctly[32m 293[2mms[22m[39m
+[31m   [31m×[31m Combinatorial Energy (E^P)[2m > [22mshould reduce energy during optimization[39m[33m 5148[2mms[22m[39m
+[31m     → expected 0 to be greater than 0[39m
+   [32m✓[39m Covariance Energy (E^λ)[2m > [22mshould be zero for a perfect plane[32m 46[2mms[22m[39m
+   [32m✓[39m Covariance Energy (E^λ)[2m > [22mshould be zero for a perfect hinge[32m 6[2mms[22m[39m
+   [33m[2m✓[22m[39m Covariance Energy (E^λ)[2m > [22mshould have non-zero energy on perturbed sphere [33m 1639[2mms[22m[39m
+   [32m✓[39m Covariance Energy (E^λ)[2m > [22mshould compute intrinsic variant correctly[32m 228[2mms[22m[39m
+   [33m[2m✓[22m[39m Covariance Energy (E^λ)[2m > [22mshould compute max variant correctly [33m 1432[2mms[22m[39m
+   [32m✓[39m Covariance Energy (E^λ)[2m > [22mshould compute quality metrics correctly[32m 147[2mms[22m[39m
+   [33m[2m✓[22m[39m Covariance Energy (E^λ)[2m > [22mshould reduce energy during optimization [33m 3881[2mms[22m[39m
+   [32m✓[39m Combinatorial vs Covariance Energy Comparison[2m > [22mshould both be zero for perfect plane[32m 2[2mms[22m[39m
+   [32m✓[39m Combinatorial vs Covariance Energy Comparison[2m > [22mshould both be zero for perfect hinge[32m 2[2mms[22m[39m
+   [33m[2m✓[22m[39m Combinatorial vs Covariance Energy Comparison[2m > [22mshould compare behavior on perturbed sphere [33m 1690[2mms[22m[39m
+[90mstdout[2m | demos/developable-sphere/test/planeAlignment-diagnostic.test.ts[2m > [22m[2mDifferentiablePlaneAlignment - Gradient Diagnostic[2m > [22m[2mshould show detailed gradient comparison
+[22m[39m
+=== DIAGNOSTIC TEST ===
+Test mesh: 12 vertices, 20 faces
+
+Computing uncompiled gradients...
+Compiling...
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 79ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 77ms [traversal: 2ms, stringBuild: 74ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13148
+[KernelPool] Canonicalization took 80ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 3)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,12g,0g);n128:(square,n127);n129:(-,13g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,14g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,15g,0g);n138:(square,n137);n139:(-,16g,1g);n14...
+[GraphCanonicalizerNoSort] Total: 94ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 92ms [traversal: 1ms, stringBuild: 90ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13173
+[KernelPool] Canonicalization took 94ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 8)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,3g,9g);n128:(square,n127);n129:(-,4g,10g);n130:(square,n129);n131:(+,n130,n128);n132:(-,5g,11g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,0g,9g);n138:(square,n137);n139:(-,1g,10g);n140:...
+Compiled: 12 kernels, 1.0x reuse
+
+Computing compiled gradients...
+
+Energies:
+  Uncompiled: 2.4951057062e+0
+  Compiled:   2.4951057062e+0
+  Difference: 0.000000e+0
+
+Gradient comparison (first 3 vertices):
+Vertex | Component | Uncompiled       | Compiled         | Difference      | Rel Diff
+-------|-----------|------------------|------------------|-----------------|----------
+     0 | x         | -6.1575366337e-1 | -6.1575366337e-1 | -2.220446e-16 | 3.61e-16
+     0 | y         | 8.5483195983e-1 | 8.5483195983e-1 | 3.330669e-16 | 3.90e-16
+     0 | z         | -7.2397394535e-2 | -7.2397394535e-2 | -2.775558e-17 | 3.83e-16
+     1 | x         | -6.5997415043e-1 | -6.5997415043e-1 | -2.220446e-16 | 3.36e-16
+     1 | y         | -6.8292536803e-1 | -6.8292536803e-1 | -5.551115e-16 | 8.13e-16
+     1 | z         | 1.5983402810e-1 | 1.5983402810e-1 | 5.551115e-17 | 3.47e-16
+     2 | x         | 1.5343310298e-1 | 1.5343310298e-1 | 2.775558e-16 | 1.81e-15
+     2 | y         | 4.9749955154e-2 | 4.9749955154e-2 | 3.885781e-16 | 7.81e-15
+     2 | z         | 1.8920302140e-1 | 1.8920302140e-1 | 0.000000e+0 | 0.00e+0
+
+Worst gradient component:
+  Index: 4 (vertex 1, y)
+  Uncompiled: -6.8292536803e-1
+  Compiled:   -6.8292536803e-1
+  Difference: 5.551115e-16
+  Relative:   8.128436e-16
+
+Gradient norms:
+  Uncompiled: 2.0578354082e+0
+  Compiled:   2.0578354082e+0
+  Difference: 8.881784e-16
+  Relative:   4.316081e-16
+
+=== PERMUTATION CHECK ===
+Checking if compiled gradients are just a permutation of uncompiled gradients...
+Max difference after sorting: 5.551115e-16
+✅ GRADIENTS ARE PERMUTED! The compiled gradients are the correct values but in wrong positions.
+
+Scale check:
+  Avg abs(uncompiled): 2.747007e-1
+  Avg abs(compiled):   2.747007e-1
+  Ratio:               1.000000e+0
+
+Looking for matches between any compiled and uncompiled gradient components...
+
+Perfect matches (< 1e-15): 36 out of 1296 comparisons
+Close matches (< 1e-10): 0 out of 1296 comparisons
+Expected diagonal matches if identical: 36
+
+=== JACOBIAN CHECK ===
+Checking individual residual gradients (first residual only)...
+
+First residual gradient comparison (first 5 components):
+Idx | Uncompiled       | Compiled (Jac)   | Difference      | Rel Diff
+----|------------------|------------------|-----------------|----------
+  0 | -1.8896663387e-1 | -1.8896663387e-1 | 1.110223e-16 | 5.88e-16
+  1 | 2.7863968239e-1 | 2.7863968239e-1 | -2.220446e-16 | 7.97e-16
+  2 | 1.0356914413e-2 | 1.0356914413e-2 | 1.387779e-17 | 1.34e-15
+  3 | 0.0000000000e+0 | 1.0408340856e-17 | 1.040834e-17 | Infinity
+  4 | -1.7699913654e-1 | -1.7699913654e-1 | 0.000000e+0 | 0.00e+0
+
+Max Jacobian[0] difference: 2.220446e-16
+
+[90mstdout[2m | test/ui-variance-test.spec.ts[2m > [22m[2mUI Variance Energy Test[2m > [22m[2mshould work in async mode like the UI
+[22m[39mUsing Bimodal Variance (Spatial Midpoint) energy (compiled)...
+[CompiledFunctions] Compiling 162 functions...
+[CompiledFunctions] Processing 50/162 (30%)
+[GraphCanonicalizerNoSort] Total: 20ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 19ms [traversal: 2ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5337
+[KernelPool] Canonicalization took 20ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 13)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,13g,4g);n90:(-,11g,5g);n91:(*,n90,n89);n92:(-,14g,5g);n93:(-,10g,4g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,9g,3g);n98:(*,n97,n92);n99:(-,12g,3g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n1...
+[GraphCanonicalizerNoSort] Total: 62ms | Phase1(discover): 2ms | Phase2(assign): 0ms | Phase3(expr): 59ms [traversal: 1ms, stringBuild: 58ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 62ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 13)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/ui-variance-test.spec.ts[2m > [22m[2mUI Variance Energy Test[2m > [22m[2mshould work in async mode like the UI
+[22m[39m[CompiledFunctions] Processing 100/162 (61%)
+[GraphCanonicalizerNoSort] Total: 77ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 77ms [traversal: 76ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5335
+[KernelPool] Canonicalization took 77ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 20)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+[GraphCanonicalizerNoSort] Total: 43ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 43ms [traversal: 0ms, stringBuild: 42ms] | Phase4(build): 0ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5331
+[KernelPool] Canonicalization took 43ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 20)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,10g,1g);n90:(-,8g,2g);n91:(*,n90,n89);n92:(-,11g,2g);n93:(-,7g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,6g,0g);n98:(*,n97,n92);n99:(-,9g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103:...
+
+[90mstdout[2m | demos/developable-sphere/test/planeAlignment-diagnostic.test.ts[2m > [22m[2mDifferentiablePlaneAlignment - Gradient Diagnostic[2m > [22m[2mbypass kernel cache test
+[22m[39m
+=== BYPASS KERNEL CACHE TEST ===
+Test mesh: 12 vertices, 20 faces
+
+Compiling WITH kernel reuse (normal)...
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 76ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 75ms [traversal: 2ms, stringBuild: 2ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 77ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 1)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,0g);n128:(square,n127);n129:(-,7g,1g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,2g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,15g,0g);n138:(square,n137);n139:(-,16g,1g);n140:(...
+[GraphCanonicalizerNoSort] Total: 30ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 29ms [traversal: 2ms, stringBuild: 26ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13149
+[KernelPool] Canonicalization took 30ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 7)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,9g,6g);n128:(square,n127);n129:(-,10g,7g);n130:(square,n129);n131:(+,n130,n128);n132:(-,11g,8g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,15g,6g);n138:(square,n137);n139:(-,16g,7g);n140...
+[GraphCanonicalizerNoSort] Total: 81ms | Phase1(discover): 77ms | Phase2(assign): 0ms | Phase3(expr): 4ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13179
+[KernelPool] Canonicalization took 82ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 10)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,9g,15g);n128:(square,n127);n129:(-,10g,16g);n130:(square,n129);n131:(+,n130,n128);n132:(-,11g,17g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,0g,15g);n138:(square,n137);n139:(-,1g,16g);n...
+[GraphCanonicalizerNoSort] Total: 13ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 12ms [traversal: 2ms, stringBuild: 9ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13182
+[KernelPool] Canonicalization took 13ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 11)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,9g,12g);n128:(square,n127);n129:(-,10g,13g);n130:(square,n129);n131:(+,n130,n128);n132:(-,11g,14g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,0g,12g);n138:(square,n137);n139:(-,1g,13g);n...
+Compiled: 12 kernels, 1.0x reuse
+
+Compiling AGAIN with fresh parameters (bypasses cache)...
+[CompiledFunctions] Compiling 12 functions...
+[CompiledFunctions] Processing function 0/12
+[GraphCanonicalizerNoSort] Total: 70ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 69ms [traversal: 0ms, stringBuild: 69ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13143
+[KernelPool] Canonicalization took 70ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 4)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,6g,3g);n128:(square,n127);n129:(-,7g,4g);n130:(square,n129);n131:(+,n130,n128);n132:(-,8g,5g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,15g,3g);n138:(square,n137);n139:(-,16g,4g);n140:(...
+[GraphCanonicalizerNoSort] Total: 25ms | Phase1(discover): 1ms | Phase2(assign): 0ms | Phase3(expr): 24ms [traversal: 1ms, stringBuild: 1ms] | Phase4(build): 0ms | Nodes: 783 | NodeExprs: 656 | keyLength: 13179
+[KernelPool] Canonicalization took 25ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 10)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,9g,15g);n128:(square,n127);n129:(-,10g,16g);n130:(square,n129);n131:(+,n130,n128);n132:(-,11g,17g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,0g,15g);n138:(square,n137);n139:(-,1g,16g);n...
+[KernelPool] Canonicalization took 111ms for graph with 18 params (mode: no-sort)
+[KernelPool] Cache MISS - compiling new kernel (pool size: 12)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g|n127:(-,0g,15g);n128:(square,n127);n129:(-,1g,16g);n130:(square,n129);n131:(+,n130,n128);n132:(-,2g,17g);n133:(square,n132);n134:(+,n133,n128,n130);n135:(sqrt,n134);n136:(/,n127,n135);n137:(-,9g,15g);n138:(square,n137);n139:(-,10g,16g);n1...
+Compiled: 12 kernels, 1.0x reuse
+
+Gradient comparison:
+Idx | Uncompiled       | Compiled1        | Compiled2        | Diff1          | Diff2
+----|------------------|------------------|------------------|----------------|----------------
+  0 | -6.1575366337e-1 | -6.1575366337e-1 | -6.1575366337e-1 | 2.220446e-16 | 2.220446e-16
+  1 | 8.5483195983e-1 | 8.5483195983e-1 | 8.5483195983e-1 | 3.330669e-16 | 3.330669e-16
+  2 | -7.2397394535e-2 | -7.2397394535e-2 | -7.2397394535e-2 | 2.775558e-17 | 2.775558e-17
+  3 | -6.5997415043e-1 | -6.5997415043e-1 | -6.5997415043e-1 | 2.220446e-16 | 2.220446e-16
+  4 | -6.8292536803e-1 | -6.8292536803e-1 | -6.8292536803e-1 | 5.551115e-16 | 5.551115e-16
+  5 | 1.5983402810e-1 | 1.5983402810e-1 | 1.5983402810e-1 | 5.551115e-17 | 5.551115e-17
+  6 | 1.5343310298e-1 | 1.5343310298e-1 | 1.5343310298e-1 | 2.775558e-16 | 2.775558e-16
+  7 | 4.9749955154e-2 | 4.9749955154e-2 | 4.9749955154e-2 | 3.885781e-16 | 3.885781e-16
+  8 | 1.8920302140e-1 | 1.8920302140e-1 | 1.8920302140e-1 | 0.000000e+0 | 0.000000e+0
+
+Max diffs:
+  Uncompiled vs Compiled1: 5.551115e-16
+  Uncompiled vs Compiled2: 5.551115e-16
+  Compiled1 vs Compiled2:  0.000000e+0
+
+✓ Both compiled versions match exactly - kernel caching is NOT the issue
+
+ [32m✓[39m demos/developable-sphere/test/planeAlignment-diagnostic.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2711[2mms[22m[39m
+   [33m[2m✓[22m[39m DifferentiablePlaneAlignment - Gradient Diagnostic[2m > [22mshould show detailed gradient comparison [33m 1430[2mms[22m[39m
+   [33m[2m✓[22m[39m DifferentiablePlaneAlignment - Gradient Diagnostic[2m > [22mbypass kernel cache test [33m 1198[2mms[22m[39m
+[90mstdout[2m | test/ui-variance-test.spec.ts[2m > [22m[2mUI Variance Energy Test[2m > [22m[2mshould work in async mode like the UI
+[22m[39m[CompiledFunctions] Processing 150/162 (92%)
+[GraphCanonicalizerNoSort] Total: 88ms | Phase1(discover): 0ms | Phase2(assign): 0ms | Phase3(expr): 77ms [traversal: 1ms, stringBuild: 75ms] | Phase4(build): 11ms | Nodes: 364 | NodeExprs: 275 | keyLength: 5323
+[KernelPool] Canonicalization took 89ms for graph with 21 params (mode: no-sort)
+[KernelPool] Cache HIT - reusing existing kernel (pool size: 21)
+  Canon: 0g,1g,2g,3g,4g,5g,6g,7g,8g,9g,10g,11g,12g,13g,14g,15g,16g,17g,18g,19g,20g|n89:(-,7g,1g);n90:(-,14g,2g);n91:(*,n90,n89);n92:(-,8g,2g);n93:(-,13g,1g);n94:(*,n93,n92);n95:(-,n91,n94);n96:(square,n95);n97:(-,12g,0g);n98:(*,n97,n92);n99:(-,6g,0g);n100:(*,n90,n99);n101:(-,n98,n100);n102:(square,n101);n103...
+
+[90mstdout[2m | test/ui-variance-test.spec.ts[2m > [22m[2mUI Variance Energy Test[2m > [22m[2mshould work in async mode like the UI
+[22m[39m[CompiledFunctions] Complete: 27 unique kernels, 6.0x reuse
+
+[90mstdout[2m | test/ui-variance-test.spec.ts[2m > [22m[2mUI Variance Energy Test[2m > [22m[2mshould work in async mode like the UI
+[22m[39mCompiled: 162 functions → 27 kernels, 6.0x reuse in 3.08s
+L-BFGS Optimization
+Initial: cost=5.159564, ||∇||=0.00e+0
+Chunk complete: 0/10, energy=5.160e+0, reason: Initial gradient below tolerance
+
+ [32m✓[39m test/ui-variance-test.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3609[2mms[22m[39m
+   [33m[2m✓[22m[39m UI Variance Energy Test[2m > [22mshould work in async mode like the UI [33m 3603[2mms[22m[39m

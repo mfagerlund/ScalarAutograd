@@ -32,7 +32,7 @@ export class KernelPool {
   private valueCanonCache = new WeakMap<Value, string>();
 
   /** Canonicalization mode: 'no-sort' | 'hash' */
-  private canonMode: 'no-sort' | 'hash' = 'no-sort';
+  public canonMode: 'no-sort' | 'hash' = 'hash';
 
   /**
    * Get or compile a kernel for the given residual graph.

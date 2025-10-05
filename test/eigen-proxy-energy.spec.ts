@@ -4,6 +4,7 @@ import { DevelopableOptimizer } from '../demos/developable-sphere/src/optimizati
 import { EigenProxyEnergy } from '../demos/developable-sphere/src/energy/EigenProxyEnergy';
 import { DevelopableEnergy } from '../demos/developable-sphere/src/energy/DevelopableEnergy';
 import { Vec3 } from '../src/Vec3';
+import { testLog } from './testUtils';
 
 describe('Eigenvalue Proxy Energy', () => {
   it('should have non-zero energy on perturbed sphere', () => {
@@ -21,7 +22,7 @@ describe('Eigenvalue Proxy Energy', () => {
     }
 
     const energy = EigenProxyEnergy.compute(sphere);
-    console.log(`Initial perturbed energy: ${energy.data.toExponential(3)}`);
+    testLog(`Initial perturbed energy: ${energy.data.toExponential(3)}`);
 
     // Should have measurable energy (not zero, not too huge)
     expect(energy.data).toBeGreaterThan(0.001);
@@ -45,26 +46,26 @@ describe('Eigenvalue Proxy Energy', () => {
     const initialEnergy = EigenProxyEnergy.compute(sphere).data;
     const initialVariance = DevelopableEnergy.compute(sphere).data;
 
-    console.log('\n=== Eigenvalue Proxy Energy Test ===');
-    console.log(`Initial eigen-proxy energy: ${initialEnergy.toExponential(3)}`);
-    console.log(`Initial variance: ${initialVariance.toExponential(3)}`);
+    testLog('\n=== Eigenvalue Proxy Energy Test ===');
+    testLog(`Initial eigen-proxy energy: ${initialEnergy.toExponential(3)}`);
+    testLog(`Initial variance: ${initialVariance.toExponential(3)}`);
 
     const optimizer = new DevelopableOptimizer(sphere);
     const result = await optimizer.optimizeAsync({
       maxIterations: 50,
       gradientTolerance: 1e-6,
       verbose: true,
-      energyType: 'eigenproxy',
+      energyType: 'Eigenvalue Proxy (Trace - Frobenius)',
       chunkSize: 50,
     });
 
     const finalEnergy = EigenProxyEnergy.compute(sphere).data;
     const finalVariance = DevelopableEnergy.compute(sphere).data;
 
-    console.log(`\nFinal eigen-proxy energy: ${finalEnergy.toExponential(3)}`);
-    console.log(`Final variance: ${finalVariance.toExponential(3)}`);
-    console.log(`Iterations: ${result.iterations}`);
-    console.log(`Convergence: ${result.convergenceReason}`);
+    testLog(`\nFinal eigen-proxy energy: ${finalEnergy.toExponential(3)}`);
+    testLog(`Final variance: ${finalVariance.toExponential(3)}`);
+    testLog(`Iterations: ${result.iterations}`);
+    testLog(`Convergence: ${result.convergenceReason}`);
 
     // Should run at least a few iterations
     expect(result.iterations).toBeGreaterThan(3);
@@ -77,7 +78,7 @@ describe('Eigenvalue Proxy Energy', () => {
   });
 
   it('should compare eigenproxy with variance and bounding box', { timeout: 30000 }, async () => {
-    const energyTypes: Array<'variance' | 'boundingbox' | 'eigenproxy'> = ['variance', 'boundingbox', 'eigenproxy'];
+    const energyTypes = ['Bimodal Variance (Spatial Midpoint)', 'Bounding Box Spread', 'Eigenvalue Proxy (Trace - Frobenius)'];
     const results: Record<string, any> = {};
 
     for (const energyType of energyTypes) {
@@ -119,12 +120,12 @@ describe('Eigenvalue Proxy Energy', () => {
       };
     }
 
-    console.log('\n=== Energy Function Comparison ===');
+    testLog('\n=== Energy Function Comparison ===');
     for (const [type, res] of Object.entries(results)) {
-      console.log(`\n${type}:`);
-      console.log(`  Variance: ${res.initialVariance.toExponential(3)} → ${res.finalVariance.toExponential(3)}`);
-      console.log(`  Developable: ${(res.initialDev * 100).toFixed(1)}% → ${(res.finalDev * 100).toFixed(1)}%`);
-      console.log(`  Iterations: ${res.iterations}, ${res.convergence}`);
+      testLog(`\n${type}:`);
+      testLog(`  Variance: ${res.initialVariance.toExponential(3)} → ${res.finalVariance.toExponential(3)}`);
+      testLog(`  Developable: ${(res.initialDev * 100).toFixed(1)}% → ${(res.finalDev * 100).toFixed(1)}%`);
+      testLog(`  Iterations: ${res.iterations}, ${res.convergence}`);
     }
 
     // All should improve developability and run multiple iterations

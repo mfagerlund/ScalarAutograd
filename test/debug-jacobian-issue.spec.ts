@@ -5,6 +5,7 @@
 import { V } from "../src/V";
 import { CompiledFunctions } from "../src/CompiledFunctions";
 import { canonicalizeGraphNoSort } from "../src/GraphCanonicalizerNoSort";
+import { testLog } from "./testUtils";
 
 describe('Debug Jacobian Issue', () => {
   it('should show canonical strings for different param usage', () => {
@@ -20,9 +21,9 @@ describe('Debug Jacobian Issue', () => {
     const { canon: canon1 } = canonicalizeGraphNoSort(r1, params);
     const { canon: canon2 } = canonicalizeGraphNoSort(r2, params);
 
-    console.log('r1 (x-5) canonical:', canon1);
-    console.log('r2 (y-3) canonical:', canon2);
-    console.log('Are they equal?', canon1 === canon2);
+    testLog('r1 (x-5) canonical:', canon1);
+    testLog('r2 (y-3) canonical:', canon2);
+    testLog('Are they equal?', canon1 === canon2);
 
     // Now compile both together
     const compiled = CompiledFunctions.compile(params, (p) => [
@@ -30,15 +31,15 @@ describe('Debug Jacobian Issue', () => {
       V.sub(p[1], V.C(3))
     ]);
 
-    console.log('\nCompiled info:');
-    console.log('Number of kernels:', compiled.kernelCount);
-    console.log('Number of functions:', compiled.numFunctions);
+    testLog('\nCompiled info:');
+    testLog('Number of kernels:', compiled.kernelCount);
+    testLog('Number of functions:', compiled.numFunctions);
 
     const { values, jacobian } = compiled.evaluateJacobian(params);
 
-    console.log('\nEvaluation:');
-    console.log('Values:', values);
-    console.log('Jacobian:', jacobian);
+    testLog('\nEvaluation:');
+    testLog('Values:', values);
+    testLog('Jacobian:', jacobian);
 
     // What we expect:
     // J[0] = [1, 0] because r1 = x - 5, so ∂r1/∂x=1, ∂r1/∂y=0
@@ -79,7 +80,7 @@ describe('Debug Jacobian Issue', () => {
     const r1Params = findParams(r1, paramSet);
     const r2Params = findParams(r2, paramSet);
 
-    console.log('r1 uses params:', r1Params.map(p => p.label));
-    console.log('r2 uses params:', r2Params.map(p => p.label));
+    testLog('r1 uses params:', r1Params.map(p => p.label));
+    testLog('r2 uses params:', r2Params.map(p => p.label));
   });
 });

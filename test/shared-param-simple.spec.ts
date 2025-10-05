@@ -3,10 +3,11 @@
  */
 
 import { V, Value, CompiledResiduals } from '../src';
+import { testLog } from './testUtils';
 
 describe('Shared Parameter Bug', () => {
   it('should handle parameter used twice in graph', () => {
-    console.log('\n=== SHARED PARAMETER TEST ===\n');
+    testLog('\n=== SHARED PARAMETER TEST ===\n');
 
     // Single parameter
     const params = [V.W(2.0), V.W(3.0)];
@@ -32,21 +33,21 @@ describe('Shared Parameter Bug', () => {
 
     const { gradient: compiledGrads } = compiled.evaluateSumWithGradient(params);
 
-    console.log('Graph gradients:', graphGrads);
-    console.log('Compiled gradients:', compiledGrads);
+    testLog('Graph gradients:', graphGrads);
+    testLog('Compiled gradients:', compiledGrads);
 
     const maxDiff = Math.max(...params.map((_, i) => Math.abs(graphGrads[i] - compiledGrads[i])));
-    console.log(`Max gradient diff: ${maxDiff.toExponential(6)}`);
+    testLog(`Max gradient diff: ${maxDiff.toExponential(6)}`);
 
     // Analytical: f(x,y) = xy + x^2
     // df/dx = y + 2x = 3 + 2*2 = 7
     // df/dy = x = 2
-    console.log(`Expected gradients: [7, 2]`);
+    testLog(`Expected gradients: [7, 2]`);
 
     if (maxDiff < 1e-10) {
-      console.log('✅ PASS');
+      testLog('✅ PASS');
     } else {
-      console.log('❌ FAIL');
+      testLog('❌ FAIL');
     }
 
     expect(maxDiff).toBeLessThan(1e-10);

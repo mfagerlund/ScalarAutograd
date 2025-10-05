@@ -4,6 +4,7 @@
 
 import { V } from "../src/V";
 import { CompiledFunctions } from "../src/CompiledFunctions";
+import { testLog } from "./testUtils";
 
 describe('Debug Distance Canonical Strings', () => {
   it('should show canonical strings for distance constraints', () => {
@@ -31,14 +32,14 @@ describe('Debug Distance Canonical Strings', () => {
       ];
     });
 
-    console.log('\nKernel count:', compiled.kernelCount);
-    console.log('Function count:', compiled.numFunctions);
-    console.log('\nCanonical strings:');
+    testLog('\nKernel count:', compiled.kernelCount);
+    testLog('Function count:', compiled.numFunctions);
+    testLog('\nCanonical strings:');
 
     // @ts-ignore - accessing internal kernelPool
     const canonicals = compiled.kernelPool.getCanonicalStrings();
     canonicals.forEach((canon, i) => {
-      console.log(`  Kernel ${i}: ${canon}`);
+      testLog(`  Kernel ${i}: ${canon}`);
     });
   });
 });

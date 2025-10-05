@@ -17,9 +17,9 @@ function printCompiledCode(
   paramValues: number[],
   testName: string
 ) {
-  console.log(`\n${'='.repeat(80)}`);
-  console.log(`${testName}`);
-  console.log('='.repeat(80));
+  testLog(`\n${'='.repeat(80)}`);
+  testLog(`${testName}`);
+  testLog('='.repeat(80));
 
   const params = paramValues.map((val, i) => {
     const p = V.W(val, `p${i}`);
@@ -35,9 +35,9 @@ function printCompiledCode(
   // Get the compiled kernel
   const kernel = compileIndirectKernel(expr, params, registry);
 
-  console.log('\nCompiled function:');
-  console.log(kernel.toString());
-  console.log('');
+  testLog('\nCompiled function:');
+  testLog(kernel.toString());
+  testLog('');
 }
 
 describe('Print Compiled Code', () => {

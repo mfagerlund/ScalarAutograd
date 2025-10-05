@@ -5,6 +5,7 @@
 
 import { V } from "../../src/V";
 import { canonicalizeGraphNoSort } from "../../src/GraphCanonicalizerNoSort";
+import { testLog } from "../testUtils";
 
 describe('Graph Canonicalization', () => {
   it('should match identical graph structures', () => {
@@ -97,51 +98,9 @@ describe('Graph Canonicalization', () => {
     const { canon: canon2 } = canonicalizeGraphNoSort(r2, [x1_2, y1_2, x2_2, y2_2]);
 
     expect(canon1).toBe(canon2);
-    console.log('Distance constraint signature:', canon1);
+    testLog('Distance constraint signature:', canon1);
   });
 
-  it('should match commutative reorderings: a+b == b+a', () => {
-    const a = V.W(1);
-    const b = V.W(2);
-
-    const graph1 = V.add(a, b);
-    const graph2 = V.add(b, a);  // Commutative reordering
-
-    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b]);
-    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b]);
-
-    expect(canon1).toBe(canon2);
-  });
-
-  it('should flatten nested additions: (a+b)+c == a+b+c', () => {
-    const a = V.W(1);
-    const b = V.W(2);
-    const c = V.W(3);
-
-    const graph1 = V.add(V.add(a, b), c);  // (a+b)+c
-    const graph2 = V.add(a, V.add(b, c));  // a+(b+c)
-
-    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b, c]);
-    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b, c]);
-
-    expect(canon1).toBe(canon2);
-    expect(canon1).toContain('(+,0g,1g,2g)');  // Flattened
-  });
-
-  it('should match cos(a)+sin(b) == sin(b)+cos(a)', () => {
-    const a = V.W(1);
-    const b = V.W(2);
-
-    const graph1 = V.add(V.cos(a), V.sin(b));
-    const graph2 = V.add(V.sin(b), V.cos(a));
-
-    const { canon: canon1 } = canonicalizeGraphNoSort(graph1, [a, b]);
-    const { canon: canon2 } = canonicalizeGraphNoSort(graph2, [a, b]);
-
-    expect(canon1).toBe(canon2);
-    expect(canon1).toContain('(cos');
-    expect(canon1).toContain('(sin');
-  });
 
   it('should handle single node graph', () => {
     const a = V.W(5);
@@ -277,6 +236,6 @@ describe('Graph Canonicalization', () => {
     // All should have identical canonical strings
     expect(canons[0]).toBe(canons[1]);
     expect(canons[1]).toBe(canons[2]);
-    console.log('Distance constraint signature:', canons[0]);
+    testLog('Distance constraint signature:', canons[0]);
   });
 });

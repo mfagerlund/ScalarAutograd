@@ -3,10 +3,11 @@ import { IcoSphere } from '../demos/developable-sphere/src/mesh/IcoSphere';
 import { CurvatureClassifier } from '../demos/developable-sphere/src/energy/CurvatureClassifier';
 import { TriangleMesh } from '../demos/developable-sphere/src/mesh/TriangleMesh';
 import { Vec3 } from '../src/Vec3';
+import { testLog } from './testUtils';
 
 describe('Sphere Curvature Analysis', () => {
   it('measures angle defect at different subdivision levels', () => {
-    console.log('\nAngle defect on unit spheres (adaptive threshold):\n');
+    testLog('\nAngle defect on unit spheres (adaptive threshold):\n');
 
     for (let sub = 2; sub <= 5; sub++) {
       const sphere = IcoSphere.generate(sub, 1.0);
@@ -21,12 +22,12 @@ describe('Sphere Curvature Analysis', () => {
 
       const adaptiveThreshold = 0.1 * (4 * Math.PI / sphere.vertices.length);
 
-      console.log(`Subdivision ${sub} (${sphere.vertices.length} verts):`);
-      console.log(`  Mean angle defect: ${stats.mean.toExponential(3)} rad`);
-      console.log(`  Adaptive threshold: ${adaptiveThreshold.toExponential(3)} rad`);
-      console.log(`  Classification: ${(devRatio * 100).toFixed(1)}% developable`);
-      console.log(`  Total curvature: ${totalCurvature.toFixed(4)} (expected ${expectedTotal.toFixed(4)})`);
-      console.log('');
+      testLog(`Subdivision ${sub} (${sphere.vertices.length} verts):`);
+      testLog(`  Mean angle defect: ${stats.mean.toExponential(3)} rad`);
+      testLog(`  Adaptive threshold: ${adaptiveThreshold.toExponential(3)} rad`);
+      testLog(`  Classification: ${(devRatio * 100).toFixed(1)}% developable`);
+      testLog(`  Total curvature: ${totalCurvature.toFixed(4)} (expected ${expectedTotal.toFixed(4)})`);
+      testLog('');
 
       // Verify total curvature is conserved (Gauss-Bonnet theorem)
       expect(totalCurvature).toBeCloseTo(expectedTotal, 1);
@@ -35,7 +36,7 @@ describe('Sphere Curvature Analysis', () => {
       expect(devRatio).toBeLessThan(0.2); // Less than 20% should be "flat"
     }
 
-    console.log('✓ Adaptive threshold correctly classifies spheres as curved at all subdivisions');
+    testLog('✓ Adaptive threshold correctly classifies spheres as curved at all subdivisions');
   });
 
   it('correctly identifies flat surfaces as developable', () => {
@@ -55,9 +56,9 @@ describe('Sphere Curvature Analysis', () => {
     const classification = CurvatureClassifier.classifyVertices(flatMesh);
     const devRatio = classification.hingeVertices.length / flatMesh.vertices.length;
 
-    console.log('\nFlat quad mesh:');
-    console.log(`  Vertices: ${flatMesh.vertices.length}`);
-    console.log(`  Developable: ${(devRatio * 100).toFixed(1)}%`);
+    testLog('\nFlat quad mesh:');
+    testLog(`  Vertices: ${flatMesh.vertices.length}`);
+    testLog(`  Developable: ${(devRatio * 100).toFixed(1)}%`);
 
     // Flat surface should be mostly developable (boundary vertices may have different angles)
     expect(devRatio).toBeGreaterThan(0.5); // At least 50% should be flat

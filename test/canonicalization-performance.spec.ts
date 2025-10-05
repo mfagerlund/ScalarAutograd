@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { V, Value } from '../src';
+import { testLog } from './testUtils';
 
 describe('Canonicalization Performance', () => {
   it('should canonicalize large sum expression efficiently', () => {
@@ -21,7 +22,7 @@ describe('Canonicalization Performance', () => {
     const compiled = V.compileObjective(params, () => sum);
     const duration = performance.now() - start;
 
-    console.log(`100-term sum: ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
+    testLog(`100-term sum: ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
 
     // Should be fast - under 100ms
     expect(duration).toBeLessThan(100);
@@ -51,7 +52,7 @@ describe('Canonicalization Performance', () => {
     const compiled = V.compileObjective(params, () => result);
     const duration = performance.now() - start;
 
-    console.log(`Deep nested (64 params, 16 terms): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
+    testLog(`Deep nested (64 params, 16 terms): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
 
     // Should be fast
     expect(duration).toBeLessThan(100);
@@ -86,7 +87,7 @@ describe('Canonicalization Performance', () => {
     const compiled = V.compileObjective(params, () => variance);
     const duration = performance.now() - start;
 
-    console.log(`Variance (${n} params): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
+    testLog(`Variance (${n} params): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
 
     // Should be very fast - this is the core pattern
     expect(duration).toBeLessThan(50);
@@ -130,7 +131,7 @@ describe('Canonicalization Performance', () => {
     const compiled = V.compileObjective(params, () => totalEnergy);
     const duration = performance.now() - start;
 
-    console.log(`Multiple variance (${numRegions} regions, ${regionSize} each): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
+    testLog(`Multiple variance (${numRegions} regions, ${regionSize} each): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
 
     // This is closer to real mesh optimization
     expect(duration).toBeLessThan(200);
@@ -185,7 +186,7 @@ describe('Canonicalization Performance', () => {
     const compiled = V.compileObjective(params, () => totalEnergy);
     const duration = performance.now() - start;
 
-    console.log(`Mesh-like energy (${numVertices} vertices): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
+    testLog(`Mesh-like energy (${numVertices} vertices): ${duration.toFixed(0)}ms, ${compiled.kernelCount} kernels`);
 
     // This should be reasonable - the real mesh has 162-642 vertices
     expect(duration).toBeLessThan(500);

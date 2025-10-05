@@ -5,6 +5,7 @@
 import { V } from "../src/V";
 import { CompiledFunctions } from "../src/CompiledFunctions";
 import { lbfgs } from "../src/LBFGS";
+import { testLog } from "./testUtils";
 
 describe('L-BFGS with CompiledFunctions', () => {
   it.skip('should optimize Rosenbrock with compiled gradient', () => {
@@ -20,9 +21,9 @@ describe('L-BFGS with CompiledFunctions', () => {
       return [term1, term2];
     });
 
-    console.log('\nRosenbrock with compiled gradients:');
-    console.log(`Kernels: ${compiled.kernelCount}`);
-    console.log(`Functions: ${compiled.numFunctions}`);
+    testLog('\nRosenbrock with compiled gradients:');
+    testLog(`Kernels: ${compiled.kernelCount}`);
+    testLog(`Functions: ${compiled.numFunctions}`);
 
     const result = lbfgs(params, compiled, {
       maxIterations: 200,
@@ -30,9 +31,9 @@ describe('L-BFGS with CompiledFunctions', () => {
       verbose: false
     });
 
-    console.log(`Final: x=${x.data.toFixed(6)}, y=${y.data.toFixed(6)}`);
-    console.log(`Iterations: ${result.iterations}`);
-    console.log(`Convergence: ${result.convergenceReason}`);
+    testLog(`Final: x=${x.data.toFixed(6)}, y=${y.data.toFixed(6)}`);
+    testLog(`Iterations: ${result.iterations}`);
+    testLog(`Convergence: ${result.convergenceReason}`);
 
     // Should converge near (1, 1) - Rosenbrock is hard
     expect(x.data).toBeCloseTo(1, 2);
@@ -52,9 +53,9 @@ describe('L-BFGS with CompiledFunctions', () => {
       p.map((param, i) => V.square(V.sub(param, V.C(targets[i]))))
     );
 
-    console.log(`\n${N} residuals with kernel reuse:`);
-    console.log(`Kernels: ${compiled.kernelCount}`);
-    console.log(`Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
+    testLog(`\n${N} residuals with kernel reuse:`);
+    testLog(`Kernels: ${compiled.kernelCount}`);
+    testLog(`Reuse factor: ${compiled.kernelReuseFactor.toFixed(1)}x`);
 
     // Should compile to 1 kernel
     expect(compiled.kernelCount).toBe(1);
@@ -69,8 +70,8 @@ describe('L-BFGS with CompiledFunctions', () => {
 
     const finalCost = compiled.evaluateSumWithGradient(params).value;
 
-    console.log(`Cost: ${initialCost.toFixed(6)} → ${finalCost.toFixed(6)}`);
-    console.log(`Iterations: ${result.iterations}`);
+    testLog(`Cost: ${initialCost.toFixed(6)} → ${finalCost.toFixed(6)}`);
+    testLog(`Iterations: ${result.iterations}`);
 
     // Should converge to targets
     expect(finalCost).toBeLessThan(1e-10);
@@ -107,9 +108,9 @@ describe('L-BFGS with CompiledFunctions', () => {
       ];
     });
 
-    console.log('\nDistance constraints:');
-    console.log(`Kernels: ${compiled.kernelCount}`);
-    console.log(`Constraints: ${compiled.numFunctions}`);
+    testLog('\nDistance constraints:');
+    testLog(`Kernels: ${compiled.kernelCount}`);
+    testLog(`Constraints: ${compiled.numFunctions}`);
 
     const initialCost = compiled.evaluateSumWithGradient(points).value;
 
@@ -120,8 +121,8 @@ describe('L-BFGS with CompiledFunctions', () => {
 
     const finalCost = compiled.evaluateSumWithGradient(points).value;
 
-    console.log(`Cost: ${initialCost.toFixed(6)} → ${finalCost.toFixed(10)}`);
-    console.log(`Iterations: ${result.iterations}`);
+    testLog(`Cost: ${initialCost.toFixed(6)} → ${finalCost.toFixed(10)}`);
+    testLog(`Iterations: ${result.iterations}`);
 
     // Should satisfy all constraints
     expect(finalCost).toBeLessThan(1e-8);
@@ -157,9 +158,9 @@ describe('L-BFGS with CompiledFunctions', () => {
       verbose: false
     });
 
-    console.log('\nUncompiled vs Compiled:');
-    console.log(`Uncompiled: (${x1.data.toFixed(6)}, ${y1.data.toFixed(6)}) in ${result1.iterations} iters`);
-    console.log(`Compiled:   (${x2.data.toFixed(6)}, ${y2.data.toFixed(6)}) in ${result2.iterations} iters`);
+    testLog('\nUncompiled vs Compiled:');
+    testLog(`Uncompiled: (${x1.data.toFixed(6)}, ${y1.data.toFixed(6)}) in ${result1.iterations} iters`);
+    testLog(`Compiled:   (${x2.data.toFixed(6)}, ${y2.data.toFixed(6)}) in ${result2.iterations} iters`);
 
     // Should produce identical results
     expect(x1.data).toBeCloseTo(x2.data, 8);

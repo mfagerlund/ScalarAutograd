@@ -7,10 +7,11 @@ import { V } from "../src/V";
 import { Value } from "../src/Value";
 import { ValueRegistry } from "../src/ValueRegistry";
 import { compileIndirectKernel } from "../src/compileIndirectKernel";
+import { testLog } from "./testUtils";
 
 describe('Same Graph Test', () => {
   it('should produce identical gradients when using the same graph', () => {
-    console.log('\n=== SAME GRAPH TEST ===\n');
+    testLog('\n=== SAME GRAPH TEST ===\n');
 
     // Build a simple computation graph ONCE
     const params = [V.W(2.0, 'a'), V.W(3.0, 'b'), V.W(4.0, 'c')];
@@ -20,25 +21,25 @@ describe('Same Graph Test', () => {
     const sum = V.add(params[0], params[1]);
     const result = V.mul(sum, params[2]);
 
-    console.log('Built graph: (a + b) * c');
-    console.log(`Initial values: a=${params[0].data}, b=${params[1].data}, c=${params[2].data}`);
-    console.log(`Result value: ${result.data}\n`);
+    testLog('Built graph: (a + b) * c');
+    testLog(`Initial values: a=${params[0].data}, b=${params[1].data}, c=${params[2].data}`);
+    testLog(`Result value: ${result.data}\n`);
 
     // Method 1: Use graph backward (normal)
-    console.log('Method 1: Graph backward...');
+    testLog('Method 1: Graph backward...');
     params.forEach(p => p.grad = 0);
     result.backward();
     const graphGrads = params.map(p => p.grad);
-    console.log(`Graph gradients: [${graphGrads.map(g => g.toExponential(10)).join(', ')}]`);
+    testLog(`Graph gradients: [${graphGrads.map(g => g.toExponential(10)).join(', ')}]`);
 
     // Method 2: Compile the SAME graph and use kernel
-    console.log('\nMethod 2: Compile kernel from same graph...');
+    testLog('\nMethod 2: Compile kernel from same graph...');
     const registry = new ValueRegistry();
     params.forEach(p => registry.register(p));
 
     const kernel = compileIndirectKernel(result, params, registry);
-    console.log('Kernel function:');
-    console.log(kernel.toString());
+    testLog('Kernel function:');
+    testLog(kernel.toString());
 
     // Build input/gradient indices
     const indices: number[] = [];
@@ -72,32 +73,32 @@ describe('Same Graph Test', () => {
       gradientIndices.push(paramIdx >= 0 ? paramIdx : -1);
     }
 
-    console.log(`\nIndices: [${indices.join(', ')}]`);
-    console.log(`GradientIndices: [${gradientIndices.join(', ')}]`);
+    testLog(`\nIndices: [${indices.join(', ')}]`);
+    testLog(`GradientIndices: [${gradientIndices.join(', ')}]`);
 
     // Execute kernel
     const allValues = registry.getDataArray();
     const gradient = new Array(params.length).fill(0);
     const kernelValue = kernel(allValues, indices, gradientIndices, gradient);
 
-    console.log(`\nKernel value: ${kernelValue}`);
-    console.log(`Kernel gradients: [${gradient.map(g => g.toExponential(10)).join(', ')}]`);
+    testLog(`\nKernel value: ${kernelValue}`);
+    testLog(`Kernel gradients: [${gradient.map(g => g.toExponential(10)).join(', ')}]`);
 
     // Compare
-    console.log('\n=== COMPARISON ===');
-    console.log('Param | Graph Gradient   | Kernel Gradient  | Difference');
-    console.log('------|------------------|------------------|------------------');
+    testLog('\n=== COMPARISON ===');
+    testLog('Param | Graph Gradient   | Kernel Gradient  | Difference');
+    testLog('------|------------------|------------------|------------------');
     for (let i = 0; i < params.length; i++) {
       const diff = Math.abs(gradient[i] - graphGrads[i]);
-      console.log(`  ${i}   | ${graphGrads[i].toExponential(10)} | ${gradient[i].toExponential(10)} | ${diff.toExponential(6)}`);
+      testLog(`  ${i}   | ${graphGrads[i].toExponential(10)} | ${gradient[i].toExponential(10)} | ${diff.toExponential(6)}`);
       expect(gradient[i]).toBeCloseTo(graphGrads[i], 15);
     }
 
-    console.log('\n✓ Same graph produces identical gradients!\n');
+    testLog('\n✓ Same graph produces identical gradients!\n');
   });
 
   it('complex expression with same graph', () => {
-    console.log('\n=== COMPLEX SAME GRAPH TEST ===\n');
+    testLog('\n=== COMPLEX SAME GRAPH TEST ===\n');
 
     const params = [
       V.W(1.0, 'x'), V.W(2.0, 'y'), V.W(3.0, 'z')
@@ -111,9 +112,9 @@ describe('Same Graph Test', () => {
     const sum = V.add(V.add(x2, y2), z2);
     const result = V.sqrt(sum);
 
-    console.log('Built graph: sqrt(x^2 + y^2 + z^2)');
-    console.log(`Initial values: x=${params[0].data}, y=${params[1].data}, z=${params[2].data}`);
-    console.log(`Result value: ${result.data}\n`);
+    testLog('Built graph: sqrt(x^2 + y^2 + z^2)');
+    testLog(`Initial values: x=${params[0].data}, y=${params[1].data}, z=${params[2].data}`);
+    testLog(`Result value: ${result.data}\n`);
 
     // Graph backward
     params.forEach(p => p.grad = 0);
@@ -151,13 +152,13 @@ describe('Same Graph Test', () => {
     const gradient = new Array(params.length).fill(0);
     kernel(allValues, indices, gradientIndices, gradient);
 
-    console.log('Graph gradients:  [' + graphGrads.map(g => g.toExponential(10)).join(', ') + ']');
-    console.log('Kernel gradients: [' + gradient.map(g => g.toExponential(10)).join(', ') + ']');
+    testLog('Graph gradients:  [' + graphGrads.map(g => g.toExponential(10)).join(', ') + ']');
+    testLog('Kernel gradients: [' + gradient.map(g => g.toExponential(10)).join(', ') + ']');
 
     for (let i = 0; i < params.length; i++) {
       expect(gradient[i]).toBeCloseTo(graphGrads[i], 15);
     }
 
-    console.log('\n✓ Complex graph produces identical gradients!\n');
+    testLog('\n✓ Complex graph produces identical gradients!\n');
   });
 });

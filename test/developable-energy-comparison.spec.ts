@@ -4,6 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { V, Vec3, lbfgs, CompiledFunctions, Value } from '../src';
+import { testLog } from './testUtils';
 
 // Minimal mesh for testing
 interface SimpleMesh {
@@ -153,20 +154,20 @@ describe('Developable Energy Comparison', () => {
 
     const result2 = lbfgs(params2, compiled, { maxIterations: 20, verbose: false });
 
-    console.log('Non-compiled:');
-    console.log('  Energy:', result1.finalCost);
-    console.log('  Iterations:', result1.iterations);
-    console.log('  Convergence:', result1.convergenceReason);
+    testLog('Non-compiled:');
+    testLog('  Energy:', result1.finalCost);
+    testLog('  Iterations:', result1.iterations);
+    testLog('  Convergence:', result1.convergenceReason);
 
-    console.log('\nCompiled:');
-    console.log('  Energy:', result2.finalCost);
-    console.log('  Iterations:', result2.iterations);
-    console.log('  Convergence:', result2.convergenceReason);
-    console.log('  Kernels:', compiled.kernelCount, 'Reuse:', compiled.kernelReuseFactor.toFixed(1) + 'x');
+    testLog('\nCompiled:');
+    testLog('  Energy:', result2.finalCost);
+    testLog('  Iterations:', result2.iterations);
+    testLog('  Convergence:', result2.convergenceReason);
+    testLog('  Kernels:', compiled.kernelCount, 'Reuse:', compiled.kernelReuseFactor.toFixed(1) + 'x');
 
-    console.log('\nDifference:');
-    console.log('  Energy diff:', Math.abs(result1.finalCost - result2.finalCost));
-    console.log('  Max param diff:', Math.max(...params1.map((p, i) => Math.abs(p.data - params2[i].data))));
+    testLog('\nDifference:');
+    testLog('  Energy diff:', Math.abs(result1.finalCost - result2.finalCost));
+    testLog('  Max param diff:', Math.max(...params1.map((p, i) => Math.abs(p.data - params2[i].data))));
 
     // Check results are close
     expect(Math.abs(result1.finalCost - result2.finalCost)).toBeLessThan(1e-6);
