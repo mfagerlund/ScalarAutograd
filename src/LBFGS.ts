@@ -49,13 +49,17 @@ export interface LBFGSResult {
  * Computes objective value and gradient.
  * Uses compiled path if objectiveFn is CompiledFunctions, otherwise graph backward.
  */
-function computeObjectiveAndGradient(
+async function computeObjectiveAndGradient(
   params: Value[],
-  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions
-): { cost: number; gradient: number[] } {
-  if (objectiveFn instanceof CompiledFunctions) {
+  objectiveFn: ((params: Value[]) => Value) | CompiledFunctions | any
+): Promise<{ cost: number; gradient: number[] }> {
+  // Check for compiled functions (duck-typing supports both CompiledFunctions and GPUCompiledFunctions)
+  if (objectiveFn instanceof CompiledFunctions ||
+      (typeof objectiveFn.evaluateSumWithGradient === 'function')) {
     // Compiled path: sum all functions and accumulate gradients
-    const { value, gradient } = objectiveFn.evaluateSumWithGradient(params);
+    const result = objectiveFn.evaluateSumWithGradient(params);
+    // Handle both sync (CompiledFunctions) and async (GPUCompiledFunctions)
+    const { value, gradient } = result instanceof Promise ? await result : result;
     return { cost: value, gradient };
   }
 
@@ -81,7 +85,7 @@ function computeObjectiveAndGradient(
  * 1. Sufficient decrease (Armijo): f(x + α*d) ≤ f(x) + c1*α*∇f(x)ᵀd
  * 2. Curvature condition: |∇f(x + α*d)ᵀd| ≤ c2*|∇f(x)ᵀd|
  */
-function wolfeLineSearch(
+async function wolfeLineSearch(
   params: Value[],
   direction: number[],
   objectiveFn: ((params: Value[]) => Value) | CompiledFunctions,
@@ -93,7 +97,7 @@ function wolfeLineSearch(
     maxSteps: number;
     initialStepSize: number;
   }
-): { stepSize: number; newCost: number; newGradient: number[]; evaluations: number } {
+): Promise<{ stepSize: number; newCost: number; newGradient: number[]; evaluations: number }> {
   const { c1, c2, maxSteps, initialStepSize } = options;
   const originalData = params.map((p) => p.data);
 
@@ -316,7 +320,7 @@ export function lbfgs(
   const rho_history: number[] = [];  // 1 / (y^T * s)
 
   // Initial evaluation
-  let { cost, gradient } = computeObjectiveAndGradient(params, objectiveFn);
+  let { cost, gradient } = await computeObjectiveAndGradient(params, objectiveFn);
   totalFunctionEvaluations++;
   let gradientNorm = Math.sqrt(gradient.reduce((sum, g) => sum + g * g, 0));
 

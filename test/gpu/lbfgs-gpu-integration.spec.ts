@@ -48,20 +48,7 @@ describe('L-BFGS GPU Integration', () => {
     console.log('\\n=== GPU L-BFGS Optimization ===');
     console.log(`Initial: x=${x.data.toFixed(4)}, y=${y.data.toFixed(4)}`);
 
-    // Create synchronous wrapper for L-BFGS compatibility
-    const syncWrapper = {
-      evaluateSumWithGradient: (p: Value[]) => {
-        // Block on the promise - not ideal but works for now
-        let result: any;
-        gpuCompiled.evaluateSumWithGradient(p).then(r => result = r);
-        // Spin wait (horrible but simple for testing)
-        const start = Date.now();
-        while (!result && Date.now() - start < 5000) { /* wait */ }
-        return result;
-      }
-    };
-
-    const result = lbfgs(params, syncWrapper as any, {
+    const result = await lbfgs(params, gpuCompiled as any, {
       maxIterations: 50,
       verbose: false,
       gradientTolerance: 1e-6
