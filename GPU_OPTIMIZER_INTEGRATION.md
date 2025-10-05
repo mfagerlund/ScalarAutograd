@@ -198,6 +198,42 @@ Hybrid:
 
 **Savings: 1.2s per 200 iterations** - better, but still small vs 81s compilation
 
+## Implementation Status
+
+### ✅ Phase 1: GPUCompiledFunctions Class
+Created `GPUCompiledFunctions` with same interface as `CompiledFunctions`:
+- `evaluateSumWithGradient()` - For L-BFGS
+- `evaluateJacobian()` - For Levenberg-Marquardt
+
+**Issue**: Methods are async (GPU operations), but L-BFGS expects sync
+
+**Solutions**:
+1. **Create `lbfgsAsync`** - Async version of L-BFGS for GPU
+2. **Use top-level await** - Only works in ES modules
+3. **Synchronous blocking** - Not possible in JavaScript without hacks
+
+**Recommended**: Implement `lbfgsAsync` as separate function
+
+### 🚧 Phase 2: Async L-BFGS
+```typescript
+export async function lbfgsAsync(
+  params: Value[],
+  objectiveFn: GPUCompiledFunctions | CompiledFunctions,
+  options: LBFGSOptions = {}
+): Promise<LBFGSResult> {
+  // Same algorithm as lbfgs(), but awaits GPU evaluations
+  const { cost, gradient } = await objectiveFn.evaluateSumWithGradient(params);
+  // ...
+}
+```
+
+### 📊 Current Status: Numerical Gradients (Placeholder)
+GPUCompiledFunctions currently uses finite differences for gradients:
+- Forward pass: GPU (batched, fast)
+- Gradients: Numerical (O(N) kernel calls, slow)
+
+This is a placeholder until we implement reverse-mode autodiff on GPU.
+
 ## Conclusion
 
 **The real bottleneck is canonicalization (81s), not runtime (1.7s).**

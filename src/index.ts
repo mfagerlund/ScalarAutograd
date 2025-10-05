@@ -9,3 +9,8 @@ export { V } from './V';
 export { Value } from './Value';
 export { Vec2 } from './Vec2';
 export { Vec3 } from './Vec3';
+
+// GPU acceleration
+export { WebGPUContext } from './gpu/WebGPUContext';
+export { compileToWGSL, WGSLKernel } from './gpu/compileToWGSL';
+export { GPUCompiledFunctions } from './gpu/GPUCompiledFunctions';
