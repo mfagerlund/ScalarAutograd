@@ -201,6 +201,7 @@ export class DevelopableOptimizer {
 
     if (verbose) {
       console.log(`Using ${energyType} energy (${useCompiled ? 'compiled' : 'non-compiled'})...`);
+      console.log(`Optimizer: ${optimizer}, chunk size: ${chunkSize}`);
     }
 
     // Compile if enabled
@@ -267,12 +268,12 @@ export class DevelopableOptimizer {
         ? nonlinearLeastSquares(this.params, objectiveFn, {
             maxIterations: chunkIterations,
             gradientTolerance,
-            verbose,
+            verbose: false, // Disable verbose to avoid console spam
           })
         : lbfgs(this.params, objectiveFn, {
             maxIterations: chunkIterations,
             gradientTolerance,
-            verbose,
+            verbose: false, // Disable verbose to avoid console spam
           });
 
       totalIterations += result.iterations;
@@ -286,9 +287,7 @@ export class DevelopableOptimizer {
         this.captureSnapshot();
       }
 
-      if (verbose) {
-        console.log(`Chunk complete: ${totalIterations}/${maxIterations}, energy=${currentEnergy.toExponential(3)}, reason: ${result.convergenceReason}`);
-      }
+      // Removed verbose logging during optimization loop to reduce console spam
 
       // Always update progress numbers
       if (onProgress) {
