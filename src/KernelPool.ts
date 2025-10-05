@@ -28,9 +28,6 @@ export class KernelPool {
   /** @internal */
   public kernels = new Map<string, KernelDescriptor>();
 
-  /** Cache canonical strings by output Value (weak references to avoid memory leaks during compilation) */
-  private valueCanonCache = new WeakMap<Value, string>();
-
   /** Canonicalization mode: 'no-sort' | 'hash' */
   private canonMode: 'no-sort' | 'hash' = 'no-sort';
 
@@ -76,25 +73,16 @@ export class KernelPool {
     const paramIndexMap = new Map(params.map((p, i) => [p, i]));
     usedParams.sort((a, b) => paramIndexMap.get(a)! - paramIndexMap.get(b)!);
 
-    // Check cache first (avoids re-canonicalizing same Value object)
-    let canon = this.valueCanonCache.get(residual);
-    let canonTime = 0;
+    // Canonicalize structure (param usage will be encoded in gradientIndices at runtime)
+    const canonStart = performance.now();
+    const result =
+      this.canonMode === 'hash' ? canonicalizeGraphHash(residual, usedParams) :
+      canonicalizeGraphNoSort(residual, usedParams);
+    const canon = result.canon;
+    const canonTime = performance.now() - canonStart;
 
-    if (!canon) {
-      // Canonicalize structure (param usage will be encoded in gradientIndices at runtime)
-      const canonStart = performance.now();
-      const result =
-        this.canonMode === 'hash' ? canonicalizeGraphHash(residual, usedParams) :
-        canonicalizeGraphNoSort(residual, usedParams);
-      canon = result.canon;
-      canonTime = performance.now() - canonStart;
-
-      // Cache for future lookups
-      this.valueCanonCache.set(residual, canon);
-
-      if (canonTime > 10) {
-        console.log(`[KernelPool] Canonicalization took ${canonTime.toFixed(0)}ms for graph with ${usedParams.length} params (mode: ${this.canonMode})`);
-      }
+    if (canonTime > 10) {
+      console.log(`[KernelPool] Canonicalization took ${canonTime.toFixed(0)}ms for graph with ${usedParams.length} params (mode: ${this.canonMode})`);
     }
 
     // Ensure all leaf nodes in this graph are registered
