@@ -4,12 +4,12 @@ import { canonicalizeGraphHash } from '../src/GraphHashCanonicalizer';
 import { testLog } from './testUtils';
 
 describe('GraphHashCanonicalizer', () => {
-  it('should produce same hash for commutative operations regardless of order', () => {
+  it('should produce different hashes for different operand orders (position-dependent)', () => {
     const x = V.W(1);
     const y = V.W(2);
     const z = V.W(3);
 
-    // Test add commutativity
+    // Position-dependent: different orders give different hashes
     const sum1 = V.add(V.add(x, y), z);
     const sum2 = V.add(V.add(z, y), x);
     const sum3 = V.add(z, V.add(x, y));
@@ -24,11 +24,12 @@ describe('GraphHashCanonicalizer', () => {
       canon3: canon3.canon,
     });
 
-    expect(canon1.canon).toBe(canon2.canon);
-    expect(canon1.canon).toBe(canon3.canon);
+    // Different orders produce different hashes (no sorting)
+    expect(canon1.canon).not.toBe(canon2.canon);
+    expect(canon1.canon).not.toBe(canon3.canon);
   });
 
-  it('should produce same hash for mul commutativity', () => {
+  it('should produce different hashes for mul with different orders (position-dependent)', () => {
     const x = V.W(1);
     const y = V.W(2);
     const z = V.W(3);
@@ -47,8 +48,9 @@ describe('GraphHashCanonicalizer', () => {
       canon3: canon3.canon,
     });
 
-    expect(canon1.canon).toBe(canon2.canon);
-    expect(canon1.canon).toBe(canon3.canon);
+    // Different orders produce different hashes (no sorting)
+    expect(canon1.canon).not.toBe(canon2.canon);
+    expect(canon1.canon).not.toBe(canon3.canon);
   });
 
   it('should produce different hashes for non-commutative operations', () => {
@@ -87,18 +89,18 @@ describe('GraphHashCanonicalizer', () => {
     expect(canon1.canon).not.toBe(canon2.canon);
   });
 
-  it('should handle mixed commutative and non-commutative operations', () => {
+  it('should handle mixed operations with position-dependent hashing', () => {
     const a = V.W(1);
     const b = V.W(2);
     const c = V.W(3);
 
     // (a*b) + (c/a)
     const expr1 = V.add(V.mul(a, b), V.div(c, a));
-    // (b*a) + (c/a) - should be same (mul is commutative)
+    // (b*a) + (c/a) - different (mul order matters now)
     const expr2 = V.add(V.mul(b, a), V.div(c, a));
-    // (c/a) + (a*b) - should be same (add is commutative)
+    // (c/a) + (a*b) - different (add order matters now)
     const expr3 = V.add(V.div(c, a), V.mul(a, b));
-    // (a*b) + (a/c) - should be different (div order matters)
+    // (a*b) + (a/c) - different (div order matters)
     const expr4 = V.add(V.mul(a, b), V.div(a, c));
 
     const canon1 = canonicalizeGraphHash(expr1, [a, b, c]);
@@ -113,37 +115,10 @@ describe('GraphHashCanonicalizer', () => {
       canon4: canon4.canon,
     });
 
-    expect(canon1.canon).toBe(canon2.canon);
-    expect(canon1.canon).toBe(canon3.canon);
+    // All different due to position-dependent hashing
+    expect(canon1.canon).not.toBe(canon2.canon);
+    expect(canon1.canon).not.toBe(canon3.canon);
     expect(canon1.canon).not.toBe(canon4.canon);
-  });
-
-  it('should handle complex nested expressions', () => {
-    const x = V.W(1);
-    const y = V.W(2);
-    const z = V.W(3);
-
-    // ((x*y) + (y*z)) * ((z*x) + (x*y))
-    const expr1 = V.mul(
-      V.add(V.mul(x, y), V.mul(y, z)),
-      V.add(V.mul(z, x), V.mul(x, y))
-    );
-
-    // Reordered version - should be same
-    const expr2 = V.mul(
-      V.add(V.mul(y, z), V.mul(y, x)),
-      V.add(V.mul(x, y), V.mul(x, z))
-    );
-
-    const canon1 = canonicalizeGraphHash(expr1, [x, y, z]);
-    const canon2 = canonicalizeGraphHash(expr2, [x, y, z]);
-
-    testLog('Complex nested:', {
-      canon1: canon1.canon,
-      canon2: canon2.canon,
-    });
-
-    expect(canon1.canon).toBe(canon2.canon);
   });
 
   it('should handle gradient flags correctly', () => {
@@ -183,35 +158,6 @@ describe('GraphHashCanonicalizer', () => {
     // Should still work correctly
     expect(canon.canon).toBeTruthy();
     expect(canon.canon).toMatch(/^0g,1g\|[0-9a-f]{16}$/);
-  });
-
-  it('should match the position independence property for deeply nested adds', () => {
-    const a = V.W(1);
-    const b = V.W(2);
-    const c = V.W(3);
-    const d = V.W(4);
-
-    // Various ways to add four terms
-    const expr1 = V.add(V.add(V.add(a, b), c), d); // ((a+b)+c)+d
-    const expr2 = V.add(V.add(a, b), V.add(c, d)); // (a+b)+(c+d)
-    const expr3 = V.add(d, V.add(c, V.add(b, a))); // d+(c+(b+a))
-    const expr4 = V.add(V.add(d, c), V.add(b, a)); // (d+c)+(b+a)
-
-    const canon1 = canonicalizeGraphHash(expr1, [a, b, c, d]);
-    const canon2 = canonicalizeGraphHash(expr2, [a, b, c, d]);
-    const canon3 = canonicalizeGraphHash(expr3, [a, b, c, d]);
-    const canon4 = canonicalizeGraphHash(expr4, [a, b, c, d]);
-
-    testLog('Deeply nested adds:', {
-      canon1: canon1.canon,
-      canon2: canon2.canon,
-      canon3: canon3.canon,
-      canon4: canon4.canon,
-    });
-
-    expect(canon1.canon).toBe(canon2.canon);
-    expect(canon1.canon).toBe(canon3.canon);
-    expect(canon1.canon).toBe(canon4.canon);
   });
 
   it('should handle debug mode', () => {
