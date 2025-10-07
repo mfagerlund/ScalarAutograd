@@ -7,6 +7,11 @@ Use agent-refactor for type-safe refactoring operations on this project.
 
 **IMPORTANT:** Run agent-refactor commands FROM THIS PROJECT DIRECTORY (C:/Dev/ScalarAutograd), NOT from the agent-refactor directory!
 
+**Before using any command:** Run with `--help` to understand all options:
+```bash
+npx agent-refactor ts <command> --help
+```
+
 Execute the following command:
 ```bash
 npx agent-refactor $ARGUMENTS
@@ -20,7 +25,17 @@ Common examples:
 - `ts barrel-file --dir src/operations`
 - `ts find-usages --file src/Value.ts --line 10 --col 5`
 - `ts find-importers --file src/utils.ts`
+- `ts fix-absolute-imports --project . --dry-run` (preview broken import fixes)
+- `ts find-orphans --project . --exclude "*.test.ts"` (find unused files)
 
 All file paths are relative to the ScalarAutograd project root.
 
-Use `--dry-run` to preview changes before applying them.
+**Safety flags:**
+- `--dry-run` - Preview changes without saving
+- `--accept-breaking` - Allow new type errors (use cautiously)
+
+**Always check --help for comprehensive documentation including:**
+- Full description of what the command does
+- All available flags and options
+- Examples and use cases
+- Expected output format
