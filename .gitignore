@@ -12,3 +12,5 @@ tsconfig.tsbuildinfo
 /CLAUDE.md
 /nul
 demo-typecheck.json
+.claude/status/demo-typecheck.json
+.claude/status/.snapshot/demo-typecheck.json
