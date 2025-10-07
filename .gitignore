@@ -11,3 +11,4 @@ tsconfig.tsbuildinfo
 /cl.bat
 /CLAUDE.md
 /nul
+demo-typecheck.json

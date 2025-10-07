@@ -1,6 +1,6 @@
 import { Value, V, Vec3, lbfgs, nonlinearLeastSquares, CompiledResiduals } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
-import { EnergyRegistry } from '../../../ScalarAutograd/demos/developable-sphere/src/energy/utils/EnergyRegistry';
+import { EnergyRegistry } from '../energy/utils/EnergyRegistry';
 
 // Import all energies to ensure they register
 import '../energy/DevelopableEnergy';

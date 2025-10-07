@@ -1,6 +1,6 @@
 import { Value, V, Vec3, Matrix3x3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
-import { EnergyRegistry } from '../../../ScalarAutograd/demos/developable-sphere/src/energy/utils/EnergyRegistry';
+import { EnergyRegistry } from './utils/EnergyRegistry';
 
 /**
  * Covariance Energy (E^λ) from "Developability of Triangle Meshes" (Stein et al., SIGGRAPH 2018).
