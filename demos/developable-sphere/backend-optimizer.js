@@ -10,7 +10,7 @@
 import { V } from '../../dist/index.js';
 import { IcoSphere } from './dist/mesh/IcoSphere.js';
 import { DevelopableOptimizer } from './dist/optimization/DevelopableOptimizer.js';
-import { DevelopableEnergy } from './dist/energy/DevelopableEnergy.js';
+import { CurvatureClassifier } from './dist/energy/utils/CurvatureClassifier.js';
 import { performance } from 'perf_hooks';
 import { writeFile } from 'fs/promises';
 
@@ -49,7 +49,7 @@ async function runOptimization(params) {
 
   // Compute final metrics
   const finalMesh = result.history[result.history.length - 1];
-  const classification = DevelopableEnergy.classifyVertices(finalMesh);
+  const classification = CurvatureClassifier.classifyVertices(finalMesh);
   const developableRatio = classification.hingeVertices.length / finalMesh.vertices.length;
 
   const stats = {

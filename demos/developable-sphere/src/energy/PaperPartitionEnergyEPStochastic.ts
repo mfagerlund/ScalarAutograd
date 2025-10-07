@@ -1,6 +1,6 @@
 import { Value, V, Vec3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
-import { EnergyRegistry } from './EnergyRegistry';
+import { EnergyRegistry } from '../../../ScalarAutograd/demos/developable-sphere/src/energy/utils/EnergyRegistry';
 import { PaperPartitionEnergyEP } from './PaperPartitionEnergyEP';
 
 /**

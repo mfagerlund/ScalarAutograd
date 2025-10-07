@@ -1,6 +1,6 @@
 import { Value, V, Vec3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
-import { EnergyRegistry } from './EnergyRegistry';
+import { EnergyRegistry } from '../../../ScalarAutograd/demos/developable-sphere/src/energy/utils/EnergyRegistry';
 
 /**
  * Combinatorial Energy (E^P) from "Developability of Triangle Meshes" (Stein et al., SIGGRAPH 2018).
@@ -148,57 +148,6 @@ export class PaperPartitionEnergyEP {
     return { minVariance: bestVariance, bestPartition: [bestP, bestQ] };
   }
 
-  /**
-   * Classify vertices as hinges or seams based on energy threshold.
-   */
-  static classifyVertices(
-    mesh: TriangleMesh,
-    hingeThreshold: number = 1e-3
-  ): { hingeVertices: number[]; seamVertices: number[] } {
-    const hingeVertices: number[] = [];
-    const seamVertices: number[] = [];
-
-    for (let i = 0; i < mesh.vertices.length; i++) {
-      const energy = this.computeVertexEnergy(i, mesh).data;
-      if (energy < hingeThreshold) {
-        hingeVertices.push(i);
-      } else {
-        seamVertices.push(i);
-      }
-    }
-
-    return { hingeVertices, seamVertices };
-  }
-
-  /**
-   * Compute quality metrics: developability percentage and number of developable regions.
-   * Better metric than raw developability% because small regions can inflate the score.
-   *
-   * Returns:
-   * - developabilityPct: percentage of vertices that are hinges
-   * - numRegions: estimated number of contiguous developable regions
-   * - qualityScore: developabilityPct / sqrt(numRegions) - rewards fewer, larger regions
-   */
-  static computeQualityMetrics(
-    mesh: TriangleMesh,
-    hingeThreshold: number = 1e-3
-  ): { developabilityPct: number; numRegions: number; qualityScore: number } {
-    const { hingeVertices, seamVertices } = this.classifyVertices(mesh, hingeThreshold);
-
-    const developabilityPct = (hingeVertices.length / mesh.vertices.length) * 100;
-
-    // Estimate number of regions by counting seam vertices and dividing by avg seam length
-    // Simple heuristic: numRegions ≈ seamVertices / avgSeamLength
-    // Assume avg seam length is ~sqrt(numVertices) for a reasonable mesh
-    const estimatedAvgSeamLength = Math.max(1, Math.sqrt(mesh.vertices.length) / 2);
-    const numRegions = Math.max(1, seamVertices.length / estimatedAvgSeamLength);
-
-    // Quality score: developability per region (penalize fragmentation)
-    // Avoid division by zero when developability is 0
-    const qualityScore = developabilityPct > 0 ? developabilityPct / Math.sqrt(numRegions) : 0;
-
-    return { developabilityPct, numRegions, qualityScore };
-  }
 }
 // Register with energy registry
 EnergyRegistry.register(PaperPartitionEnergyEP);

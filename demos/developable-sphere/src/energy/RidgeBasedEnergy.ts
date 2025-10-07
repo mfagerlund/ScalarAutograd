@@ -1,6 +1,6 @@
 import { Value, V, Vec3 } from 'scalar-autograd';
 import { TriangleMesh } from '../mesh/TriangleMesh';
-import { EnergyRegistry } from './EnergyRegistry';
+import { EnergyRegistry } from '../../../ScalarAutograd/demos/developable-sphere/src/energy/utils/EnergyRegistry';
 
 /**
  * Ridge-Based Bimodal Energy - CUSTOM IMPLEMENTATION (not from Stein et al. 2018 paper).
@@ -188,24 +188,6 @@ export class RidgeBasedEnergy {
     return V.div(V.sum(misalignments), n);
   }
 
-  static classifyVertices(
-    mesh: TriangleMesh,
-    hingeThreshold: number = 0.1
-  ): { hingeVertices: number[]; seamVertices: number[] } {
-    const hingeVertices: number[] = [];
-    const seamVertices: number[] = [];
-
-    for (let i = 0; i < mesh.vertices.length; i++) {
-      const energy = this.computeVertexEnergy(i, mesh).data;
-      if (energy < hingeThreshold) {
-        hingeVertices.push(i);
-      } else {
-        seamVertices.push(i);
-      }
-    }
-
-    return { hingeVertices, seamVertices };
-  }
 }
 
 // Register with energy registry

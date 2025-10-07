@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { IcoSphere } from './mesh/IcoSphere';
 import { DevelopableOptimizer } from './optimization/DevelopableOptimizer';
-import { CurvatureClassifier } from './energy/CurvatureClassifier';
+import { CurvatureClassifier } from './energy/utils/CurvatureClassifier';
 import { MeshRenderer } from './visualization/MeshRenderer';
 import { TriangleMesh } from './mesh/TriangleMesh';
-import { EnergyRegistry } from './energy/EnergyRegistry';
+import { EnergyRegistry } from './energy/utils/EnergyRegistry';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { BatchResults } from './BatchResults';
 import { SubdividedMesh } from './mesh/SubdividedMesh';
@@ -20,7 +20,7 @@ import './energy/PaperPartitionEnergyEP';
 import './energy/EigenProxyEnergy';
 import './energy/FastCovarianceEnergy';
 import './energy/GreatCircleEnergyEx';
-import './energy/DifferentiablePlaneAlignment';
+import './energy/utils/DifferentiablePlaneAlignment';
 
 const VERSION = 'v0';
 
