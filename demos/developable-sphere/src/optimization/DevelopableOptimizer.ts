@@ -10,7 +10,6 @@ import '../energy/AlignmentBimodalEnergy';
 import '../energy/PaperPartitionEnergyEP';
 import '../energy/PaperPartitionEnergyEPStochastic';
 import '../energy/EigenProxyEnergy';
-import '../energy/StochasticCovarianceEnergy';
 import '../energy/FastCovarianceEnergy';
 
 export type CompilationMode = 'none' | 'eager' | 'lazy';

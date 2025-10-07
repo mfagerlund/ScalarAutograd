@@ -143,6 +143,10 @@ export class TriangleMesh {
   }
 
   setVertexPosition(idx: number, pos: Vec3): void {
+    if (!isFinite(pos.x.data) || !isFinite(pos.y.data) || !isFinite(pos.z.data)) {
+      console.warn(`Attempted to set invalid position at vertex ${idx}: (${pos.x.data}, ${pos.y.data}, ${pos.z.data})`);
+      return;
+    }
     this.vertices[idx] = pos;
     this.invalidateCache();
   }
@@ -168,5 +172,69 @@ export class TriangleMesh {
     }
 
     return sharedVertices === 2; // Share exactly 2 vertices = share an edge
+  }
+
+  /**
+   * Detect degenerate triangles (very small angles or near-zero area)
+   */
+  detectDegenerateTriangles(minAngleDegrees: number = 5): Array<{faceIdx: number, angles: number[]}> {
+    const degenerate: Array<{faceIdx: number, angles: number[]}> = [];
+    const minAngleRad = minAngleDegrees * Math.PI / 180;
+
+    for (let faceIdx = 0; faceIdx < this.faces.length; faceIdx++) {
+      const face = this.faces[faceIdx];
+      const angles = [
+        this.getInteriorAngle(faceIdx, face.vertices[0]).data,
+        this.getInteriorAngle(faceIdx, face.vertices[1]).data,
+        this.getInteriorAngle(faceIdx, face.vertices[2]).data,
+      ];
+
+      if (angles.some(a => a < minAngleRad || !isFinite(a))) {
+        degenerate.push({ faceIdx, angles: angles.map(a => a * 180 / Math.PI) });
+      }
+    }
+
+    return degenerate;
+  }
+
+  /**
+   * Get mesh statistics
+   */
+  getStats(): {
+    vertices: number;
+    faces: number;
+    minAngle: number;
+    maxAngle: number;
+    avgAngle: number;
+    degenerateCount: number;
+  } {
+    let minAngle = Infinity;
+    let maxAngle = -Infinity;
+    let sumAngle = 0;
+    let angleCount = 0;
+
+    for (let faceIdx = 0; faceIdx < this.faces.length; faceIdx++) {
+      const face = this.faces[faceIdx];
+      for (const v of face.vertices) {
+        const angle = this.getInteriorAngle(faceIdx, v).data * 180 / Math.PI;
+        if (isFinite(angle)) {
+          minAngle = Math.min(minAngle, angle);
+          maxAngle = Math.max(maxAngle, angle);
+          sumAngle += angle;
+          angleCount++;
+        }
+      }
+    }
+
+    const degenerate = this.detectDegenerateTriangles();
+
+    return {
+      vertices: this.vertices.length,
+      faces: this.faces.length,
+      minAngle: minAngle === Infinity ? 0 : minAngle,
+      maxAngle: maxAngle === -Infinity ? 0 : maxAngle,
+      avgAngle: angleCount > 0 ? sumAngle / angleCount : 0,
+      degenerateCount: degenerate.length,
+    };
   }
 }

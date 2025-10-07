@@ -172,6 +172,8 @@ export class Value {
     clamp(min: number, max: number): Value;
     cos(): Value;
     cube(): Value;
+    // @internal
+    static currentBuilder: any;
     data: number;
     div(other: Value | number): Value;
     eq(other: Value): Value;
@@ -184,6 +186,8 @@ export class Value {
     grad: number;
     gt(other: Value): Value;
     gte(other: Value): Value;
+    // @internal
+    _id: number;
     label: string;
     log(): Value;
     lt(other: Value): Value;

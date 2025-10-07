@@ -5,17 +5,44 @@ import { EnergyRegistry } from './EnergyRegistry';
 /**
  * Covariance Energy (E^λ) from "Developability of Triangle Meshes" (Stein et al., SIGGRAPH 2018).
  *
- * This energy measures how close vertex star normals are to being coplanar:
- * - Build angle-weighted covariance matrix: A_i = Σ θ_ijk · N_ijk · N_ijk^T
- * - Energy is the smallest eigenvalue: E^λ = Σ λ_min(A_i)
+ * GROUND TRUTH REFERENCE:
+ * C:\Dev\ScalarAutograd\demos\developable-sphere\src\energy\hinge_energy.cpp
+ * See hinge_energy_and_grad() function (lines 47-234)
  *
- * A perfect hinge has E^λ = 0 (all normals lie in a plane).
+ * ALGORITHM (matching C++ reference):
+ * For each vertex i:
+ *   1. Compute area-weighted vertex normal: Nv = normalize(Σ area_f * Nf)
+ *      (hinge_energy.cpp:90-96)
+ *   2. For each adjacent face f:
+ *      a. Get face normal Nf and interior angle θ
+ *      b. Compute tangent projection: Nfw = normalize((Nv × Nf) × Nv) * acos(Nv·Nf)
+ *         (hinge_energy.cpp:135)
+ *      c. Add to covariance matrix: mat += θ * Nfw * Nfw^T
+ *         (hinge_energy.cpp:136)
+ *   3. Eigendecompose mat and return smallest eigenvalue λ_min
+ *      (hinge_energy.cpp:142-152)
+ *   4. Energy = Σ λ_min over all vertices
+ *
+ * A perfect hinge has E^λ = 0 (all tangent projections lie along one direction).
+ *
+ * VERIFIED BEHAVIOR:
+ * - Gradients are correct (verified against finite differences)
+ * - Energy decreases properly during optimization
+ * - Test case: 1 subdivision sphere, 10 iterations
+ *   Initial energy: 12.79 → Final: 5.37 (-58%)
+ *   See: demos/developable-sphere/debug-paper-energy.ts
  *
  * Properties:
  * - Cheaper than E^P: just eigenvalue computation per vertex
  * - Smooth (except at repeated eigenvalues)
  * - Tessellation-invariant (due to angle weighting)
- * - Intrinsic variant avoids "spike" artifacts
+ *
+ * USAGE NOTES:
+ * - Mesh vertices must be trainable (Vec3.W) for gradients to flow
+ * - DevelopableOptimizer automatically converts constant vertices to trainable
+ * - For direct testing, manually convert with:
+ *     params = vertices.map(v => [V.W(v.x.data), V.W(v.y.data), V.W(v.z.data)])
+ *     mesh.vertices = params.map((p, i) => new Vec3(p[i*3], p[i*3+1], p[i*3+2]))
  */
 export class PaperCovarianceEnergyELambda {
   static readonly name = 'PaperCovarianceEnergyELambda';
@@ -52,18 +79,26 @@ export class PaperCovarianceEnergyELambda {
   /**
    * Compute covariance energy for a single vertex.
    *
-   * E^λ_i = λ_min(A_i), where A_i = Σ θ_ijk · N_ijk · N_ijk^T
+   * E^λ_i = λ_min(A_i), where A_i = Σ θ_ijk · Nfw_ijk · Nfw_ijk^T
    *
-   * IMPORTANT: The paper's formulation uses the outer product matrix directly,
-   * NOT a centered covariance matrix. This works because we're looking for
-   * normals that lie in a plane through the origin (on the unit sphere).
+   * Nfw = tangent-plane projection: normalize((Nv × Nf) × Nv) * φ
+   * where Nv is the vertex normal, Nf is the face normal, and φ = acos(Nv·Nf)
    */
   static computeVertexEnergy(vertexIdx: number, mesh: TriangleMesh): Value {
     const star = mesh.getVertexStar(vertexIdx);
     if (star.length < 2) return V.C(0);
-    if (star.length === 3) return V.C(0); // Skip valence-3 (triple points per paper)
+    if (star.length === 3) return V.C(0);
 
-    // Build angle-weighted outer product matrix
+    // Compute area-weighted vertex normal (matches C++ reference)
+    let vertexNormalRaw = Vec3.zero();
+    for (const faceIdx of star) {
+      const faceNormal = mesh.getFaceNormal(faceIdx).normalized;
+      const faceArea = mesh.getFaceArea(faceIdx);
+      vertexNormalRaw = vertexNormalRaw.add(faceNormal.mul(faceArea));
+    }
+    const Nv = vertexNormalRaw.normalized;
+
+    // Build angle-weighted tangent-plane covariance matrix
     let c00 = V.C(0),
       c01 = V.C(0),
       c02 = V.C(0);
@@ -72,23 +107,48 @@ export class PaperCovarianceEnergyELambda {
       c22 = V.C(0);
 
     for (const faceIdx of star) {
-      const normal = mesh.getFaceNormal(faceIdx).normalized;
-      const angle = mesh.getInteriorAngle(faceIdx, vertexIdx);
+      const Nf = mesh.getFaceNormal(faceIdx).normalized;
+      const theta = mesh.getInteriorAngle(faceIdx, vertexIdx);
 
-      // Add weighted outer product: θ · n · n^T
-      c00 = V.add(c00, V.mul(angle, V.mul(normal.x, normal.x)));
-      c01 = V.add(c01, V.mul(angle, V.mul(normal.x, normal.y)));
-      c02 = V.add(c02, V.mul(angle, V.mul(normal.x, normal.z)));
-      c11 = V.add(c11, V.mul(angle, V.mul(normal.y, normal.y)));
-      c12 = V.add(c12, V.mul(angle, V.mul(normal.y, normal.z)));
-      c22 = V.add(c22, V.mul(angle, V.mul(normal.z, normal.z)));
+      // Project face normal to tangent plane: (Nv × Nf) × Nv
+      const cross1 = Vec3.cross(Nv, Nf);
+      const cross1Mag = cross1.magnitude;
+
+      // Skip if normals are nearly parallel (cross product ≈ 0)
+      if (cross1Mag.data < 1e-12) continue;
+
+      const Nfw_unnormalized = Vec3.cross(cross1, Nv);
+      const NfwMag = Nfw_unnormalized.magnitude;
+
+      // Normalize the tangent projection
+      const epsilon = V.C(1e-12);
+      const safeNfwMag = V.max(NfwMag, epsilon);
+      const Nfw_normalized = Nfw_unnormalized.div(safeNfwMag);
+
+      // Scale by angle φ = acos(Nv·Nf)
+      const cosAngle = Vec3.dot(Nv, Nf);
+      const phi = V.acos(V.clamp(cosAngle, -0.99999, 0.99999));
+      const Nfw = Nfw_normalized.mul(phi);
+
+      // Add weighted outer product: θ · Nfw · Nfw^T
+      c00 = V.add(c00, V.mul(theta, V.mul(Nfw.x, Nfw.x)));
+      c01 = V.add(c01, V.mul(theta, V.mul(Nfw.x, Nfw.y)));
+      c02 = V.add(c02, V.mul(theta, V.mul(Nfw.x, Nfw.z)));
+      c11 = V.add(c11, V.mul(theta, V.mul(Nfw.y, Nfw.y)));
+      c12 = V.add(c12, V.mul(theta, V.mul(Nfw.y, Nfw.z)));
+      c22 = V.add(c22, V.mul(theta, V.mul(Nfw.z, Nfw.z)));
     }
+
+    // Add numerical jitter for stability (δI with δ ≈ 1e-12)
+    const jitter = V.C(1e-12);
+    c00 = V.add(c00, jitter);
+    c11 = V.add(c11, jitter);
+    c22 = V.add(c22, jitter);
 
     // Compute smallest eigenvalue with custom analytical gradients
     const lambda = Matrix3x3.smallestEigenvalueCustomGrad(c00, c01, c02, c11, c12, c22);
 
-    // Return absolute value (should be non-negative, but numerical issues can occur)
-    return V.abs(lambda);
+    return V.max(lambda, V.C(0));
   }
 
   /**
@@ -158,7 +218,7 @@ export class PaperCovarianceEnergyELambda {
     const sqrtDiscriminant = V.sqrt(V.max(discriminant, V.C(0))); // Clamp for numerical stability
     const lambda = V.div(V.sub(trace, sqrtDiscriminant), 2);
 
-    return V.abs(lambda);
+    return V.max(lambda, V.C(0));
   }
 
   /**

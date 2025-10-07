@@ -81,12 +81,12 @@ export class Matrix3x3 {
     // where θ = acos(r)
     const theta = V.acos(r);
 
-    // For smallest eigenvalue: use θ/3 + 4π/3
+    // For smallest eigenvalue: use θ/3 + 2π/3 (k=1)
     const twoThirdsPI = V.C(2.0943951023931953); // 2π/3
-    const angle2 = V.add(V.div(theta, 3), V.mul(2, twoThirdsPI));
-    const eig2 = V.add(shift, V.mul(V.mul(2, p), V.cos(angle2)));
+    const angle1 = V.add(V.div(theta, 3), twoThirdsPI);
+    const eig1 = V.add(shift, V.mul(V.mul(2, p), V.cos(angle1)));
 
-    return eig2;
+    return eig1;
   }
 
   /**

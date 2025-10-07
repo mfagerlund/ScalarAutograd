@@ -2,6 +2,7 @@ import './EigenvalueHelpers';
 export { CompiledFunctions } from './CompiledFunctions';
 export { CompiledResiduals } from './CompiledResiduals';
 export { Geometry } from './Geometry';
+export { GraphBuilder, type GraphSignature } from './GraphBuilder';
 export { lbfgs, type LBFGSOptions, type LBFGSResult } from './LBFGS';
 export { Losses } from './Losses';
 export { Matrix3x3 } from './Matrix3x3';

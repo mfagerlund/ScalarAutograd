@@ -31,6 +31,24 @@ export class Value {
   static no_grad_mode = false;
 
   /**
+   * Current graph builder for incremental hash tracking (null when not building).
+   * @internal
+   */
+  static currentBuilder: any = null;
+
+  /**
+   * Global counter for unique Value IDs.
+   * @internal
+   */
+  private static nextId = 0;
+
+  /**
+   * Unique ID for this Value instance (for hashing intermediate nodes).
+   * @internal
+   */
+  public _id: number;
+
+  /**
    * The numeric value stored in this node.
    * @public
    */
@@ -85,6 +103,7 @@ export class Value {
     if (typeof data !== 'number' || Number.isNaN(data) || !Number.isFinite(data)) {
       throw new Error(`Invalid number passed to Value: ${data}`);
     }
+    this._id = Value.nextId++;
     this.data = data;
     this.label = label;
     this.requiresGrad = requiresGrad;
@@ -505,6 +524,11 @@ export class Value {
     if (requiresGrad) {
       out.backwardFn = backwardFnBuilder(out);
     }
+
+    if (Value.currentBuilder) {
+      Value.currentBuilder.recordOp(out);
+    }
+
     return out;
   }
 
@@ -528,6 +552,11 @@ export class Value {
     if (requiresGrad) {
       out.backwardFn = backwardFnBuilder(out);
     }
+
+    if (Value.currentBuilder) {
+      Value.currentBuilder.recordOp(out);
+    }
+
     return out;
   }
 

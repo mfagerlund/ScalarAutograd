@@ -296,6 +296,7 @@ export class Vec3 {
     mul(scalar: Value | number): Vec3;
     // (undocumented)
     get normalized(): Vec3;
+    normalizedCustomGrad(): Vec3;
     // (undocumented)
     static one(): Vec3;
     static project(a: Vec3, b: Vec3): Vec3;

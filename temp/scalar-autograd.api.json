@@ -6566,7 +6566,7 @@
             {
               "kind": "Method",
               "canonicalReference": "scalar-autograd!Value.makeNary:member(1)",
-              "docComment": "/**\n * N-ary operation helper for operations with multiple inputs\n */\n",
+              "docComment": "/**\n * N-ary operation helper for operations with multiple inputs\n *\n * TODO: Move code generation logic into makeNary instead of centralized switches. This would co-locate runtime and codegen logic at operation definition sites.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -9837,6 +9837,38 @@
               "isStatic": false,
               "isProtected": false,
               "isAbstract": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "scalar-autograd!Vec3#normalizedCustomGrad:member(1)",
+              "docComment": "/**\n * Normalized vector with custom analytical gradients. More efficient than autodiff through magnitude and division.\n *\n * Gradient formula: ∂(v/|v|)/∂v = (I - nn^T)/|v| where n = v/|v|\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "normalizedCustomGrad(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Vec3",
+                  "canonicalReference": "scalar-autograd!Vec3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "normalizedCustomGrad"
             },
             {
               "kind": "Method",

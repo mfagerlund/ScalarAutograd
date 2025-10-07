@@ -6,6 +6,9 @@ import { MeshRenderer } from './visualization/MeshRenderer';
 import { TriangleMesh } from './mesh/TriangleMesh';
 import { EnergyRegistry } from './energy/EnergyRegistry';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { BatchResults } from './BatchResults';
+import { SubdividedMesh } from './mesh/SubdividedMesh';
+import { Vec3, V } from 'scalar-autograd';
 import './App.css';
 
 // Import all energies to ensure they register
@@ -15,7 +18,6 @@ import './energy/RidgeBasedEnergy';
 import './energy/AlignmentBimodalEnergy';
 import './energy/PaperPartitionEnergyEP';
 import './energy/EigenProxyEnergy';
-import './energy/StochasticCovarianceEnergy';
 import './energy/FastCovarianceEnergy';
 import './energy/GreatCircleEnergyEx';
 import './energy/DifferentiablePlaneAlignment';
@@ -25,6 +27,7 @@ const VERSION = 'v0';
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [renderer, setRenderer] = useState<MeshRenderer | null>(null);
+  const [activeTab, setActiveTab] = useState<'optimize' | 'results'>('optimize');
 
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
@@ -226,6 +229,11 @@ export default function App() {
       const developableAfter = finalClassification.hingeVertices.length / finalMesh.vertices.length;
       const regionsAfter = CurvatureClassifier.countDevelopableRegions(finalMesh);
 
+      const stats = finalMesh.getStats();
+      if (stats.degenerateCount > 0) {
+        console.warn(`⚠️  Found ${stats.degenerateCount} degenerate triangles (min angle: ${stats.minAngle.toFixed(2)}°)`);
+      }
+
       renderer.updateMesh(finalMesh, finalClassification);
       renderer.render();
 
@@ -316,6 +324,220 @@ export default function App() {
 
     updateMetrics(sphere);
     setMetrics((prev) => ({ ...prev, functionEvals: 0, kernelCount: 0, kernelReuse: 0 }));
+  };
+
+  const handleSubdivide = () => {
+    if (!renderer || !currentMesh || isOptimizing) return;
+
+    const subdivided = SubdividedMesh.fromMesh(currentMesh);
+    const refined = subdivided.subdivide(false, 0);
+    const newMesh = refined.mesh;
+
+    setCurrentMesh(newMesh);
+    setHistory([]);
+    setCurrentFrame(0);
+    setConvergenceInfo(null);
+
+    const classification = CurvatureClassifier.classifyVertices(newMesh);
+    renderer.updateMesh(newMesh, classification);
+    renderer.render();
+
+    updateMetrics(newMesh);
+    console.log(`Subdivided mesh: ${currentMesh.vertices.length} → ${newMesh.vertices.length} vertices`);
+  };
+
+  const handlePerturb = () => {
+    if (!renderer || !currentMesh || isOptimizing) return;
+
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+
+    for (const v of currentMesh.vertices) {
+      minX = Math.min(minX, v.x.data);
+      maxX = Math.max(maxX, v.x.data);
+      minY = Math.min(minY, v.y.data);
+      maxY = Math.max(maxY, v.y.data);
+      minZ = Math.min(minZ, v.z.data);
+      maxZ = Math.max(maxZ, v.z.data);
+    }
+
+    const dx = maxX - minX;
+    const dy = maxY - minY;
+    const dz = maxZ - minZ;
+    const diagonal = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    const strength = 0.01 * diagonal;
+
+    const perturbedMesh = currentMesh.clone();
+
+    for (let i = 0; i < perturbedMesh.vertices.length; i++) {
+      const v = perturbedMesh.vertices[i];
+      const rx = (Math.random() - 0.5) * strength;
+      const ry = (Math.random() - 0.5) * strength;
+      const rz = (Math.random() - 0.5) * strength;
+
+      perturbedMesh.setVertexPosition(i, new Vec3(
+        V.C(v.x.data + rx),
+        V.C(v.y.data + ry),
+        V.C(v.z.data + rz)
+      ));
+    }
+
+    setCurrentMesh(perturbedMesh);
+    setHistory([]);
+    setCurrentFrame(0);
+    setConvergenceInfo(null);
+
+    const classification = CurvatureClassifier.classifyVertices(perturbedMesh);
+    renderer.updateMesh(perturbedMesh, classification);
+    renderer.render();
+
+    updateMetrics(perturbedMesh);
+    console.log(`Perturbed mesh with strength ${strength.toFixed(4)} (1% of bbox diagonal ${diagonal.toFixed(4)})`);
+  };
+
+  const handleContinue = async () => {
+    if (!renderer || !currentMesh || isOptimizing) return;
+
+    const energyFunction = EnergyRegistry.get(energyType);
+    const canCompile = energyFunction?.supportsCompilation ?? true;
+    const shouldCompile = useCompiled && canCompile;
+
+    setIsOptimizing(true);
+    setIsCompiling(shouldCompile);
+    setProgress({ iteration: 0, energy: 0 });
+    setCompileProgress({ current: 0, total: 0, percent: 0 });
+    setConvergenceInfo(null);
+    setIterationsPerSecond(0);
+    meshHistoryRef.current = [];
+    setDevelopableHistory([]);
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const optimizationStartTime = Date.now();
+
+    try {
+      const initialClassification = CurvatureClassifier.classifyVertices(currentMesh);
+      const developableBefore = initialClassification.hingeVertices.length / currentMesh.vertices.length;
+      const regionsBefore = CurvatureClassifier.countDevelopableRegions(currentMesh);
+
+      renderer.updateMesh(currentMesh, initialClassification);
+      renderer.render();
+      updateMetrics(currentMesh);
+
+      const opt = new DevelopableOptimizer(currentMesh);
+      optimizerRef.current = opt;
+
+      const result = await opt.optimizeAsync({
+        maxIterations,
+        gradientTolerance: 1e-8,
+        verbose: true,
+        captureInterval: Math.max(1, Math.floor(maxIterations / 20)),
+        chunkSize: 5,
+        energyType,
+        useCompiled: shouldCompile,
+        optimizer,
+        onCompileProgress: (current, total, percent) => {
+          setCompileProgress({ current, total, percent });
+        },
+        onCompileComplete: () => {
+          setIsCompiling(false);
+        },
+        onProgress: (iteration, energy, history) => {
+          setProgress({ iteration, energy });
+
+          const elapsed = (Date.now() - optimizationStartTime) / 1000;
+          if (elapsed > 0) {
+            setIterationsPerSecond(iteration / elapsed);
+          }
+
+          if (history && history.length > 0) {
+            const latestMesh = history[history.length - 1];
+            const classification = CurvatureClassifier.classifyVertices(latestMesh);
+            renderer.updateMesh(latestMesh, classification);
+            renderer.render();
+            updateMetrics(latestMesh);
+            setCurrentMesh(latestMesh);
+
+            const devPercent = (classification.hingeVertices.length / latestMesh.vertices.length) * 100;
+            setDevelopableHistory(prev => [...prev, { iteration, percent: devPercent }]);
+          }
+        },
+      });
+
+      setMetrics((prev) => ({
+        ...prev,
+        functionEvals: result.functionEvaluations || 0,
+        kernelCount: result.kernelCount || 0,
+        kernelReuse: result.kernelReuseFactor || 0,
+      }));
+
+      const finalMesh = result.history[result.history.length - 1];
+      const finalClassification = CurvatureClassifier.classifyVertices(finalMesh);
+      const developableAfter = finalClassification.hingeVertices.length / finalMesh.vertices.length;
+      const regionsAfter = CurvatureClassifier.countDevelopableRegions(finalMesh);
+
+      renderer.updateMesh(finalMesh, finalClassification);
+      renderer.render();
+
+      updateMetrics(finalMesh);
+
+      setHistory(result.history);
+      setCurrentFrame(result.history.length - 1);
+      setCurrentMesh(finalMesh);
+
+      const timeElapsed = (Date.now() - optimizationStartTime) / 1000;
+
+      setConvergenceInfo({
+        reason: result.convergenceReason,
+        iterations: result.iterations,
+        timeElapsed,
+        developableBefore,
+        developableAfter,
+        regionsBefore,
+        regionsAfter,
+        functionEvals: result.functionEvaluations,
+        compilationTime: result.compilationTime,
+        numFunctions: result.numFunctions,
+      });
+
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('CONTINUED OPTIMIZATION COMPLETE');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`Energy Function: ${energyType}`);
+      console.log(`Mode: ${shouldCompile ? 'Compiled' : 'Non-compiled'}${!canCompile && useCompiled ? ' (energy does not support compilation)' : ''}`);
+      if (useCompiled && result.compilationTime !== undefined) {
+        console.log('');
+        console.log('COMPILATION:');
+        console.log(`  Time: ${result.compilationTime.toFixed(2)}s`);
+        console.log(`  Functions: ${result.numFunctions}`);
+        console.log(`  Kernels: ${result.kernelCount}`);
+        console.log(`  Reuse: ${result.kernelReuseFactor?.toFixed(1)}x`);
+      }
+      console.log('');
+      console.log('OPTIMIZATION:');
+      console.log(`  Iterations: ${result.iterations} / ${maxIterations}`);
+      console.log(`  Time Elapsed: ${timeElapsed.toFixed(2)}s`);
+      console.log(`  Speed: ${(result.iterations / timeElapsed).toFixed(1)} it/s`);
+      console.log(`  Function Evals: ${result.functionEvaluations}`);
+      console.log('');
+      console.log('DEVELOPABILITY (Objective Curvature Threshold):');
+      console.log(`  Before: ${(developableBefore * 100).toFixed(2)}% (${regionsBefore} regions)`);
+      console.log(`  After:  ${(developableAfter * 100).toFixed(2)}% (${regionsAfter} regions)`);
+      console.log(`  Change: ${((developableAfter - developableBefore) * 100).toFixed(2)}% ${developableAfter > developableBefore ? '✓' : '✗'}`);
+      console.log(`  Region Quality: ${(developableAfter * 100 / Math.max(1, regionsAfter)).toFixed(1)}% per region`);
+      console.log('');
+      console.log(`Convergence: ${result.convergenceReason}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      const elapsed = (Date.now() - optimizationStartTime) / 1000;
+      if (result.iterations < 3 && elapsed < 1) {
+        alert(`Optimization ended quickly after ${result.iterations} iterations.\nReason: ${result.convergenceReason}\n\nThis often means the initial mesh already has very low energy. Try a different energy function or add perturbation.`);
+      }
+    } finally {
+      optimizerRef.current = null;
+      setIsOptimizing(false);
+    }
   };
 
   const handleFrameChange = (frame: number) => {
@@ -449,16 +671,9 @@ export default function App() {
             imageName,
             imageData,
           });
-
-          // Download image
-          const link = document.createElement('a');
-          link.download = imageName;
-          link.href = imageData;
-          link.click();
         }
       }
 
-      // Export JSON results
       const jsonData = {
         timestamp: new Date().toISOString(),
         settings: {
@@ -469,77 +684,22 @@ export default function App() {
         results,
       };
 
-      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = `batch_results_${Date.now()}.json`;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
+      try {
+        const response = await fetch('/api/save-batch-results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonData),
+        });
 
-      // Generate HTML viewer with embedded images
-      const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Batch Results - ${new Date().toISOString()}</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    h1 { color: #333; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .card h2 { margin-top: 0; color: #2196F3; }
-    .card img { width: 100%; border-radius: 4px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-    .metric { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; }
-    .metric:last-child { border-bottom: none; }
-    .label { font-weight: bold; color: #666; }
-    .value { color: #333; }
-    .positive { color: #4CAF50; }
-    .negative { color: #f44336; }
-  </style>
-</head>
-<body>
-  <h1>Batch Optimization Results</h1>
-  <p>Generated: ${new Date().toISOString()}</p>
-  <p>Settings: ${subdivisions} subdivisions, ${maxIterations} max iterations, ${optimizer} optimizer</p>
-  <div class="grid">
-    ${results.map(r => `
-      <div class="card">
-        <h2>${r.modelName}</h2>
-        ${r.imageData ? `<img src="${r.imageData}" alt="${r.modelName} result" />` : ''}
-        <div class="metric"><span class="label">Optimizer:</span><span class="value">${r.optimizer}</span></div>
-        <div class="metric"><span class="label">Compiled:</span><span class="value">${r.useCompiled ? 'Yes' : 'No'}</span></div>
-        ${r.compilationTime ? `<div class="metric"><span class="label">Compilation Time:</span><span class="value">${r.compilationTime.toFixed(2)}s</span></div>` : ''}
-        <div class="metric"><span class="label">Iterations:</span><span class="value">${r.iterations} / ${r.maxIterations}</span></div>
-        <div class="metric"><span class="label">Time Elapsed:</span><span class="value">${r.timeElapsed.toFixed(2)}s</span></div>
-        <div class="metric"><span class="label">Speed:</span><span class="value">${(r.iterations / r.timeElapsed).toFixed(1)} it/s</span></div>
-        <div class="metric"><span class="label">Function Evals:</span><span class="value">${r.functionEvals || 'N/A'}</span></div>
-        <div class="metric"><span class="label">Developability Before:</span><span class="value">${(r.developableBefore * 100).toFixed(2)}% (${r.regionsBefore} regions)</span></div>
-        <div class="metric"><span class="label">Developability After:</span><span class="value">${(r.developableAfter * 100).toFixed(2)}% (${r.regionsAfter} regions)</span></div>
-        <div class="metric"><span class="label">Change:</span><span class="value ${r.developableAfter > r.developableBefore ? 'positive' : 'negative'}">${((r.developableAfter - r.developableBefore) * 100).toFixed(2)}%</span></div>
-        <div class="metric"><span class="label">Convergence:</span><span class="value">${r.convergenceReason}</span></div>
-      </div>
-    `).join('')}
-  </div>
-  <script>
-    const results = ${JSON.stringify(jsonData, null, 2)};
-    console.log('Batch results:', results);
-  </script>
-</body>
-</html>`;
+        const saveResult = await response.json();
 
-      const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
-      const htmlUrl = URL.createObjectURL(htmlBlob);
-      const htmlLink = document.createElement('a');
-      htmlLink.download = `batch_results_${Date.now()}.html`;
-      htmlLink.href = htmlUrl;
-      htmlLink.click();
-      URL.revokeObjectURL(htmlUrl);
+        console.log('Batch run complete!', results);
+        console.log('Saved to:', saveResult.path);
 
-      console.log('Batch run complete!', results);
-      if (!batchStopRef.current) {
-        alert(`Batch run complete! ${results.length} models processed.\nResults saved as HTML and JSON files.`);
-      } else {
-        alert(`Batch run stopped! ${results.length} of ${models.length} models processed.\nPartial results saved.`);
+        setActiveTab('results');
+      } catch (error) {
+        console.error('Failed to save batch results:', error);
+        alert('Batch run complete but failed to save results: ' + error);
       }
 
     } finally {
@@ -588,8 +748,51 @@ export default function App() {
 
   return (
     <div className="app">
-      <div className="main-content">
-        <div className="canvas-container">
+      <div style={{
+        display: 'flex',
+        borderBottom: '1px solid #444',
+        background: '#1e1e1e',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <button
+          onClick={() => setActiveTab('optimize')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '14px',
+            fontWeight: activeTab === 'optimize' ? 'bold' : 'normal',
+            background: activeTab === 'optimize' ? '#2a2a2a' : 'transparent',
+            color: activeTab === 'optimize' ? '#2196F3' : '#999',
+            border: 'none',
+            borderBottom: activeTab === 'optimize' ? '2px solid #2196F3' : 'none',
+            marginBottom: activeTab === 'optimize' ? '-1px' : '0',
+            cursor: 'pointer',
+          }}
+        >
+          Optimize
+        </button>
+        <button
+          onClick={() => setActiveTab('results')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '14px',
+            fontWeight: activeTab === 'results' ? 'bold' : 'normal',
+            background: activeTab === 'results' ? '#2a2a2a' : 'transparent',
+            color: activeTab === 'results' ? '#2196F3' : '#999',
+            border: 'none',
+            borderBottom: activeTab === 'results' ? '2px solid #2196F3' : 'none',
+            marginBottom: activeTab === 'results' ? '-1px' : '0',
+            cursor: 'pointer',
+          }}
+        >
+          Batch Results
+        </button>
+      </div>
+
+      {activeTab === 'optimize' && (
+        <div className="main-content">
+          <div className="canvas-container">
           <canvas ref={canvasRef} width={800} height={600} />
 
           {/* Status Overlay - Top Left */}
@@ -980,60 +1183,15 @@ Convergence: ${convergenceInfo.reason}`;
 
             <label>
               Max Iterations: {maxIterations}
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  position: 'absolute',
-                  width: '100%',
-                  top: '9px',
-                  pointerEvents: 'none'
-                }}>
-                  {[20, 50, 100, 150, 200, 300].map(v => (
-                    <div key={v} style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: '#808080',
-                      marginLeft: v === 20 ? '0' : '-3px',
-                      marginRight: v === 300 ? '0' : '-3px'
-                    }} />
-                  ))}
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="300"
-                  step="10"
-                  value={maxIterations}
-                  onChange={(e) => setMaxIterations(parseInt(e.target.value))}
-                  disabled={isOptimizing}
-                  list="iterations-ticks"
-                />
-                <datalist id="iterations-ticks">
-                  <option value="20" label="20"></option>
-                  <option value="50" label="50"></option>
-                  <option value="100" label="100"></option>
-                  <option value="150" label="150"></option>
-                  <option value="200" label="200"></option>
-                  <option value="300" label="300"></option>
-                </datalist>
-                <div className="slider-ticks" style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: '4px',
-                  pointerEvents: 'none'
-                }}>
-                  {[20, 50, 100, 150, 200, 300].map(v => (
-                    <span key={v} style={{
-                      fontSize: '10px',
-                      color: '#808080',
-                      width: '20px',
-                      textAlign: 'center'
-                    }}>{v}</span>
-                  ))}
-                </div>
-              </div>
+              <input
+                type="range"
+                min="20"
+                max="300"
+                step="10"
+                value={maxIterations}
+                onChange={(e) => setMaxIterations(parseInt(e.target.value))}
+                disabled={isOptimizing}
+              />
             </label>
           </div>
 
@@ -1104,6 +1262,80 @@ Convergence: ${convergenceInfo.reason}`;
                   <path d="M3 3v5h5"></path>
                 </svg>
                 Reset
+              </button>
+              <button
+                onClick={handleSubdivide}
+                disabled={isOptimizing || isBatchRunning}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: isOptimizing || isBatchRunning ? '#ccc' : '#9C27B0',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isOptimizing || isBatchRunning ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18"></rect>
+                  <line x1="12" y1="3" x2="12" y2="21"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                </svg>
+                Subdivide
+              </button>
+              <button
+                onClick={handleContinue}
+                disabled={isOptimizing || isBatchRunning}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: isOptimizing || isBatchRunning ? '#ccc' : '#00BCD4',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isOptimizing || isBatchRunning ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  <line x1="19" y1="12" x2="19" y2="12" strokeWidth="3"></line>
+                </svg>
+                Continue
+              </button>
+              <button
+                onClick={handlePerturb}
+                disabled={isOptimizing || isBatchRunning}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: isOptimizing || isBatchRunning ? '#ccc' : '#FF5722',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isOptimizing || isBatchRunning ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <circle cx="12" cy="5" r="1"></circle>
+                  <circle cx="12" cy="19" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="7" cy="7" r="1"></circle>
+                  <circle cx="17" cy="7" r="1"></circle>
+                  <circle cx="7" cy="17" r="1"></circle>
+                  <circle cx="17" cy="17" r="1"></circle>
+                </svg>
+                Perturb
               </button>
               <button
                 onClick={() => setShowBatchModal(true)}
@@ -1180,6 +1412,7 @@ Convergence: ${convergenceInfo.reason}`;
           )}
         </div>
       </div>
+      )}
 
       {/* Batch Progress Overlay */}
       {isBatchRunning && (
@@ -1434,6 +1667,8 @@ Convergence: ${convergenceInfo.reason}`;
           </div>
         </div>
       )}
+
+      {activeTab === 'results' && <BatchResults />}
     </div>
   );
 }

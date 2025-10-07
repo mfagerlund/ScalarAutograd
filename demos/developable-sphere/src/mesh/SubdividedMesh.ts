@@ -1,4 +1,4 @@
-import { Vec3 } from 'scalar-autograd';
+import { Vec3, V } from 'scalar-autograd';
 import { TriangleMesh, Triangle } from './TriangleMesh';
 
 /**
@@ -62,8 +62,11 @@ export class SubdividedMesh {
    * v1------v2      v1--m12--v2
    *
    * Returns a new SubdividedMesh with parent tracking.
+   *
+   * @param projectToSphere If true, project new edge vertices to unit sphere (default: false)
+   * @param perturbRadius Small random perturbation radius for new vertices (default: 0)
    */
-  subdivide(): SubdividedMesh {
+  subdivide(projectToSphere: boolean = false, perturbRadius: number = 0): SubdividedMesh {
     const coarseMesh = this.mesh;
     const newVertices: Vec3[] = [...coarseMesh.vertices.map((v) => v.clone())];
     const newFaces: Triangle[] = [];
@@ -85,7 +88,27 @@ export class SubdividedMesh {
       // Create new midpoint vertex
       const p0 = coarseMesh.vertices[v0];
       const p1 = coarseMesh.vertices[v1];
-      const midpoint = p0.add(p1).div(2);
+      let midpoint = p0.add(p1).div(2);
+
+      if (projectToSphere) {
+        const avgRadius = p0.magnitude.add(p1.magnitude).div(2);
+        const midpointLen = midpoint.magnitude;
+        midpoint = midpoint.div(midpointLen).mul(avgRadius);
+      }
+
+      if (perturbRadius > 0) {
+        const scale = perturbRadius * (Math.random() - 0.5);
+        const rx = (Math.random() - 0.5) * 2;
+        const ry = (Math.random() - 0.5) * 2;
+        const rz = (Math.random() - 0.5) * 2;
+        const len = Math.sqrt(rx*rx + ry*ry + rz*rz);
+        const offset = new Vec3(
+          V.C(rx / len * scale),
+          V.C(ry / len * scale),
+          V.C(rz / len * scale)
+        );
+        midpoint = midpoint.add(offset);
+      }
 
       const newIdx = newVertices.length;
       newVertices.push(midpoint);
