@@ -2562,7 +2562,7 @@
             {
               "kind": "Method",
               "canonicalReference": "scalar-autograd!V.C:member(1)",
-              "docComment": "/**\n * Creates a constant Value (non-differentiable).\n *\n * @param value - The numeric value\n *\n * @param label - Optional label for the value\n *\n * @returns New constant Value\n */\n",
+              "docComment": "/**\n * Creates a constant Value (non-differentiable). Constants are interned - same numeric value returns same Value object. This improves memory usage and enables proper graph signature matching.\n *\n * @param value - The numeric value\n *\n * @param label - Optional label for the value\n *\n * @returns New or cached constant Value\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
