@@ -8,6 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "types": ["vitest/globals"],
+    "rootDir": "./src",
     "outDir": "./dist",
     "declaration": true,
     "declarationDir": "./dist"
