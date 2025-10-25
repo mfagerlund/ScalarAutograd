@@ -2,6 +2,21 @@ import { choleskySolve, computeJtJ, computeJtr, qrSolve } from "./LinearSolver";
 import { Value } from "./Value";
 import { CompiledResiduals } from "./CompiledResiduals";
 
+function formatNumberReadable(value: number): string {
+  if (value === 0) return '0';
+  const abs = Math.abs(value);
+  if (abs >= 0.01) {
+    return value.toFixed(abs >= 10 ? 2 : 3);
+  }
+  if (abs >= 1e-6) {
+    return value.toFixed(6);
+  }
+  if (abs < 1e-8) {
+    return '~0';
+  }
+  return value.toFixed(9);
+}
+
 /**
  * Configuration options for nonlinear least squares solver.
  * @public
@@ -174,7 +189,7 @@ export function nonlinearLeastSquares(
 
     if (verbose) {
       console.log(
-        `Iteration ${iter}: cost=${cost.toFixed(6)}, ||∇||=${gradientNorm.toExponential(2)}${adaptiveDamping ? `, λ=${lambda.toExponential(2)}` : ''}`
+        `Iteration ${iter}: cost=${formatNumberReadable(cost)}, ||∇||=${formatNumberReadable(gradientNorm)}${adaptiveDamping ? `, λ=${formatNumberReadable(lambda)}` : ''}`
       );
       if (iter === 0) {
         const m = J.length;  // number of constraints
