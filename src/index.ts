@@ -13,3 +13,21 @@ export { Value } from './Value';
 export { Vec2 } from './Vec2';
 export { Vec3 } from './Vec3';
 export { Vec4 } from './Vec4';
+
+// Symbolic gradient generation
+export { parse, Parser } from './symbolic/Parser';
+export { differentiate, computeGradients } from './symbolic/SymbolicDiff';
+export { simplify } from './symbolic/Simplify';
+export { generateCode, generateMathNotation, generateGradientCode, generateGradientFunction } from './symbolic/CodeGen';
+export type {
+  ASTNode,
+  NumberNode,
+  VariableNode,
+  BinaryOpNode,
+  UnaryOpNode,
+  FunctionCallNode,
+  VectorAccessNode,
+  VectorConstructorNode,
+  Assignment,
+  Program
+} from './symbolic/AST';
